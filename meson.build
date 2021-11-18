@@ -3,4 +3,8 @@ project('wm', 'cpp',
   default_options : ['warning_level=3',
                      'cpp_std=c++17'])
 
+if get_option('buildtype').startswith('debug')
+    add_project_arguments('-DDEBUG', language: 'cpp')
+endif
+
 subdir('src')
