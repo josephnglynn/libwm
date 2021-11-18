@@ -30,6 +30,10 @@ namespace flow {
 			XEvent event;
 			XNextEvent(display, &event);
 
+#ifdef DEBUG
+			std::cout << "EVENT " << event.type << " OCCURRED" << std::endl;
+#endif
+
 			switch (event.type) {
 			case KeyPress:
 				handlers::onKeyPress(event);
