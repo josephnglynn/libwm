@@ -1,8 +1,10 @@
 #include "public/flow_wm.hpp"
 #include "private/x11/handlers/handlers.hpp"
+#include "../logger/public/logger.hpp"
 #include <iostream>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <string>
 
 namespace flow {
 	void FlowWindowManager::Start()
@@ -10,13 +12,13 @@ namespace flow {
 
 		display = XOpenDisplay(nullptr);
 		if (!display) {
-			std::cerr << "Sorry, we failed to open a X display" << std::endl;
+			logger::error("Sorry, we failed to open a X display");
 		}
 
 		rootWindow = DefaultRootWindow(display);
 
 		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int {
-			std::cerr << "OH NO, another wm is currently open" << std::endl;
+			logger::error("OH NO, another wm is currently open");
 			std::exit(0);
 		});// So We Can Output Custom Message
 
@@ -31,7 +33,7 @@ namespace flow {
 			XNextEvent(display, &event);
 
 #ifdef DEBUG
-			std::cout << "EVENT " << event.type << " OCCURRED" << std::endl;
+			logger::info("EVENT "+std::to_string(event.type)+" OCCURRED");
 #endif
 
 			switch (event.type) {
@@ -141,7 +143,7 @@ namespace flow {
 				handlers::onLastEvent(event);
 				break;
 			default:
-				std::cerr << "WHATEVER EVENT " << event.type << " IS, WE MUST HAVE IGNORED IT" << std::endl;
+				logger::warn("WHATEVER EVENT "+std::to_string(event.type)+" IS, WE MUST HAVE IGNORED IT");
 				break;
 			}
 		}
@@ -149,9 +151,11 @@ namespace flow {
 
 	int FlowWindowManager::FlowX11ErrorHandler(Display* display, XErrorEvent* event)
 	{
-		std::cerr << "An X11 Error Occurred! Don't worry though, it will not stop execution" << std::endl
-				  << "Error code: " << event->error_code << std::endl
-				  << "Type: " << event->type << std::endl;
+		logger::error(
+				"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: "+
+						std::to_string(event->error_code)+
+						"\nType: "+std::to_string(event->type)
+		);
 		return 0;
 	}
 
