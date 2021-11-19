@@ -16,28 +16,37 @@
 
 namespace flow::logger {
 
-	template<typename T>
-	void info(T data)
+	template<typename ...T>
+	void info(T... data)
 	{
-		std::cout << _starting_string << Blue << data << RESET << std::endl;
+
+		std::cout << _starting_string << Blue;
+		((std::cout << std::forward<T>(data)), ...);
+		std::cout << RESET << std::endl;
 	}
 
-	template<typename T>
-	void warn(T data)
+	template<typename ...T>
+	void warn(T... data)
 	{
-		std::cout << _starting_string << Yellow << data << RESET << std::endl;
+		std::cout << _starting_string << Yellow;
+		((std::cout << std::forward<T>(data)), ...);
+		std::cout << RESET << std::endl;
 	}
 
-	template<typename T>
-	void error(T data)
+	template<typename ...T>
+	void error(T... data)
 	{
-		std::cout << _starting_string << Red << data << RESET << std::endl;
+		std::cout << _starting_string << Red;
+		((std::cout << std::forward<T>(data)), ...);
+		std::cout << RESET << std::endl;
 	}
 
-	template<typename T>
-	void success(T data)
+	template<typename ...T>
+	void success(T... data)
 	{
-		std::cout << _starting_string << Green << data << RESET << std::endl;
+		std::cout << _starting_string << Green;
+		((std::cout << std::forward<T>(data)), ...);
+		std::cout << RESET << std::endl;
 	}
 
 }
