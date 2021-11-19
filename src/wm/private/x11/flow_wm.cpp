@@ -33,7 +33,7 @@ namespace flow {
 			XNextEvent(display, &event);
 
 #ifdef DEBUG
-			logger::info("EVENT "+std::to_string(event.type)+" OCCURRED");
+			logger::info("EVENT ", std::to_string(event.type), " OCCURRED");
 #endif
 
 			switch (event.type) {
@@ -143,7 +143,7 @@ namespace flow {
 				handlers::onLastEvent(event);
 				break;
 			default:
-				logger::warn("WHATEVER EVENT "+std::to_string(event.type)+" IS, WE MUST HAVE IGNORED IT");
+				logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
 				break;
 			}
 		}
@@ -152,9 +152,9 @@ namespace flow {
 	int FlowWindowManager::FlowX11ErrorHandler(Display* display, XErrorEvent* event)
 	{
 		logger::error(
-				"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: "+
-						std::to_string(event->error_code)+
-						"\nType: "+std::to_string(event->type)
+				"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
+				std::to_string(event->error_code),
+				"\nType: "+std::to_string(event->type)
 		);
 		return 0;
 	}
