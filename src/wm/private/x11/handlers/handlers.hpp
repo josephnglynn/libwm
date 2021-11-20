@@ -88,7 +88,7 @@ namespace flow::handlers {
 	}
 
 
-	void onMapRequest (XEvent& event, FlowWindowManager& flow_window_manager) {
+	void onMapRequest (XEvent& event, FlowWindowManagerX11& flow_window_manager) {
 		XMapRequestEvent me = event.xmaprequest;
 //ADD TO CLIENT HERE
 		XMapWindow(flow_window_manager.getDisplay(), me.window);
@@ -104,7 +104,7 @@ namespace flow::handlers {
 
 	}
 
-	void onConfigureRequest (XEvent& event, FlowWindowManager& flow_window_manager) {
+	void onConfigureRequest (XEvent& event, FlowWindowManagerX11& flow_window_manager) {
 		XConfigureRequestEvent cre = event.xconfigurerequest;
 		//TODO IF WINDOW DOESN'T ALREADY EXIST
 		XWindowChanges window_changes; //TODO WINDOW CHANGES

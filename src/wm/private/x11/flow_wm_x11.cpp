@@ -1,4 +1,4 @@
-#include "public/flow_wm.hpp"
+#include "flow_wm_x11.hpp"
 #include "private/x11/handlers/handlers.hpp"
 #include "../logger/public/logger.hpp"
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <string>
 
 namespace flow {
-	void FlowWindowManager::Start()
+	void FlowWindowManagerX11::Start()
 	{
 
 		display = XOpenDisplay(nullptr);
@@ -25,7 +25,7 @@ namespace flow {
 		XSelectInput(display, rootWindow, SubstructureNotifyMask | SubstructureRedirectMask);
 
 		XSync(display, false);
-		XSetErrorHandler(FlowWindowManager::FlowX11ErrorHandler);
+		XSetErrorHandler(FlowX11ErrorHandler);
 
 		while (!quit) {
 
@@ -149,7 +149,7 @@ namespace flow {
 		}
 	}
 
-	int FlowWindowManager::FlowX11ErrorHandler(Display* display, XErrorEvent* event)
+	int FlowX11ErrorHandler(Display* display, XErrorEvent* event)
 	{
 		logger::error(
 				"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
@@ -159,7 +159,7 @@ namespace flow {
 		return 0;
 	}
 
-	FlowWindowManager::FlowWindowManager() { }
-	FlowWindowManager::~FlowWindowManager() { XCloseDisplay(display); }
+
+	FlowWindowManagerX11::~FlowWindowManagerX11() { XCloseDisplay(display); }
 
 }
