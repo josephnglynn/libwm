@@ -92,7 +92,7 @@ namespace flow {
 				handlers::onMapNotify(event);
 				break;
 			case MapRequest:
-				handlers::onMapRequest(event);
+				handlers::onMapRequest(event, *this);
 				break;
 			case ReparentNotify:
 				handlers::onReparentNotify(event);
@@ -101,7 +101,7 @@ namespace flow {
 				handlers::onConfigureNotify(event);
 				break;
 			case ConfigureRequest:
-				handlers::onConfigureRequest(event);
+				handlers::onConfigureRequest(event, *this);
 				break;
 			case GravityNotify:
 				handlers::onGravityNotify(event);

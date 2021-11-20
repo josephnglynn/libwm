@@ -88,8 +88,10 @@ namespace flow::handlers {
 	}
 
 
-	void onMapRequest (XEvent& event) {
-
+	void onMapRequest (XEvent& event, FlowWindowManager& flow_window_manager) {
+		XMapRequestEvent me = event.xmaprequest;
+//ADD TO CLIENT HERE
+		XMapWindow(flow_window_manager.getDisplay(), me.window);
 	}
 
 
@@ -102,8 +104,18 @@ namespace flow::handlers {
 
 	}
 
-	void onConfigureRequest (XEvent& event) {
-
+	void onConfigureRequest (XEvent& event, FlowWindowManager& flow_window_manager) {
+		XConfigureRequestEvent cre = event.xconfigurerequest;
+		//TODO IF WINDOW DOESN'T ALREADY EXIST
+		XWindowChanges window_changes; //TODO WINDOW CHANGES
+		window_changes.x = cre.x;
+		window_changes.y = cre.y;
+		window_changes.width = cre.width;
+		window_changes.height = cre.height;
+		window_changes.stack_mode = cre.detail;
+		window_changes.border_width = cre.border_width;
+		window_changes.sibling = cre.above;
+		XConfigureWindow(flow_window_manager.getDisplay(), cre.window, cre.value_mask, &window_changes);
 	}
 
 	void onGravityNotify (XEvent& event) {
