@@ -1,5 +1,5 @@
 wm_includes = ['public']
-wm_sources = ['private/x11/flow_wm_x11.cpp']
+wm_sources = ['private/xlib/flow_wm_xlib.cpp']
 wm_deps = [dependency('X11')]
 
 flow_wm_lib = shared_library(

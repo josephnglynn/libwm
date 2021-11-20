@@ -1,5 +1,5 @@
-#include "flow_wm_x11.hpp"
-#include "private/x11/handlers/handlers.hpp"
+#include "flow_wm_xlib.hpp"
+#include "private/xlib/handlers/handlers.hpp"
 #include "../logger/public/logger.hpp"
 #include <iostream>
 #include <X11/Xlib.h>

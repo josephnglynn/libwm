@@ -2,7 +2,7 @@
 // Created by joseph on 16/11/2021.
 //
 
-#include <wm/public/flow_wm_x11.hpp>
+#include <wm/public/flow_wm_xlib.hpp>
 
 int main()
 {
