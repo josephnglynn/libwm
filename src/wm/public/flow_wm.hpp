@@ -14,6 +14,8 @@ namespace flow {
 		~FlowWindowManager();
 		void Start();
 		static int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
+
+		Display* getDisplay() { return display; }
 	private:
 		Display* display;
 		Window rootWindow;
