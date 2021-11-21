@@ -7,20 +7,15 @@
 #include <X11/Xlib.h>
 #include "../../general/shapes.hpp"
 #include <X11/extensions/Xrandr.h>
+#include <vector>
 
 namespace flow
 {
 
 	struct Monitor : _XRRMonitorInfo
 	{
-		Monitor* next = nullptr;
-
-		Monitor() : _XRRMonitorInfo()
-		{
-		}
-		explicit Monitor(_XRRMonitorInfo info) : _XRRMonitorInfo(info)
-		{
-		}
+		Monitor() : _XRRMonitorInfo(){}
+		explicit Monitor(_XRRMonitorInfo info) : _XRRMonitorInfo(info){}
 
 		shapes::Rectangle toRectangle();
 	};
@@ -28,14 +23,11 @@ namespace flow
 	class ScreenManager
 	{
 	public:
-		void AddMonitor(Monitor* monitor);
-
 		static void Init(Display* display, Window rootWindow);
-
-		static Monitor* GetMonitor(Display* display, Window window, int* num);
+		static ScreenManager* Get();
+		Monitor* GetClientMonitor(shapes::Rectangle windowPos);
 	private:
-		Monitor* first;
-		Monitor* last;
+		std::vector<Monitor*> monitors;
 		static ScreenManager* instance;
 	};
 

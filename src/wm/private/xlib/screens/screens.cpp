@@ -19,38 +19,28 @@ namespace flow
 		for (int i = 0; i < numOfScreens; i++)
 		{
 			auto* monitor = new Monitor(result[i]);
-			instance->AddMonitor(monitor);
-#ifdef DEBUG
+			instance->monitors.push_back(monitor);
 			logger::info("ADDING SCREEN: ", "Width:", result[i].width, "Height:", result[i].height);
-#endif
+
 		}
 
 	}
-
-	void ScreenManager::AddMonitor(Monitor* monitor)
+	ScreenManager* ScreenManager::Get()
 	{
-		if (!first)
-		{
-			first = monitor;
-			last = monitor;
-		}
-
-		if (last) last->next = monitor;
-		last = monitor;
+		return instance;
 	}
 
-	Monitor* ScreenManager::GetMonitor(Display* display, Window window, int* num)
+	Monitor* ScreenManager::GetClientMonitor(shapes::Rectangle windowPos)
 	{
-		int numOfScreens;
-		auto result = XRRGetMonitors(display, window, true, &numOfScreens);
-
-		auto* monitors = new Monitor[numOfScreens];
-		for (int i = 0; i < numOfScreens; ++i)
+		for (auto i = instance->monitors.size() - 1; i >= 0; --i)
 		{
-			monitors[numOfScreens] = Monitor(result[i]);
+			if (monitors[i]->x <= windowPos.x && monitors[i]->y <= windowPos.y)
+			{
+				return monitors[i];
+			}
 		}
 
-		return monitors;
+		return nullptr;
 	}
 
 	shapes::Rectangle Monitor::toRectangle()
