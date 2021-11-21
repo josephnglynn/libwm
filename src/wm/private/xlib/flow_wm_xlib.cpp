@@ -41,9 +41,8 @@ namespace flow
 			XEvent event;
 			XNextEvent(display, &event);
 
-#ifdef DEBUG
 			logger::info("EVENT ", std::to_string(event.type), " OCCURRED");
-#endif
+
 
 			switch (event.type)
 			{

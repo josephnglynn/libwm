@@ -11,17 +11,29 @@ using namespace flow::shapes;
 namespace flow::handler_helpers
 {
 
+
+	Monitor* GetClientMonitor(X11::Client c) {
+
+	}
+
+
+	Monitor* ReorderExcessMonitors(Monitor* m, int num, Rectangle shape) {
+
+		if (num > 1 && (m[0].width - (static_cast<int>(shape.width) / 2) > shape.x))
+		{
+			m[0] = m[1];
+		}
+
+		return m;
+	}
+
 	void CenterChild(Display* display, X11::Client* client)
 	{
 		Rectangle rectangle = Rectangle();
 		int numOfMonitors;
 		auto monitors = ScreenManager::GetMonitor(display, client->window, &numOfMonitors);
-		Monitor m;
 
-		if (numOfMonitors > 1 && (monitors[0].width - (static_cast<int>(client->shape.width) / 2) > client->shape.x))
-		{
-			monitors[0] = monitors[1];
-		}
+		ReorderExcessMonitors(monitors, numOfMonitors, client->shape);
 
 		shapes::CenterRectangleOnPlane(Rectangle(), &client->shape);
 

@@ -102,6 +102,7 @@ namespace flow::X11::handlers
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
 		ClientManager::Get()->RemoveClient(dwe.window);
+		logger::warn("DESTROYED CLIENT", dwe.window);
 	}
 
 	void onUnmapNotify(XEvent& event)
@@ -135,9 +136,11 @@ namespace flow::X11::handlers
 		Display* display = FlowWindowManagerX11::Get()->GetDisplay();
 		XConfigureRequestEvent cre = event.xconfigurerequest;
 		XWindowChanges window_changes;
+
 		if (ClientManager::Get()->Exists(cre.window))
 		{
 			Client* c = ClientManager::Get()->GetClient(cre.window);
+
 			handler_helpers::CenterChild(display, c);
 			window_changes.x = c->shape.x;
 			window_changes.y = c->shape.y;
@@ -146,6 +149,7 @@ namespace flow::X11::handlers
 		}
 		else
 		{
+			logger::error("Doesn't exist", cre.window);
 			window_changes.x = cre.x;
 			window_changes.y = cre.y;
 			window_changes.width = cre.width;
@@ -155,7 +159,6 @@ namespace flow::X11::handlers
 		window_changes.stack_mode = cre.detail;
 		window_changes.border_width = cre.border_width;
 		window_changes.sibling = cre.above;
-		//handler_helpers::CenterChild(display,);
 		XConfigureWindow(display, cre.window, cre.value_mask, &window_changes);
 	}
 

@@ -13,7 +13,7 @@ namespace flow::X11
 	public:
 		void AddClient(Client* client);
 		bool Exists(Client* client);
-		bool Exists(Window& window);
+		bool Exists(Window window);
 		unsigned int GetCount();
 		Client* GetClient(Window window);
 		void RemoveClient(Client* client);

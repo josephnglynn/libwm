@@ -3,6 +3,7 @@
 //
 #include "client_manager.hpp"
 #include <iostream>
+
 namespace flow::X11
 {
 
@@ -14,10 +15,19 @@ namespace flow::X11
 		if (!first)
 		{
 			first = client;
-			return;
 		}
 
-		if (last) last->next = client;
+		if (!first->next && first != client)
+		{
+			first->next = client;
+			client->previous = first;
+		}
+
+		if (last)
+		{
+			last->next = client;
+			client->previous = last;
+		}
 		last = client;
 	}
 
@@ -35,14 +45,13 @@ namespace flow::X11
 		return false;
 	}
 
-	bool ClientManager::Exists(Window& window)
+	bool ClientManager::Exists(Window window)
 	{
 		Client* c = first;
 
 		while (c)
 		{
-			if (c->window == window)
-			{ return true; }
+			if (c->window == window) return true;
 			c = c->next;
 		}
 
@@ -54,12 +63,27 @@ namespace flow::X11
 
 		if (client == first)
 		{
-			first = client->next;
+			if (client->next)
+			{
+				first = client->next;
+			}
+			else
+			{
+				first = nullptr;
+			}
+
 		}
 
 		if (client == last)
 		{
-			last = client->previous;
+			if (client->previous)
+			{
+				last = client->previous;
+			}
+			else
+			{
+				last = nullptr;
+			}
 		}
 
 		if (client->previous) client->previous->next = client->next;
@@ -89,7 +113,6 @@ namespace flow::X11
 		}
 
 		if (!c) return;
-
 		RemoveClient(c);
 	}
 
