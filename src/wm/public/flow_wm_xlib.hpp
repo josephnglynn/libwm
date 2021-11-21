@@ -5,8 +5,11 @@
 #ifndef FLOW_WM_FLOW_WM_XLIB_HPP
 #define FLOW_WM_FLOW_WM_XLIB_HPP
 #include <X11/Xlib.h>
+#include "xlib/client_manager/client_manager.hpp"
+#include "xlib/screens/screens.hpp"
 
-namespace flow
+
+namespace flow::X11
 {
 
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
@@ -19,6 +22,8 @@ namespace flow
 		static FlowWindowManagerX11* Get();
 		void Start();
 		Display* GetDisplay();
+		ScreenManager* screenManager;
+		ClientManager* clientManager;
 	private:
 		Display* display = nullptr;
 		Window rootWindow = 0;

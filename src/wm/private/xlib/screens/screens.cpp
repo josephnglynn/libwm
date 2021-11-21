@@ -2,16 +2,16 @@
 // Created by joseph on 20/11/2021.
 //
 
-#include "screens.hpp"
+#include "public/xlib/screens/screens.hpp"
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow
 {
-	ScreenManager* ScreenManager::instance;
 
-	void ScreenManager::Init(Display* display, Window rootWindow)
+
+	ScreenManager::ScreenManager(Display* display, Window rootWindow)
 	{
-		instance = new ScreenManager();
+
 
 		int numOfScreens;
 		auto result = XRRGetMonitors(display, rootWindow, true, &numOfScreens);
@@ -19,20 +19,17 @@ namespace flow
 		for (int i = 0; i < numOfScreens; i++)
 		{
 			auto* monitor = new Monitor(result[i]);
-			instance->monitors.push_back(monitor);
+			monitors.push_back(monitor);
 			logger::info("ADDING SCREEN: ", "Width:", result[i].width, "Height:", result[i].height);
 
 		}
 
 	}
-	ScreenManager* ScreenManager::Get()
-	{
-		return instance;
-	}
+
 
 	Monitor* ScreenManager::GetClientMonitor(shapes::Rectangle windowPos)
 	{
-		for (auto i = instance->monitors.size() - 1; i >= 0; --i)
+		for (auto i = monitors.size() - 1; i >= 0; --i)
 		{
 			if (monitors[i]->x <= windowPos.x && monitors[i]->y <= windowPos.y)
 			{

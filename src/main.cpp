@@ -7,7 +7,7 @@
 int main()
 {
 
-	auto wm = flow::FlowWindowManagerX11::Init();
+	auto wm = flow::X11::FlowWindowManagerX11::Init();
 	wm->Start();
 
 	return 0;

@@ -14,16 +14,14 @@ namespace flow::X11
 		void AddClient(Client* client);
 		bool Exists(Client* client);
 		bool Exists(Window window);
-		unsigned int GetCount();
+		unsigned int GetCount() const;
 		Client* GetClient(Window window);
 		void RemoveClient(Client* client);
 		void RemoveClient(Window window);
-		static ClientManager* Get();
 	private:
 		Client* first;
 		Client* last;
 		unsigned int count = 0;
-		static ClientManager* instance;
 	};
 }
 

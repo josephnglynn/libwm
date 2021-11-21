@@ -4,10 +4,11 @@
 
 #ifndef FLOW_WM_HANDLERS_HPP
 #define FLOW_WM_HANDLERS_HPP
-#include <iostream>
-#include "handler_helpers.hpp"
-#include "../client_manager/client_manager.hpp"
-#include "../logger/public/logger.hpp"
+#include <flow_wm_xlib.hpp>
+#include "public/xlib/handlers/handlers.hpp"
+#include "public/xlib/client_manager/client_manager.hpp"
+#include "../../../../logger/public/logger.hpp"
+#include "public/xlib/handlers/handler_helpers.hpp"
 
 namespace flow::X11::handlers
 {
@@ -24,7 +25,7 @@ namespace flow::X11::handlers
 
 	void onButtonPress(XEvent& event)
 	{
-		logger::info(ClientManager::Get()->GetCount());
+		logger::info(FlowWindowManagerX11::Get()->clientManager->GetCount());
 	}
 
 	void onButtonRelease(XEvent& event)
@@ -86,7 +87,7 @@ namespace flow::X11::handlers
 	void onCreateNotify(XEvent& event)
 	{
 		XCreateWindowEvent cwe = event.xcreatewindow;
-		ClientManager* cm = ClientManager::Get();
+		ClientManager* cm = FlowWindowManagerX11::Get()->clientManager;
 		if (cm->Exists(cwe.window))
 		{ return; }
 
@@ -101,7 +102,7 @@ namespace flow::X11::handlers
 	void onDestroyNotify(XEvent& event)
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
-		ClientManager::Get()->RemoveClient(dwe.window);
+		FlowWindowManagerX11::Get()->clientManager->RemoveClient(dwe.window);
 		logger::warn("DESTROYED CLIENT", dwe.window);
 	}
 
@@ -133,14 +134,15 @@ namespace flow::X11::handlers
 
 	void onConfigureRequest(XEvent& event)
 	{
-		Display* display = FlowWindowManagerX11::Get()->GetDisplay();
+		auto fwm = FlowWindowManagerX11::Get();
+		Display* display = fwm->GetDisplay();
 		XConfigureRequestEvent cre = event.xconfigurerequest;
 		XWindowChanges window_changes;
 
-		if (ClientManager::Get()->Exists(cre.window))
+		if (fwm->clientManager->Exists(cre.window))
 		{
-			Client* c = ClientManager::Get()->GetClient(cre.window);
-			auto m = ScreenManager::Get()->GetClientMonitor(c->position);
+			Client* c = fwm->clientManager->GetClient(cre.window);
+			auto m = fwm->screenManager->GetClientMonitor(c->position);
 
 			int targetWidth = static_cast<int>( m->width * 0.8);
 			int targetHeight = static_cast<int>(m->height * 0.8);

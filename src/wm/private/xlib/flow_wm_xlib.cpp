@@ -1,12 +1,11 @@
 #include "flow_wm_xlib.hpp"
-#include "private/xlib/handlers/handlers.hpp"
-#include "../logger/public/logger.hpp"
+#include "public/xlib/handlers/handlers.hpp"
+#include "../../../logger/public/logger.hpp"
 #include <X11/Xlib.h>
 #include <string>
 
-using namespace flow::X11;
 
-namespace flow
+namespace flow::X11
 {
 
 	FlowWindowManagerX11* FlowWindowManagerX11::instance;
@@ -33,7 +32,8 @@ namespace flow
 		XSync(display, false);
 		XSetErrorHandler(FlowX11ErrorHandler);
 
-		ScreenManager::Init(display, rootWindow);
+		screenManager = new ScreenManager(display, rootWindow);
+		clientManager = new ClientManager();
 
 		while (!quit)
 		{

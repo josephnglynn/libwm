@@ -2,10 +2,9 @@
 // Created by joseph on 21/11/2021.
 //
 
-#ifndef FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
-#define FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
-#include <X11/Xlib.h>
-#include "../../general/shapes.hpp"
+#ifndef FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_CPP
+#define FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_CPP
+#include "public/xlib/handlers/handler_helpers.hpp"
 
 
 namespace flow::handler_helpers {
@@ -15,4 +14,4 @@ namespace flow::handler_helpers {
 }
 
 
-#endif //FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
+#endif //FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_CPP

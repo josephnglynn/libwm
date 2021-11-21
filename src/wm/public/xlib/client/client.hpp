@@ -4,9 +4,8 @@
 
 #ifndef FLOW_WM_CLIENT_HPP
 #define FLOW_WM_CLIENT_HPP
-#include <X11/Xlib.h>
 #include "../screens/screens.hpp"
-#include "flow_wm_xlib.hpp"
+
 
 namespace flow::X11
 {
@@ -16,18 +15,7 @@ namespace flow::X11
 
 		Client() = default;
 
-		explicit Client(Window window) : window(window)
-		{
-			XGetGeometry(FlowWindowManagerX11::Get()->GetDisplay(),
-				window,
-				nullptr,
-				&position.x,
-				&position.y,
-				&position.width,
-				&position.height,
-				&border,
-				&depth);
-		}
+		explicit Client(Window window);
 
 		Client* next;
 		Client* previous;

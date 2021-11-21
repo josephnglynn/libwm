@@ -23,12 +23,10 @@ namespace flow
 	class ScreenManager
 	{
 	public:
-		static void Init(Display* display, Window rootWindow);
-		static ScreenManager* Get();
+		ScreenManager(Display* display, Window rootWindow);
 		Monitor* GetClientMonitor(shapes::Rectangle windowPos);
 	private:
 		std::vector<Monitor*> monitors;
-		static ScreenManager* instance;
 	};
 
 }

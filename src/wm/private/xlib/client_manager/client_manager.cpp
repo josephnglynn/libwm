@@ -1,13 +1,11 @@
 //
 // Created by joseph on 20/11/2021.
 //
-#include "client_manager.hpp"
-#include <iostream>
+#include "public/xlib/client_manager/client_manager.hpp"
 
 namespace flow::X11
 {
 
-	ClientManager* ClientManager::instance;
 
 	void ClientManager::AddClient(Client* client)
 	{
@@ -92,15 +90,6 @@ namespace flow::X11
 		count--;
 	}
 
-	ClientManager* ClientManager::Get()
-	{
-		if (!ClientManager::instance)
-		{
-			ClientManager::instance = new ClientManager();
-		}
-
-		return ClientManager::instance;
-	}
 
 	void ClientManager::RemoveClient(Window window)
 	{
@@ -116,7 +105,7 @@ namespace flow::X11
 		RemoveClient(c);
 	}
 
-	unsigned int ClientManager::GetCount()
+	unsigned int ClientManager::GetCount() const
 	{
 		return count;
 	}
