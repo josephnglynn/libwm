@@ -21,7 +21,7 @@ namespace flow::logger {
 	{
 
 		std::cout << _starting_string << Blue;
-		((std::cout << std::forward<T>(data)), ...);
+		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
 	}
 
@@ -29,7 +29,7 @@ namespace flow::logger {
 	void warn(T... data)
 	{
 		std::cout << _starting_string << Yellow;
-		((std::cout << std::forward<T>(data)), ...);
+		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
 	}
 
@@ -37,7 +37,7 @@ namespace flow::logger {
 	void error(T... data)
 	{
 		std::cout << _starting_string << Red;
-		((std::cout << std::forward<T>(data)), ...);
+		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
 	}
 
@@ -45,7 +45,7 @@ namespace flow::logger {
 	void success(T... data)
 	{
 		std::cout << _starting_string << Green;
-		((std::cout << std::forward<T>(data)), ...);
+		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
 	}
 
