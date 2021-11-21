@@ -7,8 +7,8 @@
 int main()
 {
 
-	flow::FlowWindowManagerX11 flow_window_manager;
-	flow_window_manager.Start();
+	auto wm = flow::FlowWindowManagerX11::Init();
+	wm->Start();
 
 	return 0;
 }

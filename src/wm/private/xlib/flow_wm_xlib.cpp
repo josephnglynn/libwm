@@ -1,33 +1,44 @@
 #include "flow_wm_xlib.hpp"
 #include "private/xlib/handlers/handlers.hpp"
 #include "../logger/public/logger.hpp"
-#include <iostream>
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
 #include <string>
 
-namespace flow {
+using namespace flow::X11;
+
+namespace flow
+{
+
+	FlowWindowManagerX11* FlowWindowManagerX11::instance;
+
 	void FlowWindowManagerX11::Start()
 	{
 
 		display = XOpenDisplay(nullptr);
-		if (!display) {
+		if (!display)
+		{
 			logger::error("Sorry, we failed to open a X display");
 		}
 
 		rootWindow = DefaultRootWindow(display);
 
-		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int {
-			logger::error("OH NO, another wm is currently open");
-			std::exit(0);
+		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int
+		{
+		  logger::error("OH NO, another wm is currently open");
+		  std::exit(0);
 		});// So We Can Output Custom Message
 
-		XSelectInput(display, rootWindow, SubstructureNotifyMask | SubstructureRedirectMask);
+		XSelectInput(display, rootWindow, SubstructureRedirectMask | SubstructureNotifyMask | ButtonPressMask);
 
 		XSync(display, false);
 		XSetErrorHandler(FlowX11ErrorHandler);
 
-		while (!quit) {
+		ScreenManager::Init(display, rootWindow);
+
+
+
+		while (!quit)
+		{
 
 			XEvent event;
 			XNextEvent(display, &event);
@@ -36,7 +47,8 @@ namespace flow {
 			logger::info("EVENT ", std::to_string(event.type), " OCCURRED");
 #endif
 
-			switch (event.type) {
+			switch (event.type)
+			{
 			case KeyPress:
 				handlers::onKeyPress(event);
 				break;
@@ -92,7 +104,7 @@ namespace flow {
 				handlers::onMapNotify(event);
 				break;
 			case MapRequest:
-				handlers::onMapRequest(event, *this);
+				handlers::onMapRequest(event);
 				break;
 			case ReparentNotify:
 				handlers::onReparentNotify(event);
@@ -101,7 +113,7 @@ namespace flow {
 				handlers::onConfigureNotify(event);
 				break;
 			case ConfigureRequest:
-				handlers::onConfigureRequest(event, *this);
+				handlers::onConfigureRequest(event);
 				break;
 			case GravityNotify:
 				handlers::onGravityNotify(event);
@@ -152,14 +164,33 @@ namespace flow {
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event)
 	{
 		logger::error(
-				"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
-				std::to_string(event->error_code),
-				"\nType: "+std::to_string(event->type)
+			"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
+			std::to_string(event->error_code),
+			"\nType: " + std::to_string(event->type)
 		);
 		return 0;
 	}
 
+	FlowWindowManagerX11::~FlowWindowManagerX11()
+	{
+		XCloseDisplay(display);
+	}
 
-	FlowWindowManagerX11::~FlowWindowManagerX11() { XCloseDisplay(display); }
+	FlowWindowManagerX11* FlowWindowManagerX11::Init()
+	{
+		instance = new FlowWindowManagerX11();
+		return instance;
+	}
+
+	FlowWindowManagerX11* FlowWindowManagerX11::Get()
+	{
+		if (!instance) return Init();
+		return instance;
+	}
+
+	Display* FlowWindowManagerX11::GetDisplay()
+	{
+		return display;
+	}
 
 }
