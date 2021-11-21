@@ -15,8 +15,12 @@ namespace flow
 	{
 		Monitor* next = nullptr;
 
-		Monitor() : _XRRMonitorInfo() {}
-		explicit Monitor(_XRRMonitorInfo info) : _XRRMonitorInfo(info) {}
+		Monitor() : _XRRMonitorInfo()
+		{
+		}
+		explicit Monitor(_XRRMonitorInfo info) : _XRRMonitorInfo(info)
+		{
+		}
 
 		shapes::Rectangle toRectangle();
 	};

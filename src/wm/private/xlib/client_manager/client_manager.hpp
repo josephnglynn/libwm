@@ -6,8 +6,10 @@
 #define FLOW_WM_CLIENT_MANAGER_HPP
 #include "../client/client.hpp"
 
-namespace flow::X11 {
-	class ClientManager {
+namespace flow::X11
+{
+	class ClientManager
+	{
 	public:
 		void AddClient(Client* client);
 		bool Exists(Client* client);

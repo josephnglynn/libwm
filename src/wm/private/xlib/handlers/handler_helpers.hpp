@@ -11,7 +11,7 @@ using namespace flow::shapes;
 namespace flow::handler_helpers
 {
 
-	void CenterChild(Display* display,  X11::Client* client)
+	void CenterChild(Display* display, X11::Client* client)
 	{
 		Rectangle rectangle = Rectangle();
 		int numOfMonitors;

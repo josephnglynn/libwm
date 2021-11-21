@@ -14,7 +14,8 @@
 
 #include <iostream>
 
-namespace flow::logger {
+namespace flow::logger
+{
 
 	template<typename ...T>
 	void info(T... data)

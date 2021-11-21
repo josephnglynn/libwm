@@ -35,8 +35,6 @@ namespace flow
 
 		ScreenManager::Init(display, rootWindow);
 
-
-
 		while (!quit)
 		{
 
