@@ -5,8 +5,8 @@
 #ifndef FLOW_WM_HANDLERS_HPP
 #define FLOW_WM_HANDLERS_HPP
 #include <iostream>
-#include "../client_manager/client_manager.hpp"
 #include "handler_helpers.hpp"
+#include "../client_manager/client_manager.hpp"
 #include "../logger/public/logger.hpp"
 
 namespace flow::X11::handlers
@@ -140,16 +140,33 @@ namespace flow::X11::handlers
 		if (ClientManager::Get()->Exists(cre.window))
 		{
 			Client* c = ClientManager::Get()->GetClient(cre.window);
+			auto m = ScreenManager::Get()->GetClientMonitor(c->position);
 
-			handler_helpers::CenterChild(display, c);
-			window_changes.x = c->shape.x;
-			window_changes.y = c->shape.y;
-			window_changes.width = static_cast<int>(c->shape.width);
-			window_changes.height = static_cast<int>(c->shape.height);
+			int targetWidth = static_cast<int>( m->width * 0.8);
+			int targetHeight = static_cast<int>(m->height * 0.8);
+
+			if (targetWidth < cre.width)
+			{
+				cre.width = targetWidth;
+			}
+
+			if (targetHeight < cre.height)
+			{
+				cre.height = targetHeight;
+			}
+
+			c->position = handler_helpers::XConfigureRequestEventToRect(cre);
+
+			shapes::CenterRectangleOnPlane(m->toRectangle(), &c->position);
+
+			window_changes.x = c->position.x;
+			window_changes.y = c->position.y;
+			window_changes.width = static_cast<int>(c->position.width);
+			window_changes.height = static_cast<int>(c->position.height);
 		}
 		else
 		{
-			logger::error("Doesn't exist", cre.window);
+			logger::error("HMM, Client doesn't exist", cre.window);
 			window_changes.x = cre.x;
 			window_changes.y = cre.y;
 			window_changes.width = cre.width;

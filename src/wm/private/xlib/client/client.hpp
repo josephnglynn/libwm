@@ -21,10 +21,10 @@ namespace flow::X11
 			XGetGeometry(FlowWindowManagerX11::Get()->GetDisplay(),
 				window,
 				nullptr,
-				&shape.x,
-				&shape.y,
-				&shape.width,
-				&shape.height,
+				&position.x,
+				&position.y,
+				&position.width,
+				&position.height,
 				&border,
 				&depth);
 		}
@@ -32,7 +32,7 @@ namespace flow::X11
 		Client* next;
 		Client* previous;
 		Window window;
-		shapes::Rectangle shape;
+		shapes::Rectangle position;
 		unsigned int border;
 		unsigned int depth;
 

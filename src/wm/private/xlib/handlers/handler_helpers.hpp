@@ -1,45 +1,18 @@
 //
-// Created by joseph on 20/11/2021.
+// Created by joseph on 21/11/2021.
 //
 
-#ifndef FLOW_WM_HANDLER_HELPERS_HPP
-#define FLOW_WM_HANDLER_HELPERS_HPP
+#ifndef FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
+#define FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
+#include <X11/Xlib.h>
 #include "../../general/shapes.hpp"
-#include <X11/extensions/Xrandr.h>
-using namespace flow::shapes;
-
-namespace flow::handler_helpers
-{
 
 
-	Monitor* GetClientMonitor(X11::Client c) {
-
+namespace flow::handler_helpers {
+	shapes::Rectangle XConfigureRequestEventToRect(XConfigureRequestEvent xcre) {
+		return { xcre.x, xcre.y, static_cast<unsigned int>(xcre.width), static_cast<unsigned int>(xcre.height)};
 	}
-
-
-	Monitor* ReorderExcessMonitors(Monitor* m, int num, Rectangle shape) {
-
-		if (num > 1 && (m[0].width - (static_cast<int>(shape.width) / 2) > shape.x))
-		{
-			m[0] = m[1];
-		}
-
-		return m;
-	}
-
-	void CenterChild(Display* display, X11::Client* client)
-	{
-		Rectangle rectangle = Rectangle();
-		int numOfMonitors;
-		auto monitors = ScreenManager::GetMonitor(display, client->window, &numOfMonitors);
-
-		ReorderExcessMonitors(monitors, numOfMonitors, client->shape);
-
-		shapes::CenterRectangleOnPlane(Rectangle(), &client->shape);
-
-		delete[] monitors;
-	}
-
 }
 
-#endif //FLOW_WM_HANDLER_HELPERS_HPP
+
+#endif //FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_HPP
