@@ -8,9 +8,12 @@ wm_sources = [
                 'private/xlib/screens/screens.cpp',
                 'private/xlib/handlers/handlers.cpp',
                 'private/xlib/handlers/handler_helpers.cpp',
+                'private/xlib/keyboard_manager/keyboard_manager.cpp',
+                'private/general/config.cpp',
+                'private/general/keybinding.cpp'
 ]
 
-wm_deps = [dependency('X11'), dependency('xrandr')]
+wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json')]
 
 flow_wm_lib = shared_library(
     'flow_wm_lib',

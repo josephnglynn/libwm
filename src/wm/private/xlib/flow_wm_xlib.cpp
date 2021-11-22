@@ -4,7 +4,6 @@
 #include <X11/Xlib.h>
 #include <string>
 
-
 namespace flow::X11
 {
 
@@ -27,7 +26,17 @@ namespace flow::X11
 		  std::exit(0);
 		});// So We Can Output Custom Message
 
-		XSelectInput(display, rootWindow, SubstructureRedirectMask | SubstructureNotifyMask | ButtonPressMask);
+		XSelectInput(display,
+			rootWindow,
+			SubstructureRedirectMask
+				| SubstructureNotifyMask
+				| ButtonPressMask
+				| PointerMotionMask
+				| EnterWindowMask
+				| LeaveWindowMask
+				| StructureNotifyMask
+				| PropertyChangeMask
+		);
 
 		XSync(display, false);
 		XSetErrorHandler(FlowX11ErrorHandler);
@@ -42,7 +51,6 @@ namespace flow::X11
 			XNextEvent(display, &event);
 
 			logger::info("EVENT ", std::to_string(event.type), " OCCURRED");
-
 
 			switch (event.type)
 			{
