@@ -4,145 +4,147 @@
 
 #ifndef FLOW_WM_HANDLERS_HPP
 #define FLOW_WM_HANDLERS_HPP
-#include <flow_wm_xlib.hpp>
-#include "public/xlib/handlers/handlers.hpp"
+#include "flow_wm_xlib.hpp"
 #include "public/xlib/client_manager/client_manager.hpp"
 #include "../../../../logger/public/logger.hpp"
-#include "public/xlib/handlers/handler_helpers.hpp"
+#include "public/xlib/handler_helpers/handler_helpers.hpp"
 
-namespace flow::X11::handlers
+namespace flow::X11
 {
 
-	void onKeyPress(XEvent& event)
+	void FlowWindowManagerX11::onKeyPress(XEvent& event)
+	{
+
+		char str[256];
+		KeySym ks;
+		XLookupString(&event.xkey, str, 256, &ks,nullptr);
+		logger::success("WE FINALLY GOT A KEY PRESS", event.xkey.keycode , str);
+
+	}
+
+	void FlowWindowManagerX11::onKeyRelease(XEvent& event)
 	{
 
 	}
 
-	void onKeyRelease(XEvent& event)
+	void FlowWindowManagerX11::onButtonPress(XEvent& event)
+	{
+		logger::info(client_manager->GetCount());
+	}
+
+	void FlowWindowManagerX11::onButtonRelease(XEvent& event)
 	{
 
 	}
 
-	void onButtonPress(XEvent& event)
-	{
-		logger::info(FlowWindowManagerX11::Get()->client_manager->GetCount());
-	}
-
-	void onButtonRelease(XEvent& event)
+	void FlowWindowManagerX11::onMotionNotify(XEvent& event)
 	{
 
 	}
 
-	void onMotionNotify(XEvent& event)
+	void FlowWindowManagerX11::onEnterNotify(XEvent& event)
 	{
 
 	}
 
-	void onEnterNotify(XEvent& event)
+	void FlowWindowManagerX11::onLeaveNotify(XEvent& event)
 	{
 
 	}
 
-	void onLeaveNotify(XEvent& event)
+	void FlowWindowManagerX11::onFocusIn(XEvent& event)
 	{
 
 	}
 
-	void onFocusIn(XEvent& event)
+	void FlowWindowManagerX11::onFocusOut(XEvent& event)
 	{
 
 	}
 
-	void onFocusOut(XEvent& event)
+	void FlowWindowManagerX11::onKeymapNotify(XEvent& event)
 	{
 
 	}
 
-	void onKeymapNotify(XEvent& event)
+	void FlowWindowManagerX11::onExpose(XEvent& event)
 	{
 
 	}
 
-	void onExpose(XEvent& event)
+	void FlowWindowManagerX11::onGraphicsExpose(XEvent& event)
 	{
 
 	}
 
-	void onGraphicsExpose(XEvent& event)
+	void FlowWindowManagerX11::onNoExpose(XEvent& event)
 	{
 
 	}
 
-	void onNoExpose(XEvent& event)
-	{
-
-	}
-
-	void onVisibilityNotify(XEvent& event)
+	void FlowWindowManagerX11::onVisibilityNotify(XEvent& event)
 	{
 
 	}
 
 	//The X server generates this event whenever a client application creates a window by calling XCreateWindow() or XCreateSimpleWindow().
-	void onCreateNotify(XEvent& event)
+	void FlowWindowManagerX11::onCreateNotify(XEvent& event)
 	{
 		XCreateWindowEvent cwe = event.xcreatewindow;
-		ClientManager* cm = FlowWindowManagerX11::Get()->client_manager;
-		if (cm->Exists(cwe.window))
+		if (client_manager->Exists(cwe.window))
 		{ return; }
 
 		auto* client = new Client();
 		client->window = cwe.window;
-		cm->AddClient(client);
+		client_manager->AddClient(client);
 
 		logger::warn("ADDED CLIENT", cwe.window);
 
 	}
 
-	void onDestroyNotify(XEvent& event)
+	void FlowWindowManagerX11::onDestroyNotify(XEvent& event)
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
-		FlowWindowManagerX11::Get()->client_manager->RemoveClient(dwe.window);
+		client_manager->RemoveClient(dwe.window);
 		logger::warn("DESTROYED CLIENT", dwe.window);
 	}
 
-	void onUnmapNotify(XEvent& event)
+	void FlowWindowManagerX11::onUnmapNotify(XEvent& event)
 	{
 
 	}
 
-	void onMapNotify(XEvent& event)
+	void FlowWindowManagerX11::onMapNotify(XEvent& event)
 	{
 
 	}
 
-	void onMapRequest(XEvent& event)
+	void FlowWindowManagerX11::onMapRequest(XEvent& event)
 	{
 		XMapRequestEvent me = event.xmaprequest;
-		XMapWindow(FlowWindowManagerX11::Get()->GetDisplay(), me.window);
+		XMapWindow(display, me.window);
 	}
 
-	void onReparentNotify(XEvent& event)
+	void FlowWindowManagerX11::onReparentNotify(XEvent& event)
 	{
 
 	}
 
-	void onConfigureNotify(XEvent& event)
+	void FlowWindowManagerX11::onConfigureNotify(XEvent& event)
 	{
 
 	}
 
-	void onConfigureRequest(XEvent& event)
+	void FlowWindowManagerX11::onConfigureRequest(XEvent& event)
 	{
-		auto fwm = FlowWindowManagerX11::Get();
-		Display* display = fwm->GetDisplay();
+
 		XConfigureRequestEvent cre = event.xconfigurerequest;
 		XWindowChanges window_changes;
 
-		if (fwm->client_manager->Exists(cre.window))
+		if (client_manager->Exists(cre.window))
 		{
-			Client* c = fwm->client_manager->GetClient(cre.window);
-			auto m = fwm->screen_manager->GetClientMonitor(c->position);
+			Client* c = client_manager->GetClient(cre.window);
+			auto m = screen_manager->GetClientMonitor(c->position);
 
 			int target_width = static_cast<int>( m->width * 0.8);
 			int target_height = static_cast<int>(m->height * 0.8);
@@ -181,65 +183,71 @@ namespace flow::X11::handlers
 		XConfigureWindow(display, cre.window, cre.value_mask, &window_changes);
 	}
 
-	void onGravityNotify(XEvent& event)
+	void FlowWindowManagerX11::onGravityNotify(XEvent& event)
 	{
 
 	}
 
-	void onResizeRequest(XEvent& event)
+	void FlowWindowManagerX11::onResizeRequest(XEvent& event)
 	{
 
 	}
 
-	void onCirculateNotify(XEvent& event)
+	void FlowWindowManagerX11::onCirculateNotify(XEvent& event)
 	{
 
 	}
 
-	void onPropertyNotify(XEvent& event)
+	void FlowWindowManagerX11::onPropertyNotify(XEvent& event)
 	{
 
 	}
 
-	void onSelectionClear(XEvent& event)
+	void FlowWindowManagerX11::onSelectionClear(XEvent& event)
 	{
 
 	}
 
-	void onSelectionRequest(XEvent& event)
+	void FlowWindowManagerX11::onSelectionRequest(XEvent& event)
 	{
 
 	}
 
-	void onSelectionNotify(XEvent& event)
+	void FlowWindowManagerX11::onSelectionNotify(XEvent& event)
 	{
 
 	}
 
-	void onColormapNotify(XEvent& event)
+	void FlowWindowManagerX11::onColormapNotify(XEvent& event)
 	{
 
 	}
 
-	void onClientMessage(XEvent& event)
+	void FlowWindowManagerX11::onClientMessage(XEvent& event)
 	{
 
 	}
 
-	void onMappingNotify(XEvent& event)
+	void FlowWindowManagerX11::onMappingNotify(XEvent& event)
+	{
+		XMappingEvent ev = event.xmapping;
+		XRefreshKeyboardMapping(&ev);
+		if (ev.request == MappingKeyboard)
+		{
+			keyboard_manager->Start(display, root_window);
+		}
+	}
+
+	void FlowWindowManagerX11::onGenericEvent(XEvent& event)
 	{
 
 	}
 
-	void onGenericEvent(XEvent& event)
+	void FlowWindowManagerX11::onLastEvent(XEvent& event)
 	{
 
 	}
 
-	void onLastEvent(XEvent& event)
-	{
-
-	}
 }
 
 #endif //FLOW_WM_HANDLERS_HPP

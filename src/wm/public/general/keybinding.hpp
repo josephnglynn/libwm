@@ -4,12 +4,12 @@
 
 #ifndef FLOW_WM_SRC_WM_PUBLIC_GENERAL_KEYBINDING_HPP
 #define FLOW_WM_SRC_WM_PUBLIC_GENERAL_KEYBINDING_HPP
-
-
+#include <X11/Xlib.h>
+#include <string>
 namespace flow
 {
 
-	typedef int Key;
+	typedef unsigned int Key;
 
 	enum KeyFunction
 	{
@@ -17,21 +17,20 @@ namespace flow
 		//Other things to do on button press
 	};
 
-	struct KeyFunctionArg
-	{
-		int size;
-		void* data;
-	};
-
 	//Based on dwm keybinding style
 	struct KeyBinding
 	{
+		KeyBinding() = default;
+		KeyBinding(Key mk, KeySym k, KeyFunction kf, std::string arg, bool client);
+
+		bool client;
 		Key mod_key;
-		Key key;
+		KeySym key;
 		KeyFunction function;
-		KeyFunctionArg arg;
+		std::string arg;
+
+		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);
 	};
 }
-
 
 #endif //FLOW_WM_SRC_WM_PUBLIC_GENERAL_KEYBINDING_HPP

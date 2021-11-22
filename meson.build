@@ -8,3 +8,5 @@ if get_option('buildtype').startswith('debug')
 endif
 
 subdir('src')
+
+run_command('scripts/move_config.sh')

@@ -1,5 +1,4 @@
 #include "flow_wm_xlib.hpp"
-#include "public/xlib/handlers/handlers.hpp"
 #include "../../../logger/public/logger.hpp"
 #include <X11/Xlib.h>
 #include <string>
@@ -12,37 +11,9 @@ namespace flow::X11
 	void FlowWindowManagerX11::Start()
 	{
 
-		display = XOpenDisplay(nullptr);
-		if (!display)
-		{
-			logger::error("Sorry, we failed to open a X display");
-		}
-
-		root_window = DefaultRootWindow(display);
-
-		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int
-		{
-		  logger::error("OH NO, another wm is currently open");
-		  std::exit(0);
-		});// So We Can Output Custom Message
-
-		XSelectInput(display,
-			root_window,
-			SubstructureRedirectMask
-				| SubstructureNotifyMask
-				| ButtonPressMask
-				| PointerMotionMask
-				| EnterWindowMask
-				| LeaveWindowMask
-				| StructureNotifyMask
-				| PropertyChangeMask
-		);
-
-		XSync(display, false);
-		XSetErrorHandler(FlowX11ErrorHandler);
-
 		screen_manager = new ScreenManager(display, root_window);
 		client_manager = new ClientManager();
+
 
 		while (!quit)
 		{
@@ -55,109 +26,109 @@ namespace flow::X11
 			switch (event.type)
 			{
 			case KeyPress:
-				handlers::onKeyPress(event);
+				onKeyPress(event);
 				break;
 			case KeyRelease:
-				handlers::onKeyRelease(event);
+				onKeyRelease(event);
 				break;
 			case ButtonPress:
-				handlers::onButtonPress(event);
+				onButtonPress(event);
 				break;
 			case ButtonRelease:
-				handlers::onButtonRelease(event);
+				onButtonRelease(event);
 				break;
 			case MotionNotify:
-				handlers::onMotionNotify(event);
+				onMotionNotify(event);
 				break;
 			case EnterNotify:
-				handlers::onEnterNotify(event);
+				onEnterNotify(event);
 				break;
 			case LeaveNotify:
-				handlers::onLeaveNotify(event);
+				onLeaveNotify(event);
 				break;
 			case FocusIn:
-				handlers::onFocusIn(event);
+				onFocusIn(event);
 				break;
 			case FocusOut:
-				handlers::onFocusOut(event);
+				onFocusOut(event);
 				break;
 			case KeymapNotify:
-				handlers::onKeymapNotify(event);
+				onKeymapNotify(event);
 				break;
 			case Expose:
-				handlers::onExpose(event);
+				onExpose(event);
 				break;
 			case GraphicsExpose:
-				handlers::onGraphicsExpose(event);
+				onGraphicsExpose(event);
 				break;
 			case NoExpose:
-				handlers::onNoExpose(event);
+				onNoExpose(event);
 				break;
 			case VisibilityNotify:
-				handlers::onVisibilityNotify(event);
+				onVisibilityNotify(event);
 				break;
 			case CreateNotify:
-				handlers::onCreateNotify(event);
+				onCreateNotify(event);
 				break;
 			case DestroyNotify:
-				handlers::onDestroyNotify(event);
+				onDestroyNotify(event);
 				break;
 			case UnmapNotify:
-				handlers::onUnmapNotify(event);
+				onUnmapNotify(event);
 				break;
 			case MapNotify:
-				handlers::onMapNotify(event);
+				onMapNotify(event);
 				break;
 			case MapRequest:
-				handlers::onMapRequest(event);
+				onMapRequest(event);
 				break;
 			case ReparentNotify:
-				handlers::onReparentNotify(event);
+				onReparentNotify(event);
 				break;
 			case ConfigureNotify:
-				handlers::onConfigureNotify(event);
+				onConfigureNotify(event);
 				break;
 			case ConfigureRequest:
-				handlers::onConfigureRequest(event);
+				onConfigureRequest(event);
 				break;
 			case GravityNotify:
-				handlers::onGravityNotify(event);
+				onGravityNotify(event);
 				break;
 			case ResizeRequest:
-				handlers::onResizeRequest(event);
+				onResizeRequest(event);
 				break;
 			case CirculateNotify:
-				handlers::onCirculateNotify(event);
+				onCirculateNotify(event);
 				break;
 			case CirculateRequest:
-				handlers::onCirculateNotify(event);
+				onCirculateNotify(event);
 				break;
 			case PropertyNotify:
-				handlers::onPropertyNotify(event);
+				onPropertyNotify(event);
 				break;
 			case SelectionClear:
-				handlers::onSelectionClear(event);
+				onSelectionClear(event);
 				break;
 			case SelectionRequest:
-				handlers::onSelectionRequest(event);
+				onSelectionRequest(event);
 				break;
 			case SelectionNotify:
-				handlers::onSelectionNotify(event);
+				onSelectionNotify(event);
 				break;
 			case ColormapNotify:
-				handlers::onColormapNotify(event);
+				onColormapNotify(event);
 				break;
 			case ClientMessage:
-				handlers::onClientMessage(event);
+				onClientMessage(event);
 				break;
 			case MappingNotify:
-				handlers::onMappingNotify(event);
+				onMappingNotify(event);
 				break;
 			case GenericEvent:
-				handlers::onGenericEvent(event);
+				onGenericEvent(event);
 				break;
 			case LASTEvent:
-				handlers::onLastEvent(event);
+				onLastEvent(event);
 				break;
 			default:
 				logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
@@ -183,7 +154,47 @@ namespace flow::X11
 
 	FlowWindowManagerX11* FlowWindowManagerX11::Init()
 	{
+		if (instance) return instance;
 		instance = new FlowWindowManagerX11();
+
+
+		instance->display = XOpenDisplay(nullptr);
+		if (!instance->display)
+		{
+			logger::error("Sorry, we failed to open a X display");
+		}
+
+		instance->root_window = DefaultRootWindow(instance->display);
+
+		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int
+		{
+		  logger::error("OH NO, another wm is currently open");
+		  std::exit(0);
+		});// So We Can Output Custom Message
+
+		XSelectInput(instance->display,
+			instance->root_window,
+			SubstructureRedirectMask
+				| SubstructureNotifyMask
+				| ButtonPressMask
+				| KeyPressMask
+					//| PointerMotionMask
+				| EnterWindowMask
+				| LeaveWindowMask
+				| StructureNotifyMask
+				| PropertyChangeMask
+		);
+
+		{
+			auto cursor = XCreateFontCursor(instance->display, 1);
+			XDefineCursor(instance->display, instance->root_window, cursor);
+		}
+
+
+
+		XSync(instance->display, false);
+		XSetErrorHandler(FlowX11ErrorHandler);
+
 		return instance;
 	}
 
@@ -193,9 +204,16 @@ namespace flow::X11
 		return instance;
 	}
 
+
+	void FlowWindowManagerX11::SetConfig(Config* config)
+	{
+		delete keyboard_manager;
+		keyboard_manager = new KeyboardManager(config->key_bindings, config->mod_key);
+		keyboard_manager->Start(display, root_window);
+	}
+
 	Display* FlowWindowManagerX11::GetDisplay()
 	{
 		return display;
 	}
-
 }

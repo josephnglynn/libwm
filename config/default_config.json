@@ -1,0 +1,14 @@
+{
+  "config_name": "default_config",
+  "time": 0,
+  "mod_key": 64,
+  "key_bindings": [
+    {
+      "client": 0,
+      "mod_key": 65513,
+      "key": 97,
+      "function": 0,
+      "arg": "alacritty"
+    }
+  ]
+}

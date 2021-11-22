@@ -6,7 +6,7 @@
 #define FLOW_WM_SRC_WM_PUBLIC_XLIB_KEYBOARD_MANAGER_HPP
 #include <vector>
 #include "../../general/keybinding.hpp"
-
+#include <X11/Xlib.h>
 
 namespace flow
 {
@@ -14,11 +14,15 @@ namespace flow
 	class KeyboardManager
 	{
 	public:
-		KeyboardManager(KeyBinding* kb, Key mk,int num);
+		KeyboardManager(std::vector<KeyBinding>& kb, Key mk);
+		void Start(Display* display, Window root_window);
 	private:
-		int num;
 		Key mod_key;
-		KeyBinding* key_bindings;
+		unsigned int num_lock_mask;
+		std::vector<KeyBinding> key_bindings_root;
+		std::vector<KeyBinding> key_bindings_client;
+
+		void UpdateNumLockMask(Display* display);
 	};
 }
 
