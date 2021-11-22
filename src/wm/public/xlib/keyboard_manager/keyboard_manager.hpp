@@ -17,8 +17,8 @@ namespace flow
 		KeyboardManager(KeyBinding* kb, Key mk,int num);
 	private:
 		int num;
-		Key modKey;
-		KeyBinding* keybindings;
+		Key mod_key;
+		KeyBinding* key_bindings;
 	};
 }
 

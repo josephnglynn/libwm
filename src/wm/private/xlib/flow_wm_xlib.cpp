@@ -18,7 +18,7 @@ namespace flow::X11
 			logger::error("Sorry, we failed to open a X display");
 		}
 
-		rootWindow = DefaultRootWindow(display);
+		root_window = DefaultRootWindow(display);
 
 		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int
 		{
@@ -27,7 +27,7 @@ namespace flow::X11
 		});// So We Can Output Custom Message
 
 		XSelectInput(display,
-			rootWindow,
+			root_window,
 			SubstructureRedirectMask
 				| SubstructureNotifyMask
 				| ButtonPressMask
@@ -41,8 +41,8 @@ namespace flow::X11
 		XSync(display, false);
 		XSetErrorHandler(FlowX11ErrorHandler);
 
-		screenManager = new ScreenManager(display, rootWindow);
-		clientManager = new ClientManager();
+		screen_manager = new ScreenManager(display, root_window);
+		client_manager = new ClientManager();
 
 		while (!quit)
 		{

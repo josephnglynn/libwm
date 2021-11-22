@@ -22,11 +22,11 @@ namespace flow::X11
 		static FlowWindowManagerX11* Get();
 		void Start();
 		Display* GetDisplay();
-		ScreenManager* screenManager;
-		ClientManager* clientManager;
+		ScreenManager* screen_manager;
+		ClientManager* client_manager;
 	private:
 		Display* display = nullptr;
-		Window rootWindow = 0;
+		Window root_window = 0;
 		bool quit = false;
 		static FlowWindowManagerX11* instance;
 	};

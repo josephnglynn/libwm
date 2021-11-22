@@ -5,6 +5,7 @@
 #ifndef FLOW_WM_SRC_WM_PRIVATE_GENERAL_CONFIG_HPP
 #define FLOW_WM_SRC_WM_PRIVATE_GENERAL_CONFIG_HPP
 #include <nlohmann/json.hpp>
+#include <chrono>
 #include "keybinding.hpp"
 
 namespace flow
@@ -19,7 +20,7 @@ namespace flow
 		}
 
 	private:
-
+		std::string configName;
 	};
 }
 

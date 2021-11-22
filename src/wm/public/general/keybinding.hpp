@@ -26,7 +26,7 @@ namespace flow
 	//Based on dwm keybinding style
 	struct KeyBinding
 	{
-		Key modKey;
+		Key mod_key;
 		Key key;
 		KeyFunction function;
 		KeyFunctionArg arg;

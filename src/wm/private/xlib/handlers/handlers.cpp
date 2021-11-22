@@ -25,7 +25,7 @@ namespace flow::X11::handlers
 
 	void onButtonPress(XEvent& event)
 	{
-		logger::info(FlowWindowManagerX11::Get()->clientManager->GetCount());
+		logger::info(FlowWindowManagerX11::Get()->client_manager->GetCount());
 	}
 
 	void onButtonRelease(XEvent& event)
@@ -87,7 +87,7 @@ namespace flow::X11::handlers
 	void onCreateNotify(XEvent& event)
 	{
 		XCreateWindowEvent cwe = event.xcreatewindow;
-		ClientManager* cm = FlowWindowManagerX11::Get()->clientManager;
+		ClientManager* cm = FlowWindowManagerX11::Get()->client_manager;
 		if (cm->Exists(cwe.window))
 		{ return; }
 
@@ -102,7 +102,7 @@ namespace flow::X11::handlers
 	void onDestroyNotify(XEvent& event)
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
-		FlowWindowManagerX11::Get()->clientManager->RemoveClient(dwe.window);
+		FlowWindowManagerX11::Get()->client_manager->RemoveClient(dwe.window);
 		logger::warn("DESTROYED CLIENT", dwe.window);
 	}
 
@@ -139,22 +139,22 @@ namespace flow::X11::handlers
 		XConfigureRequestEvent cre = event.xconfigurerequest;
 		XWindowChanges window_changes;
 
-		if (fwm->clientManager->Exists(cre.window))
+		if (fwm->client_manager->Exists(cre.window))
 		{
-			Client* c = fwm->clientManager->GetClient(cre.window);
-			auto m = fwm->screenManager->GetClientMonitor(c->position);
+			Client* c = fwm->client_manager->GetClient(cre.window);
+			auto m = fwm->screen_manager->GetClientMonitor(c->position);
 
-			int targetWidth = static_cast<int>( m->width * 0.8);
-			int targetHeight = static_cast<int>(m->height * 0.8);
+			int target_width = static_cast<int>( m->width * 0.8);
+			int target_height = static_cast<int>(m->height * 0.8);
 
-			if (targetWidth < cre.width)
+			if (target_width < cre.width)
 			{
-				cre.width = targetWidth;
+				cre.width = target_width;
 			}
 
-			if (targetHeight < cre.height)
+			if (target_height < cre.height)
 			{
-				cre.height = targetHeight;
+				cre.height = target_height;
 			}
 
 			c->position = handler_helpers::XConfigureRequestEventToRect(cre);

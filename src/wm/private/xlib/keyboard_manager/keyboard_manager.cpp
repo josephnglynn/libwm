@@ -6,7 +6,7 @@
 
 namespace flow
 {
-	KeyboardManager::KeyboardManager(flow::KeyBinding* kb, Key mk, int num) : num(num), modKey(mk), keybindings(kb)
+	KeyboardManager::KeyboardManager(flow::KeyBinding* kb, Key mk, int num) : num(num), mod_key(mk), key_bindings(kb)
 	{
 	}
 
