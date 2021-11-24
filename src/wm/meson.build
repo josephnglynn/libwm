@@ -10,7 +10,8 @@ wm_sources = [
                 'private/xlib/handlers/handlers.cpp',
                 'private/xlib/keyboard_manager/keyboard_manager.cpp',
                 'private/general/config.cpp',
-                'private/general/keybinding.cpp'
+                'private/general/keybinding.cpp',
+                'private/xlib/cursor/cursor.cpp'
 ]
 
 wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json')]

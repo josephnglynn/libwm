@@ -8,7 +8,10 @@
       "mod_key": 65513,
       "key": 97,
       "function": 0,
-      "arg": "alacritty"
+      "arg": "alacritty",
+      "fonts": [
+        "monospace:size=10"
+      ]
     }
   ]
 }

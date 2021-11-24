@@ -14,7 +14,7 @@ namespace flow
 		config->config_name = j["config_name"];
 		config->time = j["time"];
 		config->mod_key = j["mod_key"];
-
+		config->fonts = j["fonts"].get<std::vector<std::string>>();
 		config->key_bindings = std::vector<KeyBinding>();
 		for (const auto& item: ((json::array_t)j["key_bindings"]))
 		{

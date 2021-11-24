@@ -5,13 +5,63 @@
 #ifndef FLOW_WM_FLOW_WM_XLIB_HPP
 #define FLOW_WM_FLOW_WM_XLIB_HPP
 #include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
 #include "xlib/client_manager/client_manager.hpp"
 #include "xlib/screens/screens.hpp"
 #include "general/config.hpp"
 #include "xlib/keyboard_manager/keyboard_manager.hpp"
+#include <array>
 
 namespace flow::X11
 {
+	enum
+	{
+		CurNormal, CurResize, CurMove, CurLast
+	};
+
+	enum
+	{
+		NetSupported, NetWMName, NetWMState, NetWMCheck,
+		NetWMFullscreen, NetActiveWindow, NetWMWindowType,
+		NetWMWindowTypeDialog, NetClientList, NetLast
+	};
+
+	enum
+	{
+		WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast
+	};
+
+
+	struct DrawableWindow;
+
+	struct Fnt
+	{
+		Display* dpy;
+		unsigned int h;
+		XftFont* xfont;
+		FcPattern* pattern;
+		struct Fnt* next;
+
+		static Fnt* XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern);
+
+	};
+
+	struct DrawableWindow
+	{
+		unsigned int w, h;
+		Display* dpy;
+		int screen;
+		Window root;
+		Drawable drawable;
+		GC gc;
+		XftColor* scheme;
+		Fnt* fonts;
+
+		static DrawableWindow* Create(Display* display, int screen, Window root, unsigned int w, unsigned int h);
+		static Fnt* CreateFontSet(DrawableWindow* drw, const char* fonts[], size_t font_count);
+	};
+
+
 
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
 
@@ -19,7 +69,7 @@ namespace flow::X11
 	{
 	public:
 		~FlowWindowManagerX11();
-		static FlowWindowManagerX11* Init();
+		static FlowWindowManagerX11* Init(Config* config);
 		static FlowWindowManagerX11* Get();
 
 		void SetConfig(Config* config);
@@ -33,6 +83,11 @@ namespace flow::X11
 		Display* display = nullptr;
 		Window root_window = 0;
 		bool quit = false;
+		Atom wm_atom[WMLast], net_atom[NetLast];
+		Cursor* cursor[CurLast];
+		DrawableWindow* drw;
+
+
 		static FlowWindowManagerX11* instance;
 
 		void onKeyPress(XEvent& event);

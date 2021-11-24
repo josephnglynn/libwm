@@ -24,7 +24,7 @@ namespace flow
 		int64_t time;
 		Key mod_key;
 		std::vector<KeyBinding> key_bindings;
-
+		std::vector<std::string> fonts;
 
 		friend std::ostream& operator<<(std::ostream& os, const Config& config);
 
