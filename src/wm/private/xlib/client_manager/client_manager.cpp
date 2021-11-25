@@ -101,8 +101,7 @@ namespace flow::X11
 			c = c->next;
 		}
 
-		if (!c) return;
-		RemoveClient(c);
+		if (c) RemoveClient(c);
 	}
 
 	unsigned int ClientManager::GetCount() const
