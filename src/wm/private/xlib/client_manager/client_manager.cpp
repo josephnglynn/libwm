@@ -97,11 +97,9 @@ namespace flow::X11
 
 		while (c)
 		{
-			if (c->window == window) break;
+			if (c->window == window) RemoveClient(c);
 			c = c->next;
 		}
-
-		if (c) RemoveClient(c);
 	}
 
 	unsigned int ClientManager::GetCount() const
