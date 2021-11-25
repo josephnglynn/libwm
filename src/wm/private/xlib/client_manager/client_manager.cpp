@@ -35,8 +35,7 @@ namespace flow::X11
 
 		while (c)
 		{
-			if (c == client)
-			{ return true; }
+			if (c == client) return true; 
 			c = c->next;
 		}
 
