@@ -2,16 +2,24 @@
   "config_name": "default_config",
   "time": 0,
   "mod_key": 64,
+  "fonts": [
+    "monospace:size=10"
+  ],
   "key_bindings": [
     {
-      "client": 0,
       "mod_key": 65513,
       "key": 97,
       "function": 0,
-      "arg": "alacritty",
-      "fonts": [
-        "monospace:size=10"
-      ]
+      "arg": "alacritty"
+    }
+  ],
+  "client_key_bindings": [
+    {
+      "click": 0,
+      "event_mask": 0,
+      "button": 0,
+      "function": 0,
+      "arg": ""
     }
   ]
 }

@@ -21,12 +21,25 @@ namespace flow
 	struct KeyBinding
 	{
 		KeyBinding() = default;
-		KeyBinding(Key mk, KeySym k, KeyFunction kf, std::string arg, bool client);
+		KeyBinding(Key mk, KeySym k, KeyFunction kf, std::string arg);
 
-		bool client;
 		Key mod_key;
 		KeySym key;
 		KeyFunction function;
+		std::string arg;
+
+		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);
+	};
+
+	struct ClientKeyBinding
+	{
+		ClientKeyBinding() = default;
+		ClientKeyBinding(int click, int event_mask, int button, int function, std::string arg);
+
+		int click;
+		int event_mask;
+		int button;
+		int function;
 		std::string arg;
 
 		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);

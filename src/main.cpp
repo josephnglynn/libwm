@@ -7,8 +7,8 @@
 int main()
 {
 
-	auto wm = flow::X11::FlowWindowManagerX11::Init();
-	wm->SetConfig(new flow::Config("config.json"));
+	auto config = new flow::Config("config.json");
+	auto wm = flow::X11::FlowWindowManagerX11::Init(config);
 	wm->Start();
 
 	return 0;

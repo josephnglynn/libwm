@@ -6,7 +6,9 @@
 #define FLOW_WM_SRC_WM_PUBLIC_XLIB_KEYBOARD_MANAGER_HPP
 #include <vector>
 #include "../../general/keybinding.hpp"
+#include "../client/client.hpp"
 #include <X11/Xlib.h>
+
 
 namespace flow
 {
@@ -14,13 +16,15 @@ namespace flow
 	class KeyboardManager
 	{
 	public:
-		KeyboardManager(std::vector<KeyBinding>& kb, Key mk);
+		KeyboardManager(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk);
 		void Start(Display* display, Window root_window);
+		void Update(std::vector<KeyBinding>& kb, Key mk);
+		void GrabButtons(X11::Client* c, int focused);
 	private:
 		Key mod_key;
 		unsigned int num_lock_mask;
 		std::vector<KeyBinding> key_bindings_root;
-		std::vector<KeyBinding> key_bindings_client;
+		std::vector<ClientKeyBinding> key_bindings_client;
 
 		void UpdateNumLockMask(Display* display);
 	};

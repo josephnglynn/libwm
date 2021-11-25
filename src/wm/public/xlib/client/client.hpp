@@ -17,12 +17,20 @@ namespace flow::X11
 
 		explicit Client(Window window);
 
+		void SetUrgent(int urgency);
+		void FocusClient();
+		void SetFocus();
+		int SendEvent(Atom protocol);
+
 		Client* next;
 		Client* previous;
 		Window window;
 		shapes::Rectangle position;
 		unsigned int border;
 		unsigned int depth;
+		bool is_urgent;
+		bool visible;
+		bool never_focus;
 
 	};
 }

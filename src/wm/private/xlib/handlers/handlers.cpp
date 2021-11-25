@@ -17,8 +17,8 @@ namespace flow::X11
 
 		char str[256];
 		KeySym ks;
-		XLookupString(&event.xkey, str, 256, &ks,nullptr);
-		logger::success("WE FINALLY GOT A KEY PRESS", event.xkey.keycode , str);
+		XLookupString(&event.xkey, str, 256, &ks, nullptr);
+		logger::success("WE FINALLY GOT A KEY PRESS", event.xkey.keycode, str);
 
 	}
 
@@ -247,6 +247,8 @@ namespace flow::X11
 	{
 
 	}
+
+
 
 }
 

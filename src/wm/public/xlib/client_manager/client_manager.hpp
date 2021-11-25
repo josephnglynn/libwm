@@ -16,11 +16,12 @@ namespace flow::X11
 		bool Exists(Window window);
 		unsigned int GetCount() const;
 		Client* GetClient(Window window);
+		void FocusNull();
 		void RemoveClient(Client* client);
 		void RemoveClient(Window window);
 	private:
-		Client* first;
-		Client* last;
+		Client* first = nullptr;
+		Client* last = nullptr;
 		unsigned int count = 0;
 	};
 }

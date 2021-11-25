@@ -2,10 +2,10 @@
 // Created by joseph on 20/11/2021.
 //
 #include "public/xlib/client_manager/client_manager.hpp"
+#include "public/flow_wm_xlib.hpp"
 
 namespace flow::X11
 {
-
 
 	void ClientManager::AddClient(Client* client)
 	{
@@ -90,7 +90,6 @@ namespace flow::X11
 		count--;
 	}
 
-
 	void ClientManager::RemoveClient(Window window)
 	{
 		Client* c = first;
@@ -121,6 +120,13 @@ namespace flow::X11
 		}
 
 		return nullptr;
+	}
+
+	void ClientManager::FocusNull()
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		XSetInputFocus(fwm->GetDisplay(), fwm->GetRootWindow(), RevertToPointerRoot, CurrentTime);
+		XDeleteProperty(fwm->GetDisplay(), fwm->GetRootWindow(), fwm->GetNetAtom()[NetActiveWindow]);
 	}
 
 }

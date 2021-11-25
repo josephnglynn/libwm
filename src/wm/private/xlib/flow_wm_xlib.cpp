@@ -2,6 +2,8 @@
 #include "../../../logger/public/logger.hpp"
 #include <X11/Xlib.h>
 #include <string>
+#include <X11/cursorfont.h>
+#include <X11/Xatom.h>
 
 namespace flow::X11
 {
@@ -177,9 +179,14 @@ namespace flow::X11
 		int sh = DisplayHeight(instance->display, screen);
 
 		instance->drw = DrawableWindow::Create(instance->display, screen, instance->root_window, sw, sh);
-		if (!DrawableWindow::CreateFontSet(instance->drw, instance, ))
 
+		if (!DrawableWindow::CreateFontSet(instance->drw, config->fonts))
+		{
+			logger::error("Can't load fonts");
+			std::exit(-1);
+		}
 
+		XSetWindowAttributes wa;
 		Atom utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
 		instance->wm_atom[WMProtocols] = XInternAtom(instance->display, "WM_PROTOCOLS", False);
 		instance->wm_atom[WMDelete] = XInternAtom(instance->display, "WM_DELETE_WINDOW", False);
@@ -195,30 +202,92 @@ namespace flow::X11
 		instance->net_atom[NetWMWindowTypeDialog] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 		instance->net_atom[NetClientList] = XInternAtom(instance->display, "_NET_CLIENT_LIST", False);
 
+		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->display, XC_left_ptr);
+		instance->cursor[CurResize] = CursorUtils::CreateCursor(instance->display, XC_sizing);
+		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->display, XC_fleur);
 
+		//TODO FIX THIS STARTING HERE
+		static const char col_gray1[] = "#222222";
+		static const char col_gray2[] = "#444444";
+		static const char col_gray3[] = "#bbbbbb";
+		static const char col_gray4[] = "#eeeeee";
+		static const char col_cyan[] = "#005577";
+		static const char* colors[][3] = {
+			/*               fg         bg         border   */
+			[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
+			[SchemeSel]  = { col_gray4, col_cyan, col_cyan },
+		};
 
+		instance->color_scheme =
+			static_cast<XftColor**>(malloc(sizeof(XftColor*) * sizeof(colors) / sizeof(colors[0])));
+		for (unsigned int i = 0; i < sizeof(colors) / sizeof(colors[0]); i++)
+		{
+			instance->color_scheme[i] = ColorScheme::ScmCreate(instance->drw, colors[i], 3);
+		}
+		//TODO ENDING HERE
 
-		XSelectInput(instance->display,
-			instance->root_window,
-			SubstructureRedirectMask
-				| SubstructureNotifyMask
-				| ButtonPressMask
-				| KeyPressMask
-					//| PointerMotionMask
-				| EnterWindowMask
-				| LeaveWindowMask
-				| StructureNotifyMask
-				| PropertyChangeMask
+		instance->wm_check_window = XCreateSimpleWindow(instance->display, instance->root_window, 0, 0, 1, 1, 0, 0, 0);
+
+		XChangeProperty(instance->display,
+			instance->wm_check_window,
+			instance->net_atom[NetWMCheck],
+			XA_WINDOW,
+			32,
+			PropModeReplace,
+			(unsigned char*)&instance->wm_check_window,
+			1
 		);
 
-		{
-			auto cursor = XCreateFontCursor(instance->display, 1);
-			XDefineCursor(instance->display, instance->root_window, cursor);
-		}
+		XChangeProperty(instance->display,
+			instance->wm_check_window,
+			instance->net_atom[NetWMName],
+			utf8string,
+			8,
+			PropModeReplace,
+			(unsigned char*)"dwm",
+			3
+		);
 
+		XChangeProperty(instance->display,
+			instance->root_window,
+			instance->net_atom[NetWMCheck],
+			XA_WINDOW,
+			32,
+			PropModeReplace,
+			(unsigned char*)&instance->wm_check_window,
+			1
+		);
+
+		XChangeProperty(instance->display,
+			instance->root_window,
+			instance->net_atom[NetSupported],
+			XA_ATOM,
+			32,
+			PropModeReplace,
+			(unsigned char*)instance->net_atom,
+			NetLast
+		);
+
+		XDeleteProperty(instance->display, instance->root_window, instance->net_atom[NetClientList]);
+
+		wa.cursor = instance->cursor[CurNormal]->cursor;
+		wa.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
+			| ButtonPressMask | PointerMotionMask | EnterWindowMask
+			| LeaveWindowMask | StructureNotifyMask | PropertyChangeMask;
+
+		XChangeWindowAttributes(
+			instance->display,
+			instance->root_window,
+			CWEventMask | CWCursor,
+			&wa
+		);
+
+		XSelectInput(instance->display, instance->root_window, wa.event_mask);
 		XSync(instance->display, false);
 		XSetErrorHandler(FlowX11ErrorHandler);
 
+		instance->keyboard_manager->Start(instance->display, instance->root_window);
+		instance->client_manager->FocusNull();
 		return instance;
 	}
 
@@ -227,10 +296,12 @@ namespace flow::X11
 		return instance;
 	}
 
-	void FlowWindowManagerX11::SetConfig(Config* config)
+	void FlowWindowManagerX11::SetConfig(Config* c)
 	{
+		delete this->config;
+		this->config = c;
 		delete keyboard_manager;
-		keyboard_manager = new KeyboardManager(config->key_bindings, config->mod_key);
+		keyboard_manager = new KeyboardManager(c->key_bindings, c->client_key_bindings, c->mod_key);
 		keyboard_manager->Start(display, root_window);
 	}
 
@@ -239,8 +310,7 @@ namespace flow::X11
 		return display;
 	}
 
-
-	 DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)
+	DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)
 	{
 		auto* drw = new DrawableWindow();
 
@@ -256,16 +326,18 @@ namespace flow::X11
 		return drw;
 	}
 
-	Fnt* DrawableWindow::CreateFontSet(DrawableWindow* drw, const char** fonts, size_t font_count)
+	Fnt* DrawableWindow::CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts)
 	{
-		Fnt *cur, *ret = nullptr;
+		Fnt* cur, * ret = nullptr;
 		size_t i;
 
-		if (!drw || !fonts)
+		if (!drw || fonts.empty())
 			return nullptr;
 
-		for (i = 1; i <= font_count; i++) {
-			if ((cur = Fnt::XCreateFont(drw, fonts[font_count - i], nullptr))) {
+		for (i = 0; i < fonts.size(); i++)
+		{
+			if ((cur = Fnt::XCreateFont(drw, fonts[i].c_str(), nullptr)))
+			{
 				cur->next = ret;
 				ret = cur;
 			}
@@ -273,36 +345,44 @@ namespace flow::X11
 		return (drw->fonts = ret);
 	}
 
-
 	Fnt* Fnt::XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern)
 	{
 		{
-			Fnt *font;
-			XftFont *xfont = nullptr;
-			FcPattern *pattern = nullptr;
+			Fnt* font;
+			XftFont* xfont = nullptr;
+			FcPattern* pattern = nullptr;
 
-			if (fontname) {
-				if (!(xfont = XftFontOpenName(drw->dpy, drw->screen, fontname))) {
+			if (fontname)
+			{
+				if (!(xfont = XftFontOpenName(drw->dpy, drw->screen, fontname)))
+				{
 					logger::error("error, cannot load font from name: ", fontname);
 					return nullptr;
 				}
-				if (!(pattern = FcNameParse((FcChar8 *) fontname))) {
+				if (!(pattern = FcNameParse((FcChar8*)fontname)))
+				{
 					logger::error("error, cannot parse font name to pattern: ", fontname);
 					XftFontClose(drw->dpy, xfont);
 					return nullptr;
 				}
-			} else if (fontpattern) {
-				if (!(xfont = XftFontOpenPattern(drw->dpy, fontpattern))) {
-					logger::error( "error, cannot load font from pattern.");
+			}
+			else if (fontpattern)
+			{
+				if (!(xfont = XftFontOpenPattern(drw->dpy, fontpattern)))
+				{
+					logger::error("error, cannot load font from pattern.");
 					return nullptr;
 				}
-			} else {
+			}
+			else
+			{
 				logger::error("No font specified");
 				std::exit(-1);
 			}
 
 			FcBool is_col;
-			if(FcPatternGetBool(xfont->pattern, FC_COLOR, 0, &is_col) == FcResultMatch && is_col) {
+			if (FcPatternGetBool(xfont->pattern, FC_COLOR, 0, &is_col) == FcResultMatch && is_col)
+			{
 				XftFontClose(drw->dpy, xfont);
 				return nullptr;
 			}
@@ -316,4 +396,61 @@ namespace flow::X11
 			return font;
 		}
 	}
+
+	Window FlowWindowManagerX11::GetRootWindow()
+	{
+		return root_window;
+	}
+
+	Atom* FlowWindowManagerX11::GetNetAtom()
+	{
+		return net_atom;
+	}
+
+	XftColor** FlowWindowManagerX11::GetColorScheme()
+	{
+		return color_scheme;
+	}
+	KeyboardManager* FlowWindowManagerX11::GetKeyboardManager()
+	{
+		return keyboard_manager;
+	}
+
+	Atom* FlowWindowManagerX11::GetWmAtom()
+	{
+		return wm_atom;
+	}
+
+	namespace ColorScheme
+	{
+		XftColor* ScmCreate(DrawableWindow* drw, const char* colour_names[], size_t colour_count)
+		{
+			size_t i;
+			XftColor* ret;
+
+			/* need at least two colors for a scheme */
+			if (!drw || !colour_names || colour_count < 2
+				|| !(ret = static_cast<XftColor*>(malloc(colour_count * sizeof(XftColor)))))
+				return nullptr;
+
+			for (i = 0; i < colour_count; i++)
+			{
+				ClrCreate(drw, &ret[i], colour_names[i]);
+			}
+
+			return ret;
+		}
+
+		void ClrCreate(DrawableWindow* drw, XftColor* destination, const char* color_name)
+		{
+			if (!drw || !destination || !color_name)
+				return;
+
+			if (!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen), color_name, destination)) {
+				logger::error("An error occurred allocating colour", color_name);
+				std::exit(0);
+			}
+		}
+	}
+
 }

@@ -11,6 +11,7 @@
 #include "general/config.hpp"
 #include "xlib/keyboard_manager/keyboard_manager.hpp"
 #include <array>
+#include "xlib/cursor/cursor.hpp"
 
 namespace flow::X11
 {
@@ -31,6 +32,21 @@ namespace flow::X11
 		WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast
 	};
 
+	enum
+	{
+		SchemeNorm, SchemeSel
+	};
+
+	enum
+	{
+		ColFg, ColBg, ColBorder
+	};
+
+	enum
+	{
+		ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+		ClkClientWin, ClkRootWin, ClkLast
+	};
 
 	struct DrawableWindow;
 
@@ -58,10 +74,14 @@ namespace flow::X11
 		Fnt* fonts;
 
 		static DrawableWindow* Create(Display* display, int screen, Window root, unsigned int w, unsigned int h);
-		static Fnt* CreateFontSet(DrawableWindow* drw, const char* fonts[], size_t font_count);
+		static Fnt* CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts);
 	};
 
-
+	namespace ColorScheme
+	{
+		XftColor* ScmCreate(DrawableWindow* drw, const char* colour_names[], size_t colour_count);
+		void ClrCreate(DrawableWindow* drw, XftColor* destination, const char* color_name);
+	}
 
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
 
@@ -72,21 +92,28 @@ namespace flow::X11
 		static FlowWindowManagerX11* Init(Config* config);
 		static FlowWindowManagerX11* Get();
 
-		void SetConfig(Config* config);
+		void SetConfig(Config* c);
 		void Start();
 
 		Display* GetDisplay();
+		Window GetRootWindow();
+		Atom* GetNetAtom();
+		XftColor** GetColorScheme();
+		KeyboardManager* GetKeyboardManager();
+		Atom* GetWmAtom();
 	private:
 		ScreenManager* screen_manager;
 		ClientManager* client_manager;
 		KeyboardManager* keyboard_manager;
+		Config* config;
 		Display* display = nullptr;
-		Window root_window = 0;
+		Window root_window;
 		bool quit = false;
 		Atom wm_atom[WMLast], net_atom[NetLast];
-		Cursor* cursor[CurLast];
+		Cur* cursor[CurLast];
 		DrawableWindow* drw;
-
+		XftColor** color_scheme;
+		Window wm_check_window;
 
 		static FlowWindowManagerX11* instance;
 

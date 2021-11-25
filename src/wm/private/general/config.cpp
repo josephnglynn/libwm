@@ -11,15 +11,23 @@ namespace flow
 	void InflateFromJson(Config* config, const json& j)
 	{
 		logger::info("Starting config inflation");
-		config->config_name = j["config_name"];
-		config->time = j["time"];
-		config->mod_key = j["mod_key"];
-		config->fonts = j["fonts"].get<std::vector<std::string>>();
+		j.at("config_name").get_to(config->config_name);
+		j.at("time").get_to(config->time);
+		j.at("mod_key").get_to(config->mod_key);
+		j.at("fonts").get_to(config->fonts);
 		config->key_bindings = std::vector<KeyBinding>();
+		config->client_key_bindings = std::vector<ClientKeyBinding>();
+
 		for (const auto& item: ((json::array_t)j["key_bindings"]))
 		{
-			const auto kb = KeyBinding(item["mod_key"], item["key"], item["function"], item["arg"], item["client"] == 0);
+			const auto kb = KeyBinding(item["mod_key"], item["key"], item["function"], item["arg"]);
 			config->key_bindings.push_back(kb);
+		}
+
+		for (const auto& item: ((json::array_t)j["client_key_bindings"]))
+		{
+			const auto ckb = ClientKeyBinding(item["click"], item["event_mask"], item["button"], item["function"], item["arg"]);
+			config->client_key_bindings.push_back(ckb);
 		}
 
 		logger::success("Config", config->config_name, "successfully read");

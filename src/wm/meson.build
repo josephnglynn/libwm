@@ -14,7 +14,7 @@ wm_sources = [
                 'private/xlib/cursor/cursor.cpp'
 ]
 
-wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json')]
+wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig')]
 
 flow_wm_lib = shared_library(
     'flow_wm_lib',
