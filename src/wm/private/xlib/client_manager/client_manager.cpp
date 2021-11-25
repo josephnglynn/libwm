@@ -35,8 +35,7 @@ namespace flow::X11
 
 		while (c)
 		{
-			if (c == client)
-			{ return true; }
+			if (c == client) return true; 
 			c = c->next;
 		}
 
@@ -96,12 +95,9 @@ namespace flow::X11
 
 		while (c)
 		{
-			if (c->window == window) break;
+			if (c->window == window) return RemoveClient(c);
 			c = c->next;
 		}
-
-		if (!c) return;
-		RemoveClient(c);
 	}
 
 	unsigned int ClientManager::GetCount() const
