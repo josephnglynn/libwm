@@ -96,7 +96,7 @@ namespace flow::X11
 
 		while (c)
 		{
-			if (c->window == window) RemoveClient(c);
+			if (c->window == window) return RemoveClient(c);
 			c = c->next;
 		}
 	}
