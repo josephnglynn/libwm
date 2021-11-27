@@ -7,7 +7,7 @@
   ],
   "key_bindings": [
     {
-      "mod_key": 65513,
+      "mod_key": 64,
       "key": 97,
       "function": 0,
       "arg": "alacritty"
