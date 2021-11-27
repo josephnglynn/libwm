@@ -39,22 +39,25 @@ namespace flow
 			num_lock_mask,
 			num_lock_mask | LockMask
 		};
+		KeyCode key_code;
 
 		XUngrabKey(display, AnyKey, AnyModifier, root_window);
 		for (unsigned int i = 0; i < key_bindings_root.size(); i++)
 		{
-			KeyCode keyCode = XKeysymToKeycode(display, key_bindings_root[i].key);
-			for (unsigned int k = 0; k < sizeof modifiers / sizeof modifiers[0]; ++k)
+			if ((key_code = XKeysymToKeycode(display, key_bindings_root[i].key)))
 			{
-				XGrabKey(
-					display,
-					keyCode,
-					key_bindings_root[i].mod_key | modifiers[k],
-					root_window,
-					True,
-					GrabModeAsync,
-					GrabModeAsync
-				);
+				for (unsigned int k = 0; k < sizeof modifiers / sizeof modifiers[0]; ++k)
+				{
+					XGrabKey(
+						display,
+						key_code,
+						key_bindings_root[i].mod_key | modifiers[k],
+						root_window,
+						True,
+						GrabModeAsync,
+						GrabModeAsync
+					);
+				}
 			}
 		}
 	}
