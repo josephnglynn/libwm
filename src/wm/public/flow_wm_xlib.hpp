@@ -12,76 +12,12 @@
 #include "xlib/keyboard_manager/keyboard_manager.hpp"
 #include <array>
 #include "xlib/cursor/cursor.hpp"
+#include "xlib/drawable_window/drawable_window.hpp"
+#include "xlib/enums/enums.hpp"
 
 namespace flow::X11
 {
-	enum
-	{
-		CurNormal, CurResize, CurMove, CurLast
-	};
 
-	enum
-	{
-		NetSupported, NetWMName, NetWMState, NetWMCheck,
-		NetWMFullscreen, NetActiveWindow, NetWMWindowType,
-		NetWMWindowTypeDialog, NetClientList, NetLast
-	};
-
-	enum
-	{
-		WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast
-	};
-
-	enum
-	{
-		SchemeNorm, SchemeSel
-	};
-
-	enum
-	{
-		ColFg, ColBg, ColBorder
-	};
-
-	enum
-	{
-		ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
-		ClkClientWin, ClkRootWin, ClkLast
-	};
-
-	struct DrawableWindow;
-
-	struct Fnt
-	{
-		Display* dpy;
-		unsigned int h;
-		XftFont* xfont;
-		FcPattern* pattern;
-		struct Fnt* next;
-
-		static Fnt* XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern);
-
-	};
-
-	struct DrawableWindow
-	{
-		unsigned int w, h;
-		Display* dpy;
-		int screen;
-		Window root;
-		Drawable drawable;
-		GC gc;
-		XftColor* scheme;
-		Fnt* fonts;
-
-		static DrawableWindow* Create(Display* display, int screen, Window root, unsigned int w, unsigned int h);
-		static Fnt* CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts);
-	};
-
-	namespace ColorScheme
-	{
-		XftColor* ScmCreate(DrawableWindow* drw, const char* colour_names[], size_t colour_count);
-		void ClrCreate(DrawableWindow* drw, XftColor* destination, const char* color_name);
-	}
 
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
 

@@ -79,7 +79,7 @@ namespace flow
 			XGrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, c->window, False,
 				ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeSync, None, None);
 		for (i = 0; i < key_bindings_client.size(); i++)
-			if (key_bindings_client[i].click == X11::ClkClientWin)
+			if (key_bindings_client[i].click == ClkClientWin)
 			{
 				for (j = 0; j < sizeof modifiers / sizeof modifiers[0]; j++)
 					XGrabButton(

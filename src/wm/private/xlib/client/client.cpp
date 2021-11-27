@@ -6,6 +6,7 @@
 #include "public/flow_wm_xlib.hpp"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include "public/xlib/enums/enums.hpp"
 
 flow::X11::Client::Client(Window window) : window(window), visible(true)
 {

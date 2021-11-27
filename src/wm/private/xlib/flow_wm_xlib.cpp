@@ -4,6 +4,8 @@
 #include <string>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
+#include <xlib/color_scheme/color_scheme.hpp>
+#include "public/xlib/enums/enums.hpp"
 
 namespace flow::X11
 {
@@ -172,6 +174,11 @@ namespace flow::X11
 		  std::exit(0);
 		});// So We Can Output Custom Message
 
+		XSelectInput(instance->display, instance->root_window, SubstructureRedirectMask);
+		XSync(instance->display, false);
+		XSetErrorHandler(FlowX11ErrorHandler);
+		XSync(instance->display, false);
+
 		instance->SetConfig(config);
 
 		int screen = DefaultScreen(instance->display);
@@ -284,7 +291,6 @@ namespace flow::X11
 
 		XSelectInput(instance->display, instance->root_window, wa.event_mask);
 		XSync(instance->display, false);
-		XSetErrorHandler(FlowX11ErrorHandler);
 
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 		instance->client_manager->FocusNull();
@@ -313,92 +319,9 @@ namespace flow::X11
 		return display;
 	}
 
-	DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)
-	{
-		auto* drw = new DrawableWindow();
 
-		drw->dpy = display;
-		drw->screen = screen;
-		drw->root = root;
-		drw->w = w;
-		drw->h = h;
-		drw->drawable = XCreatePixmap(display, root, w, h, DefaultDepth(display, screen));
-		drw->gc = XCreateGC(display, root, 0, nullptr);
-		XSetLineAttributes(display, drw->gc, 1, LineSolid, CapButt, JoinMiter);
 
-		return drw;
-	}
 
-	Fnt* DrawableWindow::CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts)
-	{
-		Fnt* cur, * ret = nullptr;
-		size_t i;
-
-		if (!drw || fonts.empty())
-			return nullptr;
-
-		for (i = 0; i < fonts.size(); i++)
-		{
-			if ((cur = Fnt::XCreateFont(drw, fonts[i].c_str(), nullptr)))
-			{
-				cur->next = ret;
-				ret = cur;
-			}
-		}
-		return (drw->fonts = ret);
-	}
-
-	Fnt* Fnt::XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern)
-	{
-		{
-			Fnt* font;
-			XftFont* xfont = nullptr;
-			FcPattern* pattern = nullptr;
-
-			if (fontname)
-			{
-				if (!(xfont = XftFontOpenName(drw->dpy, drw->screen, fontname)))
-				{
-					logger::error("error, cannot load font from name: ", fontname);
-					return nullptr;
-				}
-				if (!(pattern = FcNameParse((FcChar8*)fontname)))
-				{
-					logger::error("error, cannot parse font name to pattern: ", fontname);
-					XftFontClose(drw->dpy, xfont);
-					return nullptr;
-				}
-			}
-			else if (fontpattern)
-			{
-				if (!(xfont = XftFontOpenPattern(drw->dpy, fontpattern)))
-				{
-					logger::error("error, cannot load font from pattern.");
-					return nullptr;
-				}
-			}
-			else
-			{
-				logger::error("No font specified");
-				std::exit(-1);
-			}
-
-			FcBool is_col;
-			if (FcPatternGetBool(xfont->pattern, FC_COLOR, 0, &is_col) == FcResultMatch && is_col)
-			{
-				XftFontClose(drw->dpy, xfont);
-				return nullptr;
-			}
-
-			font = static_cast<Fnt*>(malloc(sizeof(Fnt)));
-			font->xfont = xfont;
-			font->pattern = pattern;
-			font->h = xfont->ascent + xfont->descent;
-			font->dpy = drw->dpy;
-
-			return font;
-		}
-	}
 
 	Window FlowWindowManagerX11::GetRootWindow()
 	{
@@ -459,36 +382,6 @@ namespace flow::X11
 		return client_manager;
 	}
 
-	namespace ColorScheme
-	{
-		XftColor* ScmCreate(DrawableWindow* drw, const char* colour_names[], size_t colour_count)
-		{
-			size_t i;
-			XftColor* ret;
 
-			/* need at least two colors for a scheme */
-			if (!drw || !colour_names || colour_count < 2
-				|| !(ret = static_cast<XftColor*>(malloc(colour_count * sizeof(XftColor)))))
-				return nullptr;
-
-			for (i = 0; i < colour_count; i++)
-			{
-				ClrCreate(drw, &ret[i], colour_names[i]);
-			}
-
-			return ret;
-		}
-
-		void ClrCreate(DrawableWindow* drw, XftColor* destination, const char* color_name)
-		{
-			if (!drw || !destination || !color_name)
-				return;
-
-			if (!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen), color_name, destination)) {
-				logger::error("An error occurred allocating colour", color_name);
-				std::exit(0);
-			}
-		}
-	}
 
 }

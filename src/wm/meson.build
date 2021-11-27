@@ -11,7 +11,10 @@ wm_sources = [
                 'private/xlib/keyboard_manager/keyboard_manager.cpp',
                 'private/general/config.cpp',
                 'private/general/keybinding.cpp',
-                'private/xlib/cursor/cursor.cpp'
+                'private/xlib/cursor/cursor.cpp',
+                'private/xlib/drawable_window/drawable_window.cpp',
+                'private/xlib/fnt/fnt.cpp',
+                'private/xlib/color_scheme/color_scheme.cpp'
 ]
 
 wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig')]
