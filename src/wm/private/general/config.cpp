@@ -31,7 +31,7 @@ namespace flow
 		}
 
 		logger::success("Config", config->config_name, "successfully read");
-		logger::info("Value:\n", *config);
+		logger::info("", *config);
 	}
 
 	Config::Config(const std::string& file_name)
