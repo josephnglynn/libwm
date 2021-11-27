@@ -288,6 +288,9 @@ namespace flow::X11
 
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 		instance->client_manager->FocusNull();
+
+		instance->Scan();
+
 		return instance;
 	}
 
@@ -419,6 +422,41 @@ namespace flow::X11
 	Atom* FlowWindowManagerX11::GetWmAtom()
 	{
 		return wm_atom;
+	}
+
+	void FlowWindowManagerX11::Scan()
+	{
+
+
+			unsigned int i, num;
+			Window d1, d2, *wins = NULL;
+			XWindowAttributes wa;
+
+			if (XQueryTree(display, root_window, &d1, &d2, &wins, &num)) {
+				for (i = 0; i < num; i++) {
+					if (!XGetWindowAttributes(display, wins[i], &wa)
+						|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
+						continue;
+					if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
+						flow::X11::ClientManager::Manage(wins[i], &wa);
+				}
+				for (i = 0; i < num; i++) { /* now the transients */
+					if (!XGetWindowAttributes(display, wins[i], &wa))
+						continue;
+					if (XGetTransientForHint(display, wins[i], &d1)
+						&& (wa.map_state == IsViewable ||  ClientManager::GetState(wins[i]) == IconicState))
+						flow::X11::ClientManager::Manage(wins[i], &wa);
+				}
+				if (wins)
+					XFree(wins);
+			}
+
+
+	}
+
+	ClientManager* FlowWindowManagerX11::GetClientManager()
+	{
+		return client_manager;
 	}
 
 	namespace ColorScheme

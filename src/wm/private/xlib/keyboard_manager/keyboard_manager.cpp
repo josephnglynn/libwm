@@ -11,7 +11,8 @@ namespace flow
 	//DWM
 	void KeyboardManager::UpdateNumLockMask(Display* display)
 	{
-		unsigned int i, j;
+		unsigned int i;
+		int j;
 		XModifierKeymap* modmap;
 
 		num_lock_mask = 0;

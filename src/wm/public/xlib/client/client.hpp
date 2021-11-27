@@ -21,17 +21,27 @@ namespace flow::X11
 		void FocusClient();
 		void SetFocus();
 		int SendEvent(Atom protocol);
+		void UpdateWindowType(Client* client);
+		Atom GetAtomProp(Atom prop);
+		void SetFullScreen();
+		void ResizeClient(shapes::Rectangle& detail);
+		void ResizeClient(int x, int y, int w, int h);
+		void Configure() const;
+		void UpdateSizeHints();
+		void UpdateWmHints();
+		void SetState(long state);
 
 		Client* next;
 		Client* previous;
 		Window window;
 		shapes::Rectangle position;
+		shapes::Rectangle old_position;
 		unsigned int border;
 		unsigned int depth;
 		bool is_urgent;
 		bool visible;
 		bool never_focus;
-
+		bool full_screen;
 	};
 }
 

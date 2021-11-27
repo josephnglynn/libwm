@@ -101,6 +101,7 @@ namespace flow::X11
 		XftColor** GetColorScheme();
 		KeyboardManager* GetKeyboardManager();
 		Atom* GetWmAtom();
+		ClientManager* GetClientManager();
 	private:
 		ScreenManager* screen_manager;
 		ClientManager* client_manager;
@@ -114,6 +115,8 @@ namespace flow::X11
 		DrawableWindow* drw;
 		XftColor** color_scheme;
 		Window wm_check_window;
+
+		void Scan();
 
 		static FlowWindowManagerX11* instance;
 
