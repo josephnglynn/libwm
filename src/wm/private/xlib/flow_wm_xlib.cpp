@@ -29,109 +29,46 @@ namespace flow::X11
 			switch (event.type)
 			{
 			case KeyPress:
-				onKeyPress(event);
-				break;
-			case KeyRelease:
-				onKeyRelease(event);
+				OnKeyPress(event);
 				break;
 			case ButtonPress:
-				onButtonPress(event);
-				break;
-			case ButtonRelease:
-				onButtonRelease(event);
+				OnButtonPress(event);
 				break;
 			case MotionNotify:
-				onMotionNotify(event);
+				OnMotionNotify(event);
 				break;
 			case EnterNotify:
-				onEnterNotify(event);
-				break;
-			case LeaveNotify:
-				onLeaveNotify(event);
+				OnEnterNotify(event);
 				break;
 			case FocusIn:
-				onFocusIn(event);
-				break;
-			case FocusOut:
-				onFocusOut(event);
-				break;
-			case KeymapNotify:
-				onKeymapNotify(event);
+				OnFocusIn(event);
 				break;
 			case Expose:
-				onExpose(event);
-				break;
-			case GraphicsExpose:
-				onGraphicsExpose(event);
-				break;
-			case NoExpose:
-				onNoExpose(event);
-				break;
-			case VisibilityNotify:
-				onVisibilityNotify(event);
-				break;
-			case CreateNotify:
-				onCreateNotify(event);
+				OnExpose(event);
 				break;
 			case DestroyNotify:
-				onDestroyNotify(event);
+				OnDestroyNotify(event);
 				break;
 			case UnmapNotify:
-				onUnmapNotify(event);
-				break;
-			case MapNotify:
-				onMapNotify(event);
+				OnUnmapNotify(event);
 				break;
 			case MapRequest:
-				onMapRequest(event);
-				break;
-			case ReparentNotify:
-				onReparentNotify(event);
+				OnMapRequest(event);
 				break;
 			case ConfigureNotify:
-				onConfigureNotify(event);
+				OnConfigureNotify(event);
 				break;
 			case ConfigureRequest:
-				onConfigureRequest(event);
-				break;
-			case GravityNotify:
-				onGravityNotify(event);
-				break;
-			case ResizeRequest:
-				onResizeRequest(event);
-				break;
-			case CirculateNotify:
-				onCirculateNotify(event);
-				break;
-			case CirculateRequest:
-				onCirculateNotify(event);
+				OnConfigureRequest(event);
 				break;
 			case PropertyNotify:
-				onPropertyNotify(event);
-				break;
-			case SelectionClear:
-				onSelectionClear(event);
-				break;
-			case SelectionRequest:
-				onSelectionRequest(event);
-				break;
-			case SelectionNotify:
-				onSelectionNotify(event);
-				break;
-			case ColormapNotify:
-				onColormapNotify(event);
+				OnPropertyNotify(event);
 				break;
 			case ClientMessage:
-				onClientMessage(event);
+				OnClientMessage(event);
 				break;
 			case MappingNotify:
-				onMappingNotify(event);
-				break;
-			case GenericEvent:
-				onGenericEvent(event);
-				break;
-			case LASTEvent:
-				onLastEvent(event);
+				OnMappingNotify(event);
 				break;
 			default:
 				logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
@@ -167,8 +104,11 @@ namespace flow::X11
 		}
 
 		instance->root_window = DefaultRootWindow(instance->display);
+		instance->screen = DefaultScreen(instance->display);
+		instance->screen_width = DisplayWidth(instance->display, instance->screen);
+		instance->screen_height = DisplayHeight(instance->display, instance->screen);
 
-		XSetErrorHandler([](Display* d, XErrorEvent* event) -> int
+		XSetErrorHandler([](Display* d, XErrorEvent*) -> int
 		{
 		  logger::error("OH NO, another wm is currently open");
 		  std::exit(0);
@@ -176,16 +116,17 @@ namespace flow::X11
 
 		XSelectInput(instance->display, instance->root_window, SubstructureRedirectMask);
 		XSync(instance->display, false);
-		XSetErrorHandler(FlowX11ErrorHandler);
+		XSetErrorHandler(nullptr);
 		XSync(instance->display, false);
 
 		instance->SetConfig(config);
 
-		int screen = DefaultScreen(instance->display);
-		int sw = DisplayWidth(instance->display, screen);
-		int sh = DisplayHeight(instance->display, screen);
-
-		instance->drw = DrawableWindow::Create(instance->display, screen, instance->root_window, sw, sh);
+		instance->drw = DrawableWindow::Create(instance->display,
+			instance->screen,
+			instance->root_window,
+			instance->screen_width,
+			instance->screen_height
+		);
 
 		if (!DrawableWindow::CreateFontSet(instance->drw, config->fonts))
 		{
@@ -319,10 +260,6 @@ namespace flow::X11
 		return display;
 	}
 
-
-
-
-
 	Window FlowWindowManagerX11::GetRootWindow()
 	{
 		return root_window;
@@ -350,30 +287,31 @@ namespace flow::X11
 	void FlowWindowManagerX11::Scan()
 	{
 
+		unsigned int i, num;
+		Window d1, d2, * wins = NULL;
+		XWindowAttributes wa;
 
-			unsigned int i, num;
-			Window d1, d2, *wins = NULL;
-			XWindowAttributes wa;
-
-			if (XQueryTree(display, root_window, &d1, &d2, &wins, &num)) {
-				for (i = 0; i < num; i++) {
-					if (!XGetWindowAttributes(display, wins[i], &wa)
-						|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
-						continue;
-					if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
-						flow::X11::ClientManager::Manage(wins[i], &wa);
-				}
-				for (i = 0; i < num; i++) { /* now the transients */
-					if (!XGetWindowAttributes(display, wins[i], &wa))
-						continue;
-					if (XGetTransientForHint(display, wins[i], &d1)
-						&& (wa.map_state == IsViewable ||  ClientManager::GetState(wins[i]) == IconicState))
-						flow::X11::ClientManager::Manage(wins[i], &wa);
-				}
-				if (wins)
-					XFree(wins);
+		if (XQueryTree(display, root_window, &d1, &d2, &wins, &num))
+		{
+			for (i = 0; i < num; i++)
+			{
+				if (!XGetWindowAttributes(display, wins[i], &wa)
+					|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
+					continue;
+				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
+					flow::X11::ClientManager::Manage(wins[i], &wa);
 			}
-
+			for (i = 0; i < num; i++)
+			{ /* now the transients */
+				if (!XGetWindowAttributes(display, wins[i], &wa))
+					continue;
+				if (XGetTransientForHint(display, wins[i], &d1)
+					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
+					flow::X11::ClientManager::Manage(wins[i], &wa);
+			}
+			if (wins)
+				XFree(wins);
+		}
 
 	}
 
@@ -381,7 +319,5 @@ namespace flow::X11
 	{
 		return client_manager;
 	}
-
-
 
 }

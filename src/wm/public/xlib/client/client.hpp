@@ -18,18 +18,20 @@ namespace flow::X11
 		explicit Client(Window window);
 
 		void SetUrgent(int urgency);
-		void FocusClient();
+		void Focus();
 		void SetFocus();
 		int SendEvent(Atom protocol);
 		void UpdateWindowType(Client* client);
 		Atom GetAtomProp(Atom prop);
-		void SetFullScreen();
+		void SetFullScreen(int fs);
 		void ResizeClient(shapes::Rectangle& detail);
 		void ResizeClient(int x, int y, int w, int h);
-		void Configure() const;
+		void Configure();
 		void UpdateSizeHints();
 		void UpdateWmHints();
 		void SetState(long state);
+		void GrabButtons(int focused);
+		void UnManage(int destroyed);
 
 		Client* next;
 		Client* previous;
@@ -42,6 +44,7 @@ namespace flow::X11
 		bool visible;
 		bool never_focus;
 		bool full_screen;
+		bool configured = false;
 	};
 }
 

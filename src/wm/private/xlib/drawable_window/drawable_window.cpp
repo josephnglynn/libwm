@@ -40,4 +40,15 @@ namespace flow {
 		}
 		return (drw->fonts = ret);
 	}
+
+
+	void DrawableWindow::Resize(unsigned int width, unsigned int height)
+	{
+		w = width;
+		h = height;
+		if (drawable) {
+			XFreePixmap(dpy, drawable);
+		}
+		drawable = XCreatePixmap(dpy, root, w, h, DefaultDepth(dpy, screen));
+	}
 }

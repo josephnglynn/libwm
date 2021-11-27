@@ -6,26 +6,29 @@
 #define FLOW_WM_SRC_WM_PUBLIC_GENERAL_KEYBINDING_HPP
 #include <X11/Xlib.h>
 #include <string>
+#include <functional>
 namespace flow
 {
 
 	typedef unsigned int Key;
 
-	enum KeyFunction
+	enum InputFunction
 	{
 		Spawn, //Run a command with argument being name of program.
 		//Other things to do on button press
+
 	};
+
 
 	//Based on dwm keybinding style
 	struct KeyBinding
 	{
 		KeyBinding() = default;
-		KeyBinding(Key mk, KeySym k, KeyFunction kf, std::string arg);
+		KeyBinding(Key mk, KeySym k, InputFunction i_f, std::string arg);
 
 		Key mod_key;
 		KeySym key;
-		KeyFunction function;
+		std::function<void(std::string)> function;
 		std::string arg;
 
 		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);
@@ -34,12 +37,12 @@ namespace flow
 	struct ClientKeyBinding
 	{
 		ClientKeyBinding() = default;
-		ClientKeyBinding(int click, int event_mask, int button, int function, std::string arg);
+		ClientKeyBinding(int click, int event_mask, int button, InputFunction i_f, std::string arg);
 
-		int click;
-		int event_mask;
-		int button;
-		int function;
+		unsigned int click;
+		unsigned int event_mask;
+		unsigned int button;
+		std::function<void(std::string)> function;
 		std::string arg;
 
 		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);

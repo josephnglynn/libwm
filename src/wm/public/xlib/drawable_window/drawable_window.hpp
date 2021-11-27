@@ -26,6 +26,7 @@ namespace flow {
 
 		static DrawableWindow* Create(Display* display, int screen, Window root, unsigned int w, unsigned int h);
 		static Fnt* CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts);
+		void Resize(unsigned int width, unsigned int height);
 	};
 }
 

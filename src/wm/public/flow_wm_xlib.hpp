@@ -51,46 +51,30 @@ namespace flow::X11
 		DrawableWindow* drw;
 		XftColor** color_scheme;
 		Window wm_check_window;
+		int screen;
+		int screen_width;
+		int screen_height;
 
 		void Scan();
 
 		static FlowWindowManagerX11* instance;
 
-		void onKeyPress(XEvent& event);
-		void onKeyRelease(XEvent& event);
-		void onButtonPress(XEvent& event);
-		void onButtonRelease(XEvent& event);
-		void onMotionNotify(XEvent& event);
-		void onEnterNotify(XEvent& event);
-		void onLeaveNotify(XEvent& event);
-		void onFocusIn(XEvent& event);
-		void onFocusOut(XEvent& event);
-		void onKeymapNotify(XEvent& event);
-		void onExpose(XEvent& event);
-		void onGraphicsExpose(XEvent& event);
-		void onNoExpose(XEvent& event);
-		void onVisibilityNotify(XEvent& event);
-		//The X server generates this event whenever a client application creates a window by calling XCreateWindow() or XCreateSimpleWindow().
-		void onCreateNotify(XEvent& event);
-		void onDestroyNotify(XEvent& event);
-		void onUnmapNotify(XEvent& event);
-		void onMapNotify(XEvent& event);
-		void onMapRequest(XEvent& event);
-		void onReparentNotify(XEvent& event);
-		void onConfigureNotify(XEvent& event);
-		void onConfigureRequest(XEvent& event);
-		void onGravityNotify(XEvent& event);
-		void onResizeRequest(XEvent& event);
-		void onCirculateNotify(XEvent& event);
-		void onPropertyNotify(XEvent& event);
-		void onSelectionClear(XEvent& event);
-		void onSelectionRequest(XEvent& event);
-		void onSelectionNotify(XEvent& event);
-		void onColormapNotify(XEvent& event);
-		void onClientMessage(XEvent& event);
-		void onMappingNotify(XEvent& event);
-		void onGenericEvent(XEvent& event);
-		void onLastEvent(XEvent& event);
+		void OnButtonPress(XEvent& event);
+		void OnClientMessage(XEvent& event);
+		void OnConfigureRequest(XEvent& event);
+		void OnConfigureNotify(XEvent& event);
+		void OnDestroyNotify(XEvent& event);
+		void OnEnterNotify(XEvent& event);
+		void OnExpose(XEvent& event);
+		void OnFocusIn(XEvent& event);
+		void OnKeyPress(XEvent& event);
+		void OnMappingNotify(XEvent& event);
+		void OnMapRequest(XEvent& event);
+		void OnMotionNotify(XEvent& event);
+		void OnPropertyNotify(XEvent& event);
+		void OnUnmapNotify(XEvent& event);
+
+
 	};
 }
 

@@ -8,14 +8,14 @@
   "key_bindings": [
     {
       "mod_key": 64,
-      "key": 97,
+      "key": 66,
       "function": 0,
       "arg": "alacritty"
     }
   ],
   "client_key_bindings": [
     {
-      "click": 0,
+      "click": 4,
       "event_mask": 0,
       "button": 0,
       "function": 0,

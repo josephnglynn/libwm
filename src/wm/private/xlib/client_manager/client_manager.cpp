@@ -129,21 +129,30 @@ namespace flow::X11
 	long ClientManager::GetState(Window window)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
-			int format;
-			long result = -1;
-			unsigned char *p = NULL;
-			unsigned long n, extra;
-			Atom real;
+		int format;
+		long result = -1;
+		unsigned char* p = NULL;
+		unsigned long n, extra;
+		Atom real;
 
-			if (XGetWindowProperty(fwm->GetDisplay(), window, fwm->GetWmAtom()[WMState], 0L, 2L, False, fwm->GetWmAtom()[WMState],
-				&real, &format, &n, &extra, (unsigned char **)&p) != Success)
-				return -1;
-			if (n != 0)
-				result = *p;
-			XFree(p);
-			return result;
+		if (XGetWindowProperty(fwm->GetDisplay(),
+			window,
+			fwm->GetWmAtom()[WMState],
+			0L,
+			2L,
+			False,
+			fwm->GetWmAtom()[WMState],
+			&real,
+			&format,
+			&n,
+			&extra,
+			(unsigned char**)&p) != Success)
+			return -1;
+		if (n != 0)
+			result = *p;
+		XFree(p);
+		return result;
 	}
-
 
 	void ClientManager::Manage(Window window, XWindowAttributes* wa)
 	{
@@ -162,15 +171,30 @@ namespace flow::X11
 		client->Configure();
 		client->UpdateSizeHints();
 		client->UpdateWmHints();
-		XSelectInput(fwm->GetDisplay(),  window, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
-		fwm->GetKeyboardManager()->GrabButtons(client, 0);
+		XSelectInput(fwm->GetDisplay(),
+			window,
+			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
+		);
+		client->GrabButtons(0);
 		XRaiseWindow(fwm->GetDisplay(), window);
 		fwm->GetClientManager()->AddClient(client);
-		XChangeProperty(fwm->GetDisplay(), fwm->GetRootWindow(), fwm->GetNetAtom()[NetClientList], XA_WINDOW, 32, PropModeAppend,
-			(unsigned char *) &(client->window), 1);
-		XMoveResizeWindow(fwm->GetDisplay(), client->window, client->position.x + 2 * 100, client->position.y, client->position.width, client->position.height);//TODO COME BACK HERE IF X POS IS MESSED UP
+		XChangeProperty(fwm->GetDisplay(),
+			fwm->GetRootWindow(),
+			fwm->GetNetAtom()[NetClientList],
+			XA_WINDOW,
+			32,
+			PropModeAppend,
+			(unsigned char*)&(client->window),
+			1
+		);
+		XMoveResizeWindow(fwm->GetDisplay(),
+			client->window,
+			client->position.x + 2 * 100,
+			client->position.y,
+			client->position.width,
+			client->position.height
+		);//TODO COME BACK HERE IF X POS IS MESSED UP
 		client->SetState(NormalState);
-
 		XMapWindow(fwm->GetDisplay(), client->window);
 		fwm->GetClientManager()->FocusNull();
 	}
