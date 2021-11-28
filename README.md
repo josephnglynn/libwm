@@ -1,4 +1,4 @@
 # wm
 
 
-(Progress)[https://github.com/FlowSpatialOs/wm/issues/3]
+[Progress](https://github.com/FlowSpatialOs/wm/issues/3)
