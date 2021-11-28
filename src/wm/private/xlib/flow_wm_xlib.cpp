@@ -8,7 +8,7 @@
 #include "public/xlib/enums/enums.hpp"
 
 #ifndef FLOW_WM_VERSION
-#define FLOW_WM_VERSION "v0.0.1"
+#define FLOW_WM_VERSION "unofficial-build"
 #endif
 
 namespace flow::X11
