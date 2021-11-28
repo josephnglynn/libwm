@@ -101,13 +101,13 @@ namespace flow::X11
 		return exists;
 	}
 
-	void Client::UpdateWindowType(Client* client)
+	void Client::UpdateWindowType()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 		Atom state = GetAtomProp(fwm->GetNetAtom()[NetWMState]);
 
 		if (state == fwm->GetNetAtom()[NetWMFullscreen])
-			client->SetFullScreen(1);
+			SetFullScreen(1);
 	}
 
 	Atom Client::GetAtomProp(Atom prop)
@@ -283,23 +283,5 @@ namespace flow::X11
 
 	}
 
-	void Client::UnManage(int destroyed)
-	{
-		auto fwm = X11::FlowWindowManagerX11::Get();
-		if (!destroyed)
-		{
-			XWindowChanges wc;
-			wc.border_width = 0;
-			XGrabServer(fwm->GetDisplay());
-			//XSetErrorHandler(xerrordummy);
-			XConfigureWindow(fwm->GetDisplay(), window, CWBorderWidth, &wc);
-			XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, window);
-			SetState(WithdrawnState);
-			XSync(fwm->GetDisplay(), False);
-			//XSetErrorHandler(xerror);
-			XUngrabServer(fwm->GetDisplay());
-		}
-		fwm->GetClientManager()->RemoveClient(this);
-	}
 
 }

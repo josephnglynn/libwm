@@ -20,8 +20,9 @@ namespace flow::X11
 		void RemoveClient(Client* client);
 		void RemoveClient(Window window);
 
+		void Manage(Window window, XWindowAttributes* wa);
+		void UnManage(Client* client, int destroyed);
 		static long GetState(Window window);
-		static void Manage(Window window, XWindowAttributes* wa);
 		Client* selected_window;
 	private:
 		Client* first = nullptr;

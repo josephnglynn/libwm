@@ -31,7 +31,7 @@ namespace flow
 
 	void KeyboardManager::Start(Display* display, Window root_window)
 	{
-		UpdateNumLockMask(X11::FlowWindowManagerX11::Get()->GetDisplay());
+		UpdateNumLockMask(display);
 		unsigned int modifiers[] = {
 			0,
 			LockMask,

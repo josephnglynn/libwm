@@ -7,6 +7,10 @@
 #include <xlib/color_scheme/color_scheme.hpp>
 #include "public/xlib/enums/enums.hpp"
 
+#ifndef VERSION
+#define VERSION "v0.0.1"
+#endif
+
 namespace flow::X11
 {
 
@@ -77,7 +81,7 @@ namespace flow::X11
 		}
 	}
 
-	int FlowX11ErrorHandler(Display* display, XErrorEvent* event)
+	int FlowX11ErrorHandler(Display* , XErrorEvent* event)
 	{
 		logger::error(
 			"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
@@ -108,7 +112,7 @@ namespace flow::X11
 		instance->screen_width = DisplayWidth(instance->display, instance->screen);
 		instance->screen_height = DisplayHeight(instance->display, instance->screen);
 
-		XSetErrorHandler([](Display* d, XErrorEvent*) -> int
+		XSetErrorHandler([](Display* , XErrorEvent*) -> int
 		{
 		  logger::error("OH NO, another wm is currently open");
 		  std::exit(0);
@@ -174,6 +178,7 @@ namespace flow::X11
 		}
 		//TODO ENDING HERE
 
+		instance->UpdateStatus();
 		instance->wm_check_window = XCreateSimpleWindow(instance->display, instance->root_window, 0, 0, 1, 1, 0, 0, 0);
 
 		XChangeProperty(instance->display,
@@ -299,7 +304,7 @@ namespace flow::X11
 					|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
 					continue;
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
-					flow::X11::ClientManager::Manage(wins[i], &wa);
+					client_manager->Manage(wins[i], &wa);
 			}
 			for (i = 0; i < num; i++)
 			{ /* now the transients */
@@ -307,7 +312,7 @@ namespace flow::X11
 					continue;
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
-					flow::X11::ClientManager::Manage(wins[i], &wa);
+					client_manager->Manage(wins[i], &wa);
 			}
 			if (wins)
 				XFree(wins);
@@ -318,6 +323,41 @@ namespace flow::X11
 	ClientManager* FlowWindowManagerX11::GetClientManager()
 	{
 		return client_manager;
+	}
+
+	void FlowWindowManagerX11::UpdateStatus()
+	{
+		static char s_text[256] = "";
+		if (!GetTextProp(root_window, XA_WM_NAME, s_text, sizeof(s_text)))
+		{
+			strcpy(s_text, "flow wm " VERSION);
+		}
+	}
+
+	int FlowWindowManagerX11::GetTextProp(Window w, Atom atom, char* text, unsigned int size)
+	{
+		char** list = nullptr;
+		int n;
+		XTextProperty name;
+
+		if (!text || size == 0)
+			return 0;
+		text[0] = '\0';
+		if (!XGetTextProperty(display, w, &name, atom) || !name.nitems)
+			return 0;
+		if (name.encoding == XA_STRING)
+			strncpy(text, (char*)name.value, size - 1);
+		else
+		{
+			if (XmbTextPropertyToTextList(display, &name, &list, &n) >= Success && n > 0 && *list)
+			{
+				strncpy(text, *list, size - 1);
+				XFreeStringList(list);
+			}
+		}
+		text[size - 1] = '\0';
+		XFree(name.value);
+		return 1;
 	}
 
 }

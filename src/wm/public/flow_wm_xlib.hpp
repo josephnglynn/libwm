@@ -56,6 +56,8 @@ namespace flow::X11
 		int screen_height;
 
 		void Scan();
+		int GetTextProp(Window w, Atom atom, char *text, unsigned int size);
+		void UpdateStatus();
 
 		static FlowWindowManagerX11* instance;
 

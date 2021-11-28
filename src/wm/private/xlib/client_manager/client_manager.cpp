@@ -177,7 +177,7 @@ namespace flow::X11
 		);
 		client->GrabButtons(0);
 		XRaiseWindow(fwm->GetDisplay(), window);
-		fwm->GetClientManager()->AddClient(client);
+		AddClient(client);
 		XChangeProperty(fwm->GetDisplay(),
 			fwm->GetRootWindow(),
 			fwm->GetNetAtom()[NetClientList],
@@ -196,7 +196,26 @@ namespace flow::X11
 		);//TODO COME BACK HERE IF X POS IS MESSED UP
 		client->SetState(NormalState);
 		XMapWindow(fwm->GetDisplay(), client->window);
-		fwm->GetClientManager()->FocusNull();
+		FocusNull();
+	}
+
+	void ClientManager::UnManage(Client* client, int destroyed)
+	{
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		if (!destroyed)
+		{
+			XWindowChanges wc;
+			wc.border_width = 0;
+			XGrabServer(fwm->GetDisplay());
+			//XSetErrorHandler(xerrordummy);
+			XConfigureWindow(fwm->GetDisplay(), client->window, CWBorderWidth, &wc);
+			XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client->window);
+			client->SetState(WithdrawnState);
+			XSync(fwm->GetDisplay(), False);
+			//XSetErrorHandler(xerror);
+			XUngrabServer(fwm->GetDisplay());
+		}
+		RemoveClient(client);
 	}
 
 }
