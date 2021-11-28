@@ -1,3 +1,4 @@
+wm_version = '0.0.1'
 wm_includes = ['public']
 
 wm_sources = [
@@ -19,6 +20,8 @@ wm_sources = [
 ]
 
 wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig')]
+
+add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
 
 flow_wm_lib = shared_library(
     'flow_wm_lib',

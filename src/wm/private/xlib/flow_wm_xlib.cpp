@@ -7,8 +7,8 @@
 #include <xlib/color_scheme/color_scheme.hpp>
 #include "public/xlib/enums/enums.hpp"
 
-#ifndef VERSION
-#define VERSION "v0.0.1"
+#ifndef FLOW_WM_VERSION
+#define FLOW_WM_VERSION "v0.0.1"
 #endif
 
 namespace flow::X11
@@ -81,7 +81,7 @@ namespace flow::X11
 		}
 	}
 
-	int FlowX11ErrorHandler(Display* , XErrorEvent* event)
+	int FlowX11ErrorHandler(Display*, XErrorEvent* event)
 	{
 		logger::error(
 			"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
@@ -112,7 +112,7 @@ namespace flow::X11
 		instance->screen_width = DisplayWidth(instance->display, instance->screen);
 		instance->screen_height = DisplayHeight(instance->display, instance->screen);
 
-		XSetErrorHandler([](Display* , XErrorEvent*) -> int
+		XSetErrorHandler([](Display*, XErrorEvent*) -> int
 		{
 		  logger::error("OH NO, another wm is currently open");
 		  std::exit(0);
@@ -330,7 +330,8 @@ namespace flow::X11
 		static char s_text[256] = "";
 		if (!GetTextProp(root_window, XA_WM_NAME, s_text, sizeof(s_text)))
 		{
-			strcpy(s_text, "flow wm " VERSION);
+			std::string version = std::string("flow-wm") + std::string(FLOW_WM_VERSION);
+			strcpy(s_text, version.c_str());
 		}
 	}
 
