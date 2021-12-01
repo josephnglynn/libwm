@@ -1,5 +1,5 @@
 #!/bin/bash
-Xephyr -br -ac -noreset -screen 800x600 :1 &
+Xephyr -br -ac -noreset -screen 800x600 :2 &
 
 #./sleep 2 $(DISPLAY=:1 alacritty)
 
