@@ -25,7 +25,7 @@
       "arg": -1312345488,
       "button": 2,
       "click": 2,
-      "function": "spawn",
+      "function": 0,
       "mask": 0
     },
     {
@@ -79,18 +79,7 @@
     }
   ],
   "keys": [
-    {
-      "arg": -1312345504,
-      "function": "spawn",
-      "key": 112,
-      "mod": 64
-    },
-    {
-      "arg": -1312345488,
-      "function": "spawn",
-      "key": 65293,
-      "mod": 65
-    },
+
     {
       "arg": 0,
       "function": "togglebar",

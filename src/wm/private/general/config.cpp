@@ -20,7 +20,7 @@ namespace flow
 
 		for (const auto& item: ((json::array_t)j["key_bindings"]))
 		{
-			const auto kb = KeyBinding(item["mod_key"], item["key"], item["function"], item["arg"]);
+			const auto kb = KeyBinding(item["mod"], item["key"], item["function"], item["arg"]);
 			config->key_bindings.push_back(kb);
 		}
 

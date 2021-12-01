@@ -7,10 +7,16 @@
   ],
   "key_bindings": [
     {
-      "mod_key": 64,
-      "key": 66,
+      "arg": "dmenu_run",
       "function": 0,
-      "arg": "alacritty"
+      "key": 102,
+      "mod": 64
+    },
+    {
+      "arg": "alacritty",
+      "function": 0,
+      "key": 74,
+      "mod": 64
     }
   ],
   "client_key_bindings": [
