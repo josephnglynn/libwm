@@ -9,6 +9,7 @@
 #include <X11/extensions/Xrandr.h>
 #include <vector>
 
+
 namespace flow
 {
 
@@ -23,10 +24,10 @@ namespace flow
 	class ScreenManager
 	{
 	public:
-		ScreenManager(Display* display, Window rootWindow);
-		Monitor* GetClientMonitor(shapes::Rectangle windowPos);
+		ScreenManager();
+		void UpdateGeom();
 	private:
-		std::vector<Monitor*> monitors;
+		std::vector<Monitor>* monitors;
 	};
 
 }

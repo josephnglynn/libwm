@@ -4,40 +4,42 @@
 
 #include "public/xlib/screens/screens.hpp"
 #include "../../../../logger/public/logger.hpp"
+#include "public/xlib/client/client.hpp"
+#include "public/flow_wm_xlib.hpp"
 
 namespace flow
 {
 
+	using namespace X11;
 
-	ScreenManager::ScreenManager(Display* display, Window rootWindow)
+	ScreenManager::ScreenManager()
 	{
-
-
-		int numOfScreens;
-		auto result = XRRGetMonitors(display, rootWindow, true, &numOfScreens);
-
-		for (int i = 0; i < numOfScreens; i++)
-		{
-			auto* monitor = new Monitor(result[i]);
-			monitors.push_back(monitor);
-			logger::info("ADDING SCREEN: ", "Width:", result[i].width, "Height:", result[i].height);
-
-		}
-
+		monitors = new std::vector<Monitor>();
 	}
 
-
-	Monitor* ScreenManager::GetClientMonitor(shapes::Rectangle windowPos)
+	void ScreenManager::UpdateGeom()
 	{
-		for (auto i = monitors.size() - 1; i >= 0; --i)
-		{
-			if (monitors[i]->x <= windowPos.x && monitors[i]->y <= windowPos.y)
-			{
-				return monitors[i];
-			}
-		}
+		auto fwm = FlowWindowManagerX11::Get();
 
-		return nullptr;
+
+		{
+			int numOfScreens;
+			auto result = XRRGetMonitors(fwm->GetDisplay(), fwm->GetRootWindow(), true, &numOfScreens);
+
+			if (numOfScreens == monitors->size()) return;
+			{
+				delete monitors;
+				monitors = new std::vector<Monitor>(numOfScreens);
+			}
+
+
+			for (int i = 0; i < numOfScreens; i++)
+			{
+				monitors->push_back(Monitor(result[i]));
+				logger::info("ADDING SCREEN: ", "Width:", result[i].width, "Height:", result[i].height);
+			}
+
+		}
 	}
 
 	shapes::Rectangle Monitor::toRectangle()
