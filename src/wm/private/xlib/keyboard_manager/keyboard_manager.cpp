@@ -3,7 +3,7 @@
 //
 
 #include "public/xlib/keyboard_manager/keyboard_manager.hpp"
-#include <flow_wm_xlib.hpp>
+#include "../../logger/public/logger.hpp"
 
 namespace flow
 {
@@ -19,7 +19,7 @@ namespace flow
 		modmap = XGetModifierMapping(display);
 		for (i = 0; i < 8; i++)
 			for (j = 0; j < modmap->max_keypermod; j++)
-				if (modmap->modifiermap[i * modmap->max_keypermod + j] == XKeysymToKeycode(display, num_lock_mask))
+				if (modmap->modifiermap[i * modmap->max_keypermod + j] == XKeysymToKeycode(display, XK_Num_Lock))
 					num_lock_mask = (1 << i);
 		XFreeModifiermap(modmap);
 	}
@@ -38,18 +38,21 @@ namespace flow
 			num_lock_mask,
 			num_lock_mask | LockMask
 		};
+
+
+
 		KeyCode key_code;
-
-
 		XUngrabKey(display, AnyKey, AnyModifier, root_window);
+
 		for (unsigned int i = 0; i < key_bindings_root.size(); i++)
 		{
 			if ((key_code = XKeysymToKeycode(display, key_bindings_root[i].key)))
 			{
 				for (unsigned int k = 0; k < sizeof modifiers / sizeof modifiers[0]; ++k)
 				{
+
 					XGrabKey(
-						display,
+ 						display,
 						key_code,
 						key_bindings_root[i].mod_key | modifiers[k],
 						root_window,
