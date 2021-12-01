@@ -4,12 +4,13 @@
 
 #include "public/xlib/cursor/cursor.hpp"
 
+
 namespace flow::CursorUtils
 {
-	Cur* CreateCursor(Display* display, int shape)
+	Cur* CreateCursor(DrawableWindow* drw, int shape)
 	{
 		Cur* cur = new Cur();
-		cur->cursor = XCreateFontCursor(display, shape);
+		cur->cursor = XCreateFontCursor(drw->dpy, shape);
 
 		return cur;
 	}
