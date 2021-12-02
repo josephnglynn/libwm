@@ -4,8 +4,8 @@
 #include <string>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
-#include <xlib/color_scheme/color_scheme.hpp>
-#include "public/xlib/enums/enums.hpp"
+#include "xlib/color_scheme/color_scheme.hpp"
+#include "xlib/enums/enums.hpp"
 
 #ifndef FLOW_WM_VERSION
 #define FLOW_WM_VERSION "unofficial-build"
@@ -19,16 +19,12 @@ namespace flow::X11
 	void FlowWindowManagerX11::Start()
 	{
 
-		screen_manager = new ScreenManager(display, root_window);
-		client_manager = new ClientManager();
-
 		while (!quit)
 		{
 
 			XEvent event;
 			XNextEvent(display, &event);
-
-			logger::info("EVENT ", std::to_string(event.type), " OCCURRED");
+			if (event.type == MotionNotify) continue;
 
 			switch (event.type)
 			{
@@ -106,7 +102,9 @@ namespace flow::X11
 		{
 			logger::error("Sorry, we failed to open a X display");
 		}
-
+		if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+			logger::warn("No locale support");
+		}
 		instance->root_window = DefaultRootWindow(instance->display);
 		instance->screen = DefaultScreen(instance->display);
 		instance->screen_width = DisplayWidth(instance->display, instance->screen);
@@ -125,7 +123,8 @@ namespace flow::X11
 
 		instance->SetConfig(config);
 
-		instance->drw = DrawableWindow::Create(instance->display,
+		instance->drw = DrawableWindow::Create(
+			instance->display,
 			instance->screen,
 			instance->root_window,
 			instance->screen_width,
@@ -137,6 +136,11 @@ namespace flow::X11
 			logger::error("Can't load fonts");
 			std::exit(-1);
 		}
+
+
+		instance->screen_manager = new ScreenManager();
+		instance->screen_manager->UpdateGeom();
+		instance->client_manager = new ClientManager();
 
 		XSetWindowAttributes wa;
 		Atom utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
@@ -154,9 +158,9 @@ namespace flow::X11
 		instance->net_atom[NetWMWindowTypeDialog] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 		instance->net_atom[NetClientList] = XInternAtom(instance->display, "_NET_CLIENT_LIST", False);
 
-		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->display, XC_left_ptr);
-		instance->cursor[CurResize] = CursorUtils::CreateCursor(instance->display, XC_sizing);
-		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->display, XC_fleur);
+		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->drw, XC_left_ptr);
+		instance->cursor[CurResize] = CursorUtils::CreateCursor(instance->drw, XC_sizing);
+		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
 
 		//TODO FIX THIS STARTING HERE
 		static const char col_gray1[] = "#222222";
@@ -197,7 +201,7 @@ namespace flow::X11
 			utf8string,
 			8,
 			PropModeReplace,
-			(unsigned char*)"dwm",
+			(unsigned char*)"flow-wm",
 			3
 		);
 
@@ -236,12 +240,14 @@ namespace flow::X11
 		);
 
 		XSelectInput(instance->display, instance->root_window, wa.event_mask);
-		XSync(instance->display, false);
 
-		instance->keyboard_manager->Start(instance->display, instance->root_window);
+		instance->keyboard_manager = new KeyboardManager(instance->config->key_bindings, instance->config->client_key_bindings, instance->config->mod_key);
+		instance->keyboard_manager->Start(instance->display,instance-> root_window);
+
+
 		instance->client_manager->FocusNull();
-
 		instance->Scan();
+
 
 		return instance;
 	}
@@ -255,9 +261,6 @@ namespace flow::X11
 	{
 		delete this->config;
 		this->config = c;
-		delete keyboard_manager;
-		keyboard_manager = new KeyboardManager(c->key_bindings, c->client_key_bindings, c->mod_key);
-		keyboard_manager->Start(display, root_window);
 	}
 
 	Display* FlowWindowManagerX11::GetDisplay()
@@ -360,5 +363,7 @@ namespace flow::X11
 		XFree(name.value);
 		return 1;
 	}
+
+
 
 }

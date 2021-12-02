@@ -2,7 +2,7 @@
 // Created by joseph on 27/11/2021.
 //
 
-#include "public/general/input_functions.hpp"
+#include "general/input_functions.hpp"
 
 namespace flow::input_functions
 {

@@ -2,8 +2,8 @@
 // Created by joseph on 20/11/2021.
 //
 #include <X11/Xatom.h>
-#include "public/xlib/client_manager/client_manager.hpp"
-#include "public/flow_wm_xlib.hpp"
+#include "xlib/client_manager/client_manager.hpp"
+#include "flow_wm_xlib.hpp"
 
 namespace flow::X11
 {

@@ -2,7 +2,7 @@
 // Created by joseph on 22/11/2021.
 //
 
-#include "public/xlib/keyboard_manager/keyboard_manager.hpp"
+#include "xlib/keyboard_manager/keyboard_manager.hpp"
 #include "../../logger/public/logger.hpp"
 
 namespace flow

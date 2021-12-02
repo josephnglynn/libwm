@@ -6,9 +6,9 @@
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
 #include "flow_wm_xlib.hpp"
-#include "public/xlib/client_manager/client_manager.hpp"
+#include "xlib/client_manager/client_manager.hpp"
 #include "../../../../logger/public/logger.hpp"
-#include "public/xlib/handler_helpers/handler_helpers.hpp"
+#include "xlib/handler_helpers/handler_helpers.hpp"
 
 #define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 
@@ -168,10 +168,12 @@ namespace flow::X11
 
 	void FlowWindowManagerX11::OnKeyPress(XEvent& event)
 	{
+		logger::info("KEY PRESSED YAY");
 		unsigned int i;
 		KeySym keysym;
 		XKeyEvent ev = event.xkey;
 		keysym = XKeycodeToKeysym(display, (KeyCode)ev.keycode, 0);
+		logger::success(keysym, "AND MASK", CLEAN_MASK(ev.state));
 		for (i = 0; i < keyboard_manager->key_bindings_root.size(); i++)
 		{
 			if (keysym == keyboard_manager->key_bindings_root[i].key

@@ -2,10 +2,10 @@
 // Created by joseph on 20/11/2021.
 //
 
-#include "public/xlib/screens/screens.hpp"
+#include "xlib/screens/screens.hpp"
+#include "xlib/client/client.hpp"
+#include "flow_wm_xlib.hpp"
 #include "../../../../logger/public/logger.hpp"
-#include "public/xlib/client/client.hpp"
-#include "public/flow_wm_xlib.hpp"
 
 namespace flow
 {

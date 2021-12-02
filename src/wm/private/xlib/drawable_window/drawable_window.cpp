@@ -2,8 +2,8 @@
 // Created by joseph on 27/11/2021.
 //
 
-#include "public/xlib/drawable_window/drawable_window.hpp"
-#include "public/xlib/fnt/fnt.hpp"
+#include "xlib/drawable_window/drawable_window.hpp"
+#include "xlib/fnt/fnt.hpp"
 
 namespace flow {
 	DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)

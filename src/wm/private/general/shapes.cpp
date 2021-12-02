@@ -1,7 +1,8 @@
 //
 // Created by joseph on 21/11/2021.
 //
-#include "public/general/shapes.hpp"
+#include "general/shapes.hpp"
+
 namespace flow::shapes
 {
 	void CenterRectangleOnPlane(Rectangle parent, Rectangle* child)

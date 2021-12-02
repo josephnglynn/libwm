@@ -2,10 +2,11 @@
 // Created by joseph on 22/11/2021.
 //
 
-#include "public/general/keybinding.hpp"
 #include <iostream>
 #include <utility>
-#include "public/general/input_functions.hpp"
+#include "general/input_functions.hpp"
+#include "general/keybinding.hpp"
+
 
 namespace flow
 {
