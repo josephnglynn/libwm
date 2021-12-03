@@ -7,7 +7,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
-#include "public/xlib/drawable_window/drawable_window.hpp"
+#include "../drawable_window/drawable_window.hpp"
 
 
 namespace flow::ColorScheme

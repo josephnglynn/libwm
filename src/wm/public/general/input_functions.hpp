@@ -14,8 +14,6 @@
 
 namespace flow::input_functions
 {
-
-
 	std::function<void(const std::string&)> InputFunctionToFunctionPointer(InputFunction i_f);
 	char* const* split(std::string s);
 	void spawn(const std::string& arg);

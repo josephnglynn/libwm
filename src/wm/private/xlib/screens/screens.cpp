@@ -2,9 +2,9 @@
 // Created by joseph on 20/11/2021.
 //
 
-#include "xlib/screens/screens.hpp"
-#include "xlib/client/client.hpp"
-#include "flow_wm_xlib.hpp"
+#include "../../../public/flow_wm_xlib.hpp"
+#include "../../../public/xlib/screens/screens.hpp"
+#include "../../../public/xlib/client/client.hpp"
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow

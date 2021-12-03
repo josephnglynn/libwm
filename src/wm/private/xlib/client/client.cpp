@@ -5,9 +5,9 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include "xlib/enums/enums.hpp"
-#include "xlib/client/client.hpp"
-#include "flow_wm_xlib.hpp"
+#include "../../../public/xlib/enums/enums.hpp"
+#include "../../../public/xlib/client/client.hpp"
+#include "../../../public/flow_wm_xlib.hpp"
 
 namespace flow::X11
 {

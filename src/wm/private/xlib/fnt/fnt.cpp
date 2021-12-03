@@ -2,7 +2,7 @@
 // Created by joseph on 27/11/2021.
 //
 
-#include "xlib/fnt/fnt.hpp"
+#include "../../../public/xlib/fnt/fnt.hpp"
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow {

@@ -4,8 +4,8 @@
 
 #include <iostream>
 #include <utility>
-#include "general/input_functions.hpp"
-#include "general/keybinding.hpp"
+#include "../../public/general/input_functions.hpp"
+#include "../../public/general/keybinding.hpp"
 
 
 namespace flow

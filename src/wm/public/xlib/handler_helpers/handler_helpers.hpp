@@ -7,7 +7,7 @@
 
 
 #include <X11/Xlib.h>
-#include "public/general/shapes.hpp"
+#include "../../general/shapes.hpp"
 
 
 namespace flow::handler_helpers {

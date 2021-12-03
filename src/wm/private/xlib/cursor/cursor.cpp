@@ -2,7 +2,7 @@
 // Created by joseph on 23/11/2021.
 //
 
-#include "xlib/cursor/cursor.hpp"
+#include "../../../public/xlib/cursor/cursor.hpp"
 
 
 namespace flow::CursorUtils

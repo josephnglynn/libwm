@@ -1,5 +1,5 @@
 wm_version = '0.0.1'
-wm_includes = ['public']
+wm_includes = include_directories('public')
 
 wm_sources = [
                 'private/general/shapes.cpp',
@@ -19,7 +19,7 @@ wm_sources = [
                 'private/general/input_functions.cpp'
 ]
 
-wm_deps = [dependency('X11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig')]
+wm_deps = [dependency('x11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig')]
 
 add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
 

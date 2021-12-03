@@ -6,11 +6,11 @@
 #define FLOW_WM_FLOW_WM_XLIB_HPP
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include <array>
+#include "general/config.hpp"
 #include "xlib/client_manager/client_manager.hpp"
 #include "xlib/screens/screens.hpp"
-#include "general/config.hpp"
 #include "xlib/keyboard_manager/keyboard_manager.hpp"
-#include <array>
 #include "xlib/cursor/cursor.hpp"
 #include "xlib/drawable_window/drawable_window.hpp"
 #include "xlib/enums/enums.hpp"

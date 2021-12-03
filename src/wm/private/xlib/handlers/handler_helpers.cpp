@@ -4,7 +4,7 @@
 
 #ifndef FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_CPP
 #define FLOW_WM_SRC_WM_PRIVATE_XLIB_HANDLERS_HANDLER_HELPERS_CPP
-#include "xlib/handler_helpers/handler_helpers.hpp"
+#include "../../../public/xlib/handler_helpers/handler_helpers.hpp"
 
 
 namespace flow::handler_helpers {

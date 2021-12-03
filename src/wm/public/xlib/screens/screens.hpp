@@ -5,10 +5,9 @@
 #ifndef FLOW_WM_SCREENS_HPP
 #define FLOW_WM_SCREENS_HPP
 #include <X11/Xlib.h>
-#include "../../general/shapes.hpp"
 #include <X11/extensions/Xrandr.h>
 #include <vector>
-
+#include "../../general/shapes.hpp"
 
 namespace flow
 {

@@ -1,4 +1,4 @@
-logger_includes = ['public']
+logger_includes = include_directories('public')
 logger_sources = ['private/logger.cpp']
 logger_deps = []
 

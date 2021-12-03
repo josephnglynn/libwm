@@ -1,7 +1,7 @@
 //
 // Created by joseph on 21/11/2021.
 //
-#include "general/shapes.hpp"
+#include "../../public/general/shapes.hpp"
 
 namespace flow::shapes
 {

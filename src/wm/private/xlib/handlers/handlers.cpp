@@ -5,10 +5,10 @@
 #ifndef FLOW_WM_HANDLERS_HPP
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
-#include "flow_wm_xlib.hpp"
-#include "xlib/client_manager/client_manager.hpp"
+#include "../../../public/flow_wm_xlib.hpp"
+#include "../../../public/xlib/client_manager/client_manager.hpp"
+#include "../../../public/xlib/handler_helpers/handler_helpers.hpp"
 #include "../../../../logger/public/logger.hpp"
-#include "xlib/handler_helpers/handler_helpers.hpp"
 
 #define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 

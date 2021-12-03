@@ -2,7 +2,7 @@
 // Created by joseph on 27/11/2021.
 //
 
-#include "xlib/color_scheme/color_scheme.hpp"
+#include "../../../public/xlib/color_scheme/color_scheme.hpp"
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow::ColorScheme

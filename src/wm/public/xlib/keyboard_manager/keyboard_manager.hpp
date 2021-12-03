@@ -4,10 +4,12 @@
 
 #ifndef FLOW_WM_SRC_WM_PUBLIC_XLIB_KEYBOARD_MANAGER_HPP
 #define FLOW_WM_SRC_WM_PUBLIC_XLIB_KEYBOARD_MANAGER_HPP
+
+#include <X11/Xlib.h>
 #include <vector>
 #include "../../general/keybinding.hpp"
 #include "../client/client.hpp"
-#include <X11/Xlib.h>
+
 
 
 namespace flow

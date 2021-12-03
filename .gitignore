@@ -33,3 +33,5 @@
 build
 .idea
 .vs-code
+.cache
+builddir

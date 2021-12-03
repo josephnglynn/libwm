@@ -1,11 +1,11 @@
-#include "flow_wm_xlib.hpp"
-#include "../../../logger/public/logger.hpp"
 #include <X11/Xlib.h>
 #include <string>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
-#include "xlib/color_scheme/color_scheme.hpp"
-#include "xlib/enums/enums.hpp"
+#include "../../public/xlib/color_scheme/color_scheme.hpp"
+#include "../../public/xlib/enums/enums.hpp"
+#include "../../public/flow_wm_xlib.hpp"
+#include "../../../logger/public/logger.hpp"
 
 #ifndef FLOW_WM_VERSION
 #define FLOW_WM_VERSION "unofficial-build"
@@ -310,7 +310,7 @@ namespace flow::X11
 					client_manager->Manage(wins[i], &wa);
 			}
 			for (i = 0; i < num; i++)
-			{ /* now the transients */
+			{ 
 				if (!XGetWindowAttributes(display, wins[i], &wa))
 					continue;
 				if (XGetTransientForHint(display, wins[i], &d1)
