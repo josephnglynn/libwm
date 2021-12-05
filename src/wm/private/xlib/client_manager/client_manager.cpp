@@ -207,15 +207,16 @@ namespace flow::X11
 			XWindowChanges wc;
 			wc.border_width = 0;
 			XGrabServer(fwm->GetDisplay());
-			//XSetErrorHandler(xerrordummy);
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int { return 0; });
 			XConfigureWindow(fwm->GetDisplay(), client->window, CWBorderWidth, &wc);
 			XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client->window);
 			client->SetState(WithdrawnState);
 			XSync(fwm->GetDisplay(), False);
-			//XSetErrorHandler(xerror);
+			XSetErrorHandler(FlowX11ErrorHandler);
 			XUngrabServer(fwm->GetDisplay());
 		}
 		RemoveClient(client);
+		FocusNull();
 	}
 
 }

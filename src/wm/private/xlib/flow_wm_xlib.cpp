@@ -2,6 +2,7 @@
 #include <string>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
+#include <unistd.h>
 #include "../../public/xlib/color_scheme/color_scheme.hpp"
 #include "../../public/xlib/enums/enums.hpp"
 #include "../../public/flow_wm_xlib.hpp"
@@ -89,7 +90,7 @@ namespace flow::X11
 
 	FlowWindowManagerX11::~FlowWindowManagerX11()
 	{
-		XCloseDisplay(display);
+		if (!detached) XCloseDisplay(display);
 	}
 
 	FlowWindowManagerX11* FlowWindowManagerX11::Init(Config* config)
@@ -102,7 +103,8 @@ namespace flow::X11
 		{
 			logger::error("Sorry, we failed to open a X display");
 		}
-		if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+		if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
+		{
 			logger::warn("No locale support");
 		}
 		instance->root_window = DefaultRootWindow(instance->display);
@@ -136,7 +138,6 @@ namespace flow::X11
 			logger::error("Can't load fonts");
 			std::exit(-1);
 		}
-
 
 		instance->screen_manager = new ScreenManager();
 		instance->screen_manager->UpdateGeom();
@@ -241,13 +242,13 @@ namespace flow::X11
 
 		XSelectInput(instance->display, instance->root_window, wa.event_mask);
 
-		instance->keyboard_manager = new KeyboardManager(instance->config->key_bindings, instance->config->client_key_bindings, instance->config->mod_key);
-		instance->keyboard_manager->Start(instance->display,instance-> root_window);
-
+		instance->keyboard_manager = new KeyboardManager(instance->config->key_bindings,
+			instance->config->client_key_bindings,
+			instance->config->mod_key);
+		instance->keyboard_manager->Start(instance->display, instance->root_window);
 
 		instance->client_manager->FocusNull();
 		instance->Scan();
-
 
 		return instance;
 	}
@@ -310,7 +311,7 @@ namespace flow::X11
 					client_manager->Manage(wins[i], &wa);
 			}
 			for (i = 0; i < num; i++)
-			{ 
+			{
 				if (!XGetWindowAttributes(display, wins[i], &wa))
 					continue;
 				if (XGetTransientForHint(display, wins[i], &d1)
@@ -364,6 +365,13 @@ namespace flow::X11
 		return 1;
 	}
 
-
+	void FlowWindowManagerX11::Detach()
+	{
+		if (display)
+		{
+			close(ConnectionNumber(display));
+		}
+		detached = true;
+	}
 
 }

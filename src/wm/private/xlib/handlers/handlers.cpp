@@ -9,7 +9,7 @@
 #include "../../../public/xlib/client_manager/client_manager.hpp"
 #include "../../../public/xlib/handler_helpers/handler_helpers.hpp"
 #include "../../../../logger/public/logger.hpp"
-
+#include "../../../public/general/input_functions.hpp"
 #define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 
 namespace flow::X11
@@ -152,8 +152,7 @@ namespace flow::X11
 
 		if ((ce.mode != NotifyNormal || ce.detail == NotifyInferior) && ce.window != root_window) return;
 		c = client_manager->GetClient(ce.window);
-		if (!c) return;
-		c->Focus();
+		if (c) c->Focus();
 	}
 
 	void FlowWindowManagerX11::OnExpose(XEvent& event)
@@ -232,8 +231,6 @@ namespace flow::X11
 		{
 			switch (pe.atom)
 			{
-			default:
-				break;
 			case XA_WM_TRANSIENT_FOR:
 				break;
 			case XA_WM_NORMAL_HINTS:
@@ -242,9 +239,10 @@ namespace flow::X11
 			case XA_WM_HINTS:
 				c->UpdateWindowType();
 				break;
+			default:
+				break;
 			}
-			if (pe.atom == net_atom[NetWMWindowType])
-				c->UpdateWindowType();
+			if (pe.atom == net_atom[NetWMWindowType]) c->UpdateWindowType();
 		}
 	}
 

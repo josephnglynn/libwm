@@ -30,7 +30,8 @@ namespace flow::X11
 
 		void SetConfig(Config* c);
 		void Start();
-
+		void Detach();
+		bool detached;
 		Display* GetDisplay();
 		Window GetRootWindow();
 		Atom* GetNetAtom();
@@ -54,6 +55,7 @@ namespace flow::X11
 		int screen;
 		int screen_width;
 		int screen_height;
+
 
 		void Scan();
 		int GetTextProp(Window w, Atom atom, char *text, unsigned int size);
