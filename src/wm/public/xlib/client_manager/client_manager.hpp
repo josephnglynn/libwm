@@ -16,14 +16,16 @@ namespace flow::X11
 		bool Exists(Window window);
 		unsigned int GetCount() const;
 		Client* GetClient(Window window);
-		void FocusNull();
 		void RemoveClient(Client* client);
 		void RemoveClient(Window window);
 
-		void Manage(Window window, XWindowAttributes* wa);
-		void UnManage(Client* client, int destroyed);
 		static long GetState(Window window);
-		Client* selected_window;
+		Client* selected;
+
+		Client* GetFirst();
+		Client* GetLast();
+		void SetFirst(Client* client);
+		void SetLast(Client* client);
 	private:
 		Client* first = nullptr;
 		Client* last = nullptr;

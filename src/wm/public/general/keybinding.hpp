@@ -15,8 +15,8 @@ namespace flow
 	enum InputFunction
 	{
 		Spawn, //Run a command with argument being name of program.
-		//Other things to do on button press
-
+		MoveMouse,
+		ResizeMouse,
 	};
 
 
@@ -45,7 +45,7 @@ namespace flow
 		std::function<void(std::string)> function;
 		std::string arg;
 
-		friend std::ostream& operator<<(std::ostream& os, const KeyBinding& kb);
+		friend std::ostream& operator<<(std::ostream& os, const ClientKeyBinding& kb);
 	};
 }
 

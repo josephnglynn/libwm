@@ -15,6 +15,7 @@ namespace flow
 		j.at("time").get_to(config->time);
 		j.at("mod_key").get_to(config->mod_key);
 		j.at("fonts").get_to(config->fonts);
+		j.at("snap").get_to(config->snap);
 		config->key_bindings = std::vector<KeyBinding>();
 		config->client_key_bindings = std::vector<ClientKeyBinding>();
 
@@ -26,7 +27,8 @@ namespace flow
 
 		for (const auto& item: ((json::array_t)j["client_key_bindings"]))
 		{
-			const auto ckb = ClientKeyBinding(item["click"], item["event_mask"], item["button"], item["function"], item["arg"]);
+			const auto ckb =
+				ClientKeyBinding(item["click"], item["event_mask"], item["button"], item["function"], item["arg"]);
 			config->client_key_bindings.push_back(ckb);
 		}
 
@@ -63,6 +65,12 @@ namespace flow
 		{
 			std::cout << "Key bindings:" << std::endl << item << std::endl << std::endl;
 		}
+
+		for (const auto& item: config.client_key_bindings)
+		{
+			std::cout << "Client bindings:" << std::endl << item << std::endl << std::endl;
+		}
+
 		return os;
 	}
 

@@ -3,9 +3,12 @@
 //
 
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../public/xlib/screens/screens.hpp"
-#include "../../../public/xlib/client/client.hpp"
-#include "../../../../logger/public/logger.hpp"
+#include "../../../public/general/input_functions.hpp"
+#include <X11/Xatom.h>
+
+
+#define INTERSECT(x, y, w, h, m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
+                               * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 
 namespace flow
 {
@@ -14,36 +17,320 @@ namespace flow
 
 	ScreenManager::ScreenManager()
 	{
-		monitors = new std::vector<Monitor>();
+
 	}
 
-	void ScreenManager::UpdateGeom()
+	int ScreenManager::UpdateGeom()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 
+		int dirty = 0;
 
+		if (XineramaIsActive(fwm->GetDisplay()))
 		{
-			int numOfScreens;
-			auto result = XRRGetMonitors(fwm->GetDisplay(), fwm->GetRootWindow(), true, &numOfScreens);
+			int i, j, n, nn;
+			Client* c;
+			Monitor* m;
+			XineramaScreenInfo* info = XineramaQueryScreens(fwm->GetDisplay(), &nn);
+			XineramaScreenInfo* unique;
 
-			if (numOfScreens == monitors->size()) return;
-			{
-				delete monitors;
-				monitors = new std::vector<Monitor>(numOfScreens);
+			for (n = 0, m = mons; m; m = m->next, n++);
+			unique = static_cast<XineramaScreenInfo*>(calloc(nn, sizeof(XineramaScreenInfo)));
+			for (i = 0, j = 0; i < nn; i++)
+				if (IsUniqueGeom(unique, j, &info[i]))
+					memcpy(&unique[j++], &info[i], sizeof(XineramaScreenInfo));
+			XFree(info);
+			nn = j;
+			if (n <= nn)
+			{ /* new monitors available */
+				for (i = 0; i < (nn - n); i++)
+				{
+					for (m = mons; m && m->next; m = m->next);
+					if (m)
+						m->next = CreateMonitor();
+					else
+						mons = CreateMonitor();
+				}
+				for (i = 0, m = mons; i < nn && m; m = m->next, i++)
+					if (i >= n
+						|| unique[i].x_org != m->mx || unique[i].y_org != m->my
+						|| unique[i].width != m->mw || unique[i].height != m->mh)
+					{
+						dirty = 1;
+						m->num = i;
+						m->mx = m->wx = unique[i].x_org;
+						m->my = m->wy = unique[i].y_org;
+						m->mw = m->ww = unique[i].width;
+						m->mh = m->wh = unique[i].height;
+					}
 			}
-
-
-			for (int i = 0; i < numOfScreens; i++)
-			{
-				monitors->push_back(Monitor(result[i]));
-				logger::info("ADDING SCREEN: ", "Width:", result[i].width, "Height:", result[i].height);
+			else
+			{ /* less monitors available nn < n */
+				for (i = nn; i < n; i++)
+				{
+					for (m = mons; m && m->next; m = m->next);
+					while ((c = m->clients->GetFirst()))
+					{
+						dirty = 1;
+						m->clients->SetFirst(c->next);
+						c->monitor = mons;
+					}
+					if (m == selected_monitor) selected_monitor = mons;
+					CleanUpMonitor(m);
+				}
 			}
-
+			free(unique);
 		}
+		else
+		{ /* default monitor setup */
+			int sw = fwm->GetScreenWidth();
+			int sh = fwm->GetScreenHeight();
+			if (!mons) mons = CreateMonitor();
+			if (mons->mw != sw || mons->mh != sh)
+			{
+				dirty = 1;
+				mons->mw = mons->ww = sw;
+				mons->mh = mons->wh = sh;
+			}
+		}
+		if (dirty)
+		{
+			selected_monitor = mons;
+			selected_monitor = WindowToMonitor(fwm->GetRootWindow());
+		}
+		return dirty;
+
 	}
 
-	shapes::Rectangle Monitor::toRectangle()
+	int ScreenManager::IsUniqueGeom(XineramaScreenInfo* unique, size_t n, XineramaScreenInfo* info)
 	{
-		return { x, y, static_cast<unsigned int>(width), static_cast<unsigned int>(height) };
+		while (n--)
+			if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
+				&& unique[n].width == info->width && unique[n].height == info->height)
+				return 0;
+		return 1;
 	}
+
+	Monitor* ScreenManager::CreateMonitor()
+	{
+		Monitor* m;
+		m = static_cast<Monitor*>(calloc(1, sizeof(Monitor)));
+		m->clients = new ClientManager();
+		return m;
+	}
+
+	void ScreenManager::CleanUpMonitor(Monitor* monitor)
+	{
+		if (monitor == mons)
+		{
+			mons = mons->next;
+		}
+		else
+		{
+			Monitor* m;
+			for (m = mons; m && m->next != monitor; m = m->next);
+			m->next = monitor->next;
+		}
+		free(monitor->clients);
+		free(monitor);
+	}
+
+	Monitor* ScreenManager::WindowToMonitor(Window w)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		int x, y;
+		Client* c;
+
+		if (w == fwm->GetRootWindow() && input_functions::GetRootPointer(&x, &y))
+			return RectToMonitor(shapes::Rectangle(x, y, 1, 1));
+		if ((c = WindowToClient(w)))
+			return c->monitor;
+		return selected_monitor;
+	}
+	Monitor* ScreenManager::RectToMonitor(shapes::Rectangle rectangle)
+	{
+		Monitor* m, * r = selected_monitor;
+		int a, area = 0;
+
+		for (m = mons; m; m = m->next)
+			if ((a = INTERSECT(rectangle.x, rectangle.y, rectangle.width, rectangle.height, m)) > area)
+			{
+				area = a;
+				r = m;
+			}
+		return r;
+	}
+
+	X11::Client* ScreenManager::WindowToClient(Window w)
+	{
+		Client* c;
+		Monitor* m;
+
+		for (m = mons; m; m = m->next)
+			for (c = m->clients->GetFirst(); c; c = c->next)
+				if (c->window == w)
+					return c;
+		return nullptr;
+	}
+
+	void ScreenManager::Manage(Window window, XWindowAttributes* wa)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		Client* t;
+		Client* client = new Client();
+		Window trans = None;
+		XWindowChanges wc;
+
+		client->window = window;
+		client->position.x = wa->x;
+		client->position.y = wa->y;
+		client->position.width = wa->width;
+		client->position.height = wa->height;
+		client->old_position = client->position;
+
+		if (XGetTransientForHint(fwm->GetDisplay(), window, &trans) && (t = WindowToClient(trans)))
+		{
+			client->monitor = t->monitor;
+		}
+		else
+		{
+			client->monitor = selected_monitor;
+			//TODO APPLY RULES HERE WE SHOULD CHECK FOR OUR SHELL
+		}
+
+		if (client->position.x + static_cast<int>(client->position.width) > client->monitor->mx + client->monitor->mw)
+		{
+			client->position.x = client->monitor->mx + client->monitor->mw - static_cast<int>(client->position.width);
+		}
+
+		if (client->position.y + static_cast<int>(client->position.height) > client->monitor->my + client->monitor->mh)
+		{
+			client->position.y = client->monitor->my + client->monitor->mh - static_cast<int>(client->position.height);
+		}
+
+		client->position.x = MAX(client->position.x, client->monitor->mx);
+
+		client->position.y = MAX(client->position.y,
+			((client->monitor->by == client->monitor->my)
+				&& (client->position.x + (static_cast<int>(client->position.width) / 2) >= client->monitor->wx)
+				&& (client->position.x + (static_cast<int>(client->position.width) / 2) < client->monitor->wx + client->monitor->ww)) ? 0
+																													: client->monitor->my
+		);
+
+		XConfigureWindow(fwm->GetDisplay(), window, CWBorderWidth, &wc);
+		XSetWindowBorder(fwm->GetDisplay(), window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
+		client->Configure();
+		client->UpdateWindowType();
+		client->UpdateSizeHints();
+		client->UpdateWmHints();
+		XSelectInput(fwm->GetDisplay(),
+			window,
+			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
+		);
+		fwm->GetKeyboardManager()->GrabButtons(client, 0);
+		XRaiseWindow(fwm->GetDisplay(), window);
+		client->monitor->clients->AddClient(client);
+		XChangeProperty(fwm->GetDisplay(),
+			fwm->GetRootWindow(),
+			fwm->GetNetAtom()[NetClientList],
+			XA_WINDOW,
+			32,
+			PropModeAppend,
+			(unsigned char*)&(client->window),
+			1
+		);
+		XMoveResizeWindow(fwm->GetDisplay(),
+			client->window,
+			client->position.x,
+			client->position.y,
+			client->position.width,
+			client->position.height
+		);//TODO COME BACK HERE IF X POS IS MESSED UP
+		client->SetState(NormalState);
+		if (client->monitor == selected_monitor)
+		{
+			UnFocus(GetSelectedMonitor()->clients->selected, 1);
+		}
+		client->monitor->clients->selected = client;
+		XMapWindow(fwm->GetDisplay(), client->window);
+		Focus(nullptr);
+	}
+
+	void ScreenManager::Focus(X11::Client* client)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		if (selected_monitor->clients->selected && selected_monitor->clients->selected != client)
+			UnFocus(selected_monitor->clients->selected, 1);
+		if (client)
+		{
+			if (client->monitor != selected_monitor)
+				selected_monitor = client->monitor;
+			if (client->is_urgent) client->SetUrgent(0);
+			fwm->GetKeyboardManager()->GrabButtons(client, 1);
+			XSetWindowBorder(fwm->GetDisplay(), client->window, fwm->GetColorScheme()[SchemeSel][ColBorder].pixel);
+			client->SetFocus();
+		}
+		else
+		{
+			XSetInputFocus(fwm->GetDisplay(), fwm->GetRootWindow(), RevertToPointerRoot, CurrentTime);
+			XDeleteProperty(fwm->GetDisplay(), fwm->GetRootWindow(), fwm->GetNetAtom()[NetActiveWindow]);
+		}
+		selected_monitor->clients->selected = client;
+	}
+
+	Monitor* ScreenManager::GetSelectedMonitor()
+	{
+		return selected_monitor;
+	}
+
+	Monitor* ScreenManager::GetMons()
+	{
+		return mons;
+	}
+
+	void ScreenManager::SetSelectedMonitor(Monitor* monitor)
+	{
+		selected_monitor = monitor;
+	}
+
+	void ScreenManager::UnManage(Client* client, int destroyed)
+	{
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		if (!destroyed)
+		{
+			XWindowChanges wc;
+			wc.border_width = 0;
+			XGrabServer(fwm->GetDisplay());
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int
+			{ return 0; });
+			XConfigureWindow(fwm->GetDisplay(), client->window, CWBorderWidth, &wc);
+			XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client->window);
+			client->SetState(WithdrawnState);
+			XSync(fwm->GetDisplay(), False);
+			XSetErrorHandler(FlowX11ErrorHandler);
+			XUngrabServer(fwm->GetDisplay());
+		}
+		client->monitor->clients->RemoveClient(client);
+		fwm->GetScreenManager()->Focus(nullptr);
+	}
+
+	void ScreenManager::UnFocus(X11::Client* client, int set_focus)
+	{
+		if (!client) return;
+		auto fwm = FlowWindowManagerX11::Get();
+		fwm->GetKeyboardManager()->GrabButtons(client, 0);
+		XSetWindowBorder(fwm->GetDisplay(), client->window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
+		if (set_focus)
+		{
+			XSetInputFocus(fwm->GetDisplay(), fwm->GetRootWindow(), RevertToPointerRoot, CurrentTime);
+			XDeleteProperty(fwm->GetDisplay(), fwm->GetRootWindow(), fwm->GetNetAtom()[NetActiveWindow]);
+		}
+
+	}
+
+	void ScreenManager::Resize(X11::Client* client,int x, int y, int w, int h, int interact)
+	{
+		if (client->ApplySizeHints(&x, &y, &w, &h, interact)) client->ResizeClient(x, y, w, h);
+	}
+
 }

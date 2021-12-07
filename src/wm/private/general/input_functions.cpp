@@ -2,9 +2,14 @@
 // Created by joseph on 27/11/2021.
 //
 
-
+#include <cstdlib>
 #include "../../public/general/input_functions.hpp"
 #include "../../../logger/public/logger.hpp"
+#include "../../public/xlib/screens/screens.hpp"
+#define BUTTON_MASK              (ButtonPressMask|ButtonReleaseMask)
+#define MOUSEMASK               (BUTTON_MASK|PointerMotionMask)
+
+using namespace flow::X11;
 
 namespace flow::input_functions
 {
@@ -14,8 +19,12 @@ namespace flow::input_functions
 		switch (i_f)
 		{
 		case Spawn:
-			return &spawn;
-			break;
+			return spawn;
+		case MoveMouse:
+			return moveMouse;
+		case ResizeMouse:
+			return resizeMouse;
+
 		}
 	}
 
@@ -23,15 +32,18 @@ namespace flow::input_functions
 	{
 
 		std::vector<std::string> strings;
-		while (!s.empty()) {
+		while (!s.empty())
+		{
 
 			size_t pos = s.find(' ');
-			if (pos == 0) {
+			if (pos == 0)
+			{
 				s.erase(s.begin(), s.begin() + 1);
 				continue;
 			}
 
-			if (pos == std::string::npos) {
+			if (pos == std::string::npos)
+			{
 				strings.push_back(s);
 				break;
 			}
@@ -53,7 +65,8 @@ namespace flow::input_functions
 			setsid();
 			std::vector<std::string> split_string = split(arg);
 			char** args = new char* [split_string.size() + 1];
-			for (size_t i = 0; i < split_string.size(); ++i) {
+			for (size_t i = 0; i < split_string.size(); ++i)
+			{
 				args[i] = strdup(split_string[i].c_str());
 			}
 			args[split_string.size()] = nullptr;
@@ -61,6 +74,187 @@ namespace flow::input_functions
 			_exit(0);
 		}
 
+	}
+
+	int GetRootPointer(int* x, int* y)
+	{
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		int di;
+		unsigned int dui;
+		Window dummy;
+
+		return XQueryPointer(fwm->GetDisplay(), fwm->GetRootWindow(), &dummy, &dummy, x, y, &di, &di, &dui);
+	}
+
+	inline int int_abs(int x)
+	{
+		return abs(x);
+	}
+
+	void moveMouse(const std::string&)
+	{
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		int x, y, ocx, ocy, nx, ny;
+		Client* c;
+		Monitor* m;
+		XEvent event;
+		Time last_time;
+
+		if (!(c = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected)) return;
+		if (c->full_screen) return;
+
+		ocx = c->position.x;
+		ocy = c->position.y;
+
+		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+			None, fwm->GetCursor()[CurMove]->cursor, CurrentTime) != GrabSuccess)
+		{
+			return;
+		}
+
+		if (!GetRootPointer(&x, &y)) return;
+
+		do
+		{
+			XMaskEvent(fwm->GetDisplay(), MOUSEMASK | ExposureMask | SubstructureRedirectMask, &event);
+			switch (event.type)
+			{
+			case ConfigureRequest:
+			case Expose:
+			case MapRequest:
+				fwm->HandleEvent(event);
+				break;
+			case MotionNotify:
+				if ((event.xmotion.time - last_time) <= (1000 / 60))
+					continue;
+				last_time = event.xmotion.time;
+
+				nx = ocx + (event.xmotion.x - x);
+				ny = ocy + (event.xmotion.y - y);
+
+				unsigned int snap = fwm->GetConfig()->snap;
+
+				Monitor* selected_monitor = fwm->GetScreenManager()->GetSelectedMonitor();
+				if (abs(selected_monitor->wx - nx) < static_cast<int>(snap))
+					nx = selected_monitor->wx;
+				else if (int_abs(static_cast<int>(selected_monitor->wx + selected_monitor->ww) - (nx + c->position.width)) < static_cast<int>(snap))
+					nx = selected_monitor->wx + selected_monitor->ww - static_cast<int>(c->position.width);
+				if (abs(selected_monitor->wy - ny) < static_cast<int>(snap))
+					ny = selected_monitor->wy;
+				else if (int_abs(static_cast<int>(selected_monitor->wy + selected_monitor->wh) - (ny + c->position.height)) < static_cast<int>(snap))
+					ny = selected_monitor->wy + selected_monitor->wh - static_cast<int>(c->position.height);
+
+				fwm->GetScreenManager()->Resize(c, nx, ny, static_cast<int>(c->position.width), static_cast<int>(c->position.height), 1);
+				break;
+			}
+		} while (event.type != ButtonRelease);
+
+		XUngrabPointer(fwm->GetDisplay(), CurrentTime);
+		auto sm = fwm->GetScreenManager();
+		if ((m = sm->RectToMonitor(c->position)) != sm->GetSelectedMonitor())
+		{
+			c->SendMonitor(m);
+			sm->SetSelectedMonitor(m);
+			sm->Focus(nullptr);
+		}
+	}
+
+	void resizeMouse(const std::string&)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		ScreenManager* sm = fwm->GetScreenManager();
+		int ocx, ocy, nw, nh;
+		int ocx2, ocy2, nx, ny;
+		Client* c;
+		Monitor* m;
+		XEvent event;
+		int hc, vc;
+		int root;
+		unsigned int mask;
+		Window dummy;
+		Time last_time = 0;
+
+		if (!(c = sm->GetSelectedMonitor()->clients->selected))
+			return;
+		if (c->full_screen)
+			return;
+
+		ocx = c->position.x;
+		ocy = c->position.y;
+		ocx2 = c->position.x + static_cast<int>(c->position.width);
+		ocy2 = c->position.y + static_cast<int>(c->position.height);
+
+		if (!XQueryPointer(fwm->GetDisplay(), c->window, &dummy, &dummy, &root, &root, &nx, &ny, &mask)) return;
+
+		hc = nx < static_cast<int>(c->position.width) / 2;
+		vc = ny < static_cast<int>(c->position.height) / 2;
+
+		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+			None, fwm->GetCursor()[hc | (vc) << 1]->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
+			return;
+
+		int a_x, a_y;
+		XQueryPointer(fwm->GetDisplay(), c->window, &dummy, &dummy, &root, &root, &a_x, &a_y, &mask);
+
+
+		XWarpPointer(
+			fwm->GetDisplay(),
+			None,
+			c->window,
+			0,
+			0,
+			0,
+			0,
+			a_x,
+			a_y
+		);
+
+		do
+		{
+			XMaskEvent(fwm->GetDisplay(), MOUSEMASK | ExposureMask | SubstructureRedirectMask, &event);
+			switch (event.type)
+			{
+			case ConfigureRequest:
+			case Expose:
+			case MapRequest:
+				fwm->HandleEvent(event);
+				break;
+			case MotionNotify:
+				if ((event.xmotion.time - last_time) <= (1000 / 60))
+					continue;
+				last_time = event.xmotion.time;
+
+				nw = MAX(event.xmotion.x - ocx + 1, 1);
+				nh = MAX(event.xmotion.y - ocy + 1, 1);
+				nx = hc ? event.xmotion.x : c->position.x;
+				ny = vc ? event.xmotion.y : c->position.y;
+				nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
+				nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+
+				sm->Resize(c, nx, ny, nw, nh, 1);
+				break;
+			}
+		} while (event.type != ButtonRelease);
+
+		XWarpPointer(fwm->GetDisplay(),
+			None,
+			c->window,
+			0,
+			0,
+			0,
+			0,
+			hc ? 1 : static_cast<int>(c->position.width - 1),
+			vc ? 1 : static_cast<int>(c->position.height - 1)
+		);
+
+		XUngrabPointer(fwm->GetDisplay(), CurrentTime);
+		while (XCheckMaskEvent(fwm->GetDisplay(), EnterWindowMask, &event));
+		if ((m = sm->RectToMonitor(c->position)) != sm->GetSelectedMonitor())
+		{
+			c->SendMonitor(m);
+			sm->SetSelectedMonitor(m);
+			sm->Focus(nullptr);
+		}
 	}
 }
 

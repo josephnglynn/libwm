@@ -37,11 +37,15 @@ namespace flow::X11
 		Atom* GetNetAtom();
 		XftColor** GetColorScheme();
 		KeyboardManager* GetKeyboardManager();
+		ScreenManager* GetScreenManager();
 		Atom* GetWmAtom();
-		ClientManager* GetClientManager();
+		Cur** GetCursor();
+		void HandleEvent(XEvent& event);
+		int GetScreenWidth();
+		int GetScreenHeight();
+		Config* GetConfig();
 	private:
 		ScreenManager* screen_manager;
-		ClientManager* client_manager;
 		KeyboardManager* keyboard_manager;
 		Config* config;
 		Display* display = nullptr;

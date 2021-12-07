@@ -6,7 +6,6 @@
 #define FLOW_WM_CLIENT_HPP
 #include "../screens/screens.hpp"
 
-
 namespace flow::X11
 {
 
@@ -18,7 +17,6 @@ namespace flow::X11
 		explicit Client(Window window);
 
 		void SetUrgent(int urgency);
-		void Focus();
 		void SetFocus();
 		int SendEvent(Atom protocol);
 		void UpdateWindowType();
@@ -30,11 +28,14 @@ namespace flow::X11
 		void UpdateSizeHints();
 		void UpdateWmHints();
 		void SetState(long state);
-		void GrabButtons(int focused);
+		int ApplySizeHints(int* x, int* y, int* w, int* h, int interact);
+		void SendMonitor(Monitor* m);
 
 		Client* next;
 		Client* previous;
 		Window window;
+		float min_a, max_a;
+		int base_width, base_height, inc_width, inc_height, min_width, min_height, max_width, max_height;
 		shapes::Rectangle position;
 		shapes::Rectangle old_position;
 		unsigned int border;
@@ -44,6 +45,7 @@ namespace flow::X11
 		bool never_focus;
 		bool full_screen;
 		bool configured = false;
+		Monitor* monitor;
 	};
 }
 

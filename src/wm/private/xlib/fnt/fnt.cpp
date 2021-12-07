@@ -10,7 +10,7 @@ namespace flow {
 	{
 		{
 			Fnt* font;
-			XftFont* xfont = nullptr;
+			XftFont* xfont;
 			FcPattern* pattern = nullptr;
 
 			if (fontname)

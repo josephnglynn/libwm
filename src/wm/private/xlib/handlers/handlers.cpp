@@ -20,11 +20,19 @@ namespace flow::X11
 
 		unsigned int i, click = ClkRootWin;
 		XButtonPressedEvent xb = event.xbutton;
-
-		Client* client = client_manager->GetClient(xb.window);
-		if (client)
+		Client* client;
+		Monitor* m;
+		Monitor* sel_mon = screen_manager->GetSelectedMonitor();
+		if ((m = screen_manager->WindowToMonitor(xb.window)) && m != sel_mon)
 		{
-			client->Focus();
+			if (sel_mon->clients->selected) screen_manager->UnFocus(sel_mon->clients->selected, 1);
+			screen_manager->SetSelectedMonitor(m);
+			screen_manager->Focus(nullptr);
+		}
+
+		if ((client = screen_manager->WindowToClient(xb.window)))
+		{
+			screen_manager->Focus(client);
 			XAllowEvents(display, ReplayPointer, CurrentTime);
 			click = ClkClientWin;
 		}
@@ -36,8 +44,8 @@ namespace flow::X11
 				&& keyboard_manager->key_bindings_client[i].button == xb.button
 				&& CLEAN_MASK(keyboard_manager->key_bindings_client[i].event_mask) == CLEAN_MASK(xb.state))
 			{
+				logger::info("BUTTON_PRESSED: ", keyboard_manager->key_bindings_client[i]);
 				keyboard_manager->key_bindings_client[i].function(keyboard_manager->key_bindings_client[i].arg);
-				logger::info("BUTTON CLICK");
 			}
 		}
 
@@ -46,18 +54,18 @@ namespace flow::X11
 	void FlowWindowManagerX11::OnClientMessage(XEvent& event)
 	{
 		XClientMessageEvent cme = event.xclient;
-		Client* client = client_manager->GetClient(cme.window);
+		Client* client = screen_manager->WindowToClient(cme.window);
 
 		if (!client) return;
 		if (cme.message_type == net_atom[NetWMState])
 		{
-			if (cme.data.l[1] == net_atom[NetWMFullscreen] || cme.data.l[2] == net_atom[NetWMFullscreen])
+			if (static_cast<Atom>(cme.data.l[1]) == net_atom[NetWMFullscreen] || static_cast<Atom>(cme.data.l[2]) == net_atom[NetWMFullscreen])
 			{
 				client->SetFullScreen((cme.data.l[0] == 1 || (cme.data.l[0] == 2 && !client->full_screen)));
 			}
 			else if (cme.message_type == net_atom[NetActiveWindow])
 			{
-				if (!client->is_urgent)
+				if (client != screen_manager->GetSelectedMonitor()->clients->selected && !client->is_urgent)
 				{
 					client->SetUrgent(1);
 				}
@@ -69,15 +77,17 @@ namespace flow::X11
 	{
 
 		Client* c;
+		Monitor* m;
 		XConfigureRequestEvent ev = event.xconfigurerequest;
 		XWindowChanges wc;
 
-		if ((c = client_manager->GetClient(ev.window)))
+		if ((c = screen_manager->WindowToClient(ev.window)))
 		{
 			if (ev.value_mask & CWBorderWidth)
 				c->border = ev.border_width;
 			else if (c->configured)
 			{
+				m = screen_manager->GetSelectedMonitor();
 				if (ev.value_mask & CWX)
 				{
 					c->old_position.x = c->position.x;
@@ -98,6 +108,12 @@ namespace flow::X11
 					c->old_position.height = c->position.height;
 					c->position.height = ev.height;
 				}
+
+				if ((c->position.x + static_cast<int>(c->position.width)) > m->mx + m->mw)
+					c->position.x = m->mx + (m->mw / 2 - static_cast<int>(c->position.width) / 2);
+				if ((c->position.y + static_cast<int>(c->position.height)) > m->my + m->mh)
+					c->position.y = m->my + (m->mh / 2 - static_cast<int>(c->position.height) / 2);
+
 				if ((ev.value_mask & (CWX | CWY)) && !(ev.value_mask & (CWWidth | CWHeight))) c->Configure();
 			}
 			else
@@ -122,6 +138,8 @@ namespace flow::X11
 	//TODO COME BACK HERE
 	void FlowWindowManagerX11::OnConfigureNotify(XEvent& event)
 	{
+		Monitor* m;
+		Client* c;
 		XConfigureEvent ev = event.xconfigure;
 		int dirty;
 
@@ -130,10 +148,17 @@ namespace flow::X11
 			dirty = (screen_width != ev.width || screen_height != ev.height);
 			screen_width = ev.width;
 			screen_height = ev.height;
-			if (dirty)
+			if (screen_manager->UpdateGeom() || dirty)
 			{
 				drw->Resize(screen_width, screen_height);
-				client_manager->FocusNull();
+				for (m = screen_manager->GetMons(); m; m = m->next)
+				{
+					for (c = m->clients->GetFirst(); c; c = c->next)
+					{
+						if (c->full_screen) c->ResizeClient(m->mx, m->my, m->mw, m->mh);
+					}
+				}
+				screen_manager->Focus(nullptr);
 			}
 		}
 	}
@@ -141,28 +166,56 @@ namespace flow::X11
 	void FlowWindowManagerX11::OnDestroyNotify(XEvent& event)
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
-		Client* c = client_manager->GetClient(dwe.window);
-		if (c) client_manager->UnManage(c, 1);
+		Client* c;
+		if ((c = screen_manager->WindowToClient(dwe.window)))
+		{
+			screen_manager->UnManage(c, 1);
+		}
 	}
 
 	void FlowWindowManagerX11::OnEnterNotify(XEvent& event)
 	{
 		Client* c;
+		Monitor* m;
 		XCrossingEvent ce = event.xcrossing;
 
 		if ((ce.mode != NotifyNormal || ce.detail == NotifyInferior) && ce.window != root_window) return;
-		c = client_manager->GetClient(ce.window);
-		if (c) c->Focus();
+		c = screen_manager->WindowToClient(ce.window);
+		m = c ? c->monitor : screen_manager->WindowToMonitor(ce.window);
+
+		if (m != screen_manager->GetSelectedMonitor())
+		{
+			if (screen_manager->GetSelectedMonitor()->clients->selected)
+				screen_manager->UnFocus(screen_manager->GetSelectedMonitor()->clients->selected,
+					1);
+			screen_manager->SetSelectedMonitor(m);
+		}
+		else if (!c || c == screen_manager->GetSelectedMonitor()->clients->selected)
+		{
+			return;
+		}
+
+		screen_manager->Focus(c);
 	}
 
 	void FlowWindowManagerX11::OnExpose(XEvent& event)
 	{
-	//	XExposeEvent ee = event.xexpose;
+		Monitor* m;
+		XExposeEvent ee = event.xexpose;
+		if (ee.count == 0 && (m = screen_manager->WindowToMonitor(ee.window)))
+		{
+			//DRAW BARS
+		}
 	}
 
 	void FlowWindowManagerX11::OnFocusIn(XEvent& event)
 	{
-	//	XFocusChangeEvent fce = event.xfocus;
+		XFocusChangeEvent fce = event.xfocus;
+		if (screen_manager->GetSelectedMonitor()->clients->selected
+			&& fce.window != screen_manager->GetSelectedMonitor()->clients->selected->window)
+		{
+			screen_manager->GetSelectedMonitor()->clients->selected->SetFocus();
+		}
 	}
 
 	void FlowWindowManagerX11::OnKeyPress(XEvent& event)
@@ -171,7 +224,12 @@ namespace flow::X11
 		unsigned int i;
 		KeySym keysym;
 		XKeyEvent ev = event.xkey;
+
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 		keysym = XKeycodeToKeysym(display, (KeyCode)ev.keycode, 0);
+		#pragma clang diagnostic pop
+
 		logger::success(keysym, "AND MASK", CLEAN_MASK(ev.state));
 		for (i = 0; i < keyboard_manager->key_bindings_root.size(); i++)
 		{
@@ -204,8 +262,10 @@ namespace flow::X11
 			return;
 		if (wa.override_redirect)
 			return;
-		Client* c = client_manager->GetClient(mre.window);
-		if (!c) client_manager->Manage(mre.window, &wa);
+		if (!screen_manager->WindowToClient(mre.window))
+		{
+			screen_manager->Manage(mre.window, &wa);
+		}
 	}
 
 	void FlowWindowManagerX11::OnMotionNotify(XEvent& event)
@@ -227,7 +287,7 @@ namespace flow::X11
 		{
 			return;
 		}
-		else if ((c = client_manager->GetClient(pe.window)))
+		else if ((c = screen_manager->WindowToClient(pe.window)))
 		{
 			switch (pe.atom)
 			{
@@ -251,13 +311,22 @@ namespace flow::X11
 		Client* c;
 		XUnmapEvent ume = event.xunmap;
 
-		if ((c = client_manager->GetClient(ume.window))) {
-			if (ume.send_event) {
+		if ((c = screen_manager->WindowToClient(ume.window)))
+		{
+			if (ume.send_event)
+			{
 				c->SetState(WithdrawnState);
-			} else {
-				client_manager->UnManage(c, 0);
+			}
+			else
+			{
+				screen_manager->UnManage(c, 0);
 			}
 		}
+	}
+
+	Config* FlowWindowManagerX11::GetConfig()
+	{
+		return config;
 	}
 
 }

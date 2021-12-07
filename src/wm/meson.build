@@ -19,7 +19,7 @@ wm_sources = [
                 'private/general/input_functions.cpp',
 ]
 
-wm_deps = [dependency('x11'), dependency('xrandr'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads')]
+wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads')]
 
 add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
 

@@ -8,6 +8,7 @@
 #include "../../../public/xlib/enums/enums.hpp"
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
+#include "../../../../logger/public/logger.hpp"
 
 namespace flow::X11
 {
@@ -37,19 +38,6 @@ namespace flow::X11
 		XFree(wmh);
 	}
 
-	void Client::Focus()
-	{
-		auto fwm = FlowWindowManagerX11::Get();
-
-		if (is_urgent)
-		{
-			SetUrgent(0);
-		}
-
-		GrabButtons(1);
-		XSetWindowBorder(fwm->GetDisplay(), window, fwm->GetColorScheme()[SchemeSel][ColBorder].pixel);
-
-	}
 	void Client::SetFocus()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
@@ -199,7 +187,7 @@ namespace flow::X11
 
 	void Client::UpdateSizeHints()
 	{
-//TODO
+
 	}
 
 	void Client::UpdateWmHints()
@@ -209,7 +197,7 @@ namespace flow::X11
 
 		if ((wmh = XGetWMHints(fwm->GetDisplay(), window)))
 		{
-			if (this == fwm->GetClientManager()->selected_window && wmh->flags & XUrgencyHint)
+			if (this == fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected && wmh->flags & XUrgencyHint)
 			{
 				wmh->flags &= ~XUrgencyHint;
 				XSetWMHints(fwm->GetDisplay(), window, wmh);
@@ -219,7 +207,7 @@ namespace flow::X11
 			if (wmh->flags & InputHint)
 				never_focus = !wmh->input;
 			else
-				never_focus = 0;
+				never_focus = false;
 			XFree(wmh);
 		}
 
@@ -241,48 +229,92 @@ namespace flow::X11
 		);
 	}
 
-	void Client::GrabButtons(int focused)
-	{
-		auto fwm = X11::FlowWindowManagerX11::Get();
-		fwm->GetKeyboardManager()->UpdateNumLockMask(fwm->GetDisplay());
-		unsigned int i, j;
-		unsigned int modifiers[] = {
-			0,
-			LockMask,
-			fwm->GetKeyboardManager()->num_lock_mask,
-			fwm->GetKeyboardManager()->num_lock_mask | LockMask
-		};
-		XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, window);
-		if (!focused)
-		{
-			XGrabButton(
-				fwm->GetDisplay(),
-				AnyButton,
-				AnyModifier,
-				window,
-				False,
-				ButtonPressMask | ButtonReleaseMask,
-				GrabModeSync,
-				GrabModeSync,
-				None,
-				None
-			);
-		}
-		for (i = 0; i < fwm->GetKeyboardManager()->key_bindings_client.size(); i++)
-		{
-			if (fwm->GetKeyboardManager()->key_bindings_client[i].click == ClkClientWin)
-			{
-				for (j = 0; j < sizeof modifiers / sizeof modifiers[0]; j++)
-					XGrabButton(
-						fwm->GetDisplay(), fwm->GetKeyboardManager()->key_bindings_client[i].button,
-						fwm->GetKeyboardManager()->key_bindings_client[i].event_mask | modifiers[j],
-						window, False, ButtonPressMask | ButtonReleaseMask,
-						GrabModeAsync, GrabModeSync, None, None
-					);
-			}
-		}
 
+	static inline constexpr int MAX(int A, int B)
+	{
+		return A > B ? A : B;
 	}
 
+	static inline constexpr int MIN(int A, int B)
+	{
+		return A < B ? A : B;
+	}
+
+	int Client::ApplySizeHints(int* x, int* y, int* w, int* h, int interact)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		int sw = fwm->GetScreenWidth();
+		int sh = fwm->GetScreenHeight();
+		int baseismin;
+
+		/* set minimum possible */
+		*w = MAX(1, *w);
+		*h = MAX(1, *h);
+		if (interact)
+		{
+			if (*x > sw)
+				*x = sw - position.width;
+			if (*y > sh)
+				*y = sh - position.height;
+			if (*x + *w < 0)
+				*x = 0;
+			if (*y + *h < 0)
+				*y = 0;
+		}
+		else
+		{
+			if (*x >= monitor->wx + monitor->ww)
+				*x = monitor->wx + monitor->ww - position.width;
+			if (*y >= monitor->wy + monitor->wh)
+				*y = monitor->wy + monitor->wh - position.height;
+			if (*x + *w <= monitor->wx)
+				*x = monitor->wx;
+			if (*y + *h <= monitor->wy)
+				*y = monitor->wy;
+		}
+
+		baseismin = base_width == min_width && base_height == min_height;
+		if (!baseismin)
+		{
+			*w -= base_width;
+			*h -= base_height;
+		}
+
+		if (min_a > 0 && max_a > 0)
+		{
+			if (max_a < (float)*w / *h)
+				*w = *h * max_a + 0.5;
+			else if (min_a < (float)*h / *w)
+				*h = *w * min_a + 0.5;
+		}
+		if (baseismin)
+		{
+			*w -= base_width;
+			*h -= base_height;
+		}
+
+		if (inc_width)
+			*w -= *w % inc_width;
+		if (inc_height)
+			*h -= *h % inc_height;
+		/* restore base dimensions */
+		*w = MAX(*w + base_width, min_width);
+		*h = MAX(*h + base_height, min_height);
+		if (max_width)
+			*w = MIN(*w, max_width);
+		if (max_height)
+			*h = MIN(*h, max_height);
+
+		return *x != position.x || *y != position.y || *w != static_cast<int>(position.width) || *h != static_cast<int>(position.height);
+	}
+	void Client::SendMonitor(Monitor* m)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		auto sm = fwm->GetScreenManager();
+		if (monitor == m) return;
+		sm->UnFocus(this, 1);
+		monitor = m;
+		sm->Focus(nullptr);
+	}
 
 }

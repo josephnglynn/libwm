@@ -23,6 +23,7 @@ namespace flow
 		std::string config_name;
 		int64_t time;
 		Key mod_key;
+		unsigned int snap;
 		std::vector<KeyBinding> key_bindings;
 		std::vector<ClientKeyBinding> client_key_bindings;
 		std::vector<std::string> fonts;

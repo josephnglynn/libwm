@@ -7,7 +7,7 @@
 
 enum
 {
-	CurNormal, CurResize, CurMove, CurLast
+	CurResizeBottomRight, CurResizeBottomLeft, CurResizeTopRight, CurResizeTopLeft, CurNormal, CurMove, CurLast
 };
 
 enum

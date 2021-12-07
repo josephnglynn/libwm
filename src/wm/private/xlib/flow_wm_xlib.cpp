@@ -17,6 +17,58 @@ namespace flow::X11
 
 	FlowWindowManagerX11* FlowWindowManagerX11::instance;
 
+	void FlowWindowManagerX11::HandleEvent(XEvent& event) {
+		switch (event.type)
+		{
+		case KeyPress:
+			OnKeyPress(event);
+			break;
+		case ButtonPress:
+			OnButtonPress(event);
+			break;
+		case MotionNotify:
+			OnMotionNotify(event);
+			break;
+		case EnterNotify:
+			OnEnterNotify(event);
+			break;
+		case FocusIn:
+			OnFocusIn(event);
+			break;
+		case Expose:
+			OnExpose(event);
+			break;
+		case DestroyNotify:
+			OnDestroyNotify(event);
+			break;
+		case UnmapNotify:
+			OnUnmapNotify(event);
+			break;
+		case MapRequest:
+			OnMapRequest(event);
+			break;
+		case ConfigureNotify:
+			OnConfigureNotify(event);
+			break;
+		case ConfigureRequest:
+			OnConfigureRequest(event);
+			break;
+		case PropertyNotify:
+			OnPropertyNotify(event);
+			break;
+		case ClientMessage:
+			OnClientMessage(event);
+			break;
+		case MappingNotify:
+			OnMappingNotify(event);
+			break;
+		default:
+			logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
+			break;
+		}
+	}
+
+
 	void FlowWindowManagerX11::Start()
 	{
 
@@ -26,55 +78,7 @@ namespace flow::X11
 			XEvent event;
 			XNextEvent(display, &event);
 			if (event.type == MotionNotify) continue;
-
-			switch (event.type)
-			{
-			case KeyPress:
-				OnKeyPress(event);
-				break;
-			case ButtonPress:
-				OnButtonPress(event);
-				break;
-			case MotionNotify:
-				OnMotionNotify(event);
-				break;
-			case EnterNotify:
-				OnEnterNotify(event);
-				break;
-			case FocusIn:
-				OnFocusIn(event);
-				break;
-			case Expose:
-				OnExpose(event);
-				break;
-			case DestroyNotify:
-				OnDestroyNotify(event);
-				break;
-			case UnmapNotify:
-				OnUnmapNotify(event);
-				break;
-			case MapRequest:
-				OnMapRequest(event);
-				break;
-			case ConfigureNotify:
-				OnConfigureNotify(event);
-				break;
-			case ConfigureRequest:
-				OnConfigureRequest(event);
-				break;
-			case PropertyNotify:
-				OnPropertyNotify(event);
-				break;
-			case ClientMessage:
-				OnClientMessage(event);
-				break;
-			case MappingNotify:
-				OnMappingNotify(event);
-				break;
-			default:
-				logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
-				break;
-			}
+			HandleEvent(event);
 		}
 	}
 
@@ -92,6 +96,7 @@ namespace flow::X11
 	{
 		if (!detached) XCloseDisplay(display);
 	}
+
 
 	FlowWindowManagerX11* FlowWindowManagerX11::Init(Config* config)
 	{
@@ -141,7 +146,6 @@ namespace flow::X11
 
 		instance->screen_manager = new ScreenManager();
 		instance->screen_manager->UpdateGeom();
-		instance->client_manager = new ClientManager();
 
 		XSetWindowAttributes wa;
 		Atom utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
@@ -160,7 +164,10 @@ namespace flow::X11
 		instance->net_atom[NetClientList] = XInternAtom(instance->display, "_NET_CLIENT_LIST", False);
 
 		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->drw, XC_left_ptr);
-		instance->cursor[CurResize] = CursorUtils::CreateCursor(instance->drw, XC_sizing);
+		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->drw, XC_top_left_corner);
+		instance->cursor[CurResizeTopRight] = CursorUtils::CreateCursor(instance->drw, XC_top_right_corner);
+		instance->cursor[CurResizeBottomRight] = CursorUtils::CreateCursor(instance->drw, XC_bottom_right_corner);
+		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
 		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
 
 		//TODO FIX THIS STARTING HERE
@@ -247,7 +254,7 @@ namespace flow::X11
 			instance->config->mod_key);
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 
-		instance->client_manager->FocusNull();
+		instance->screen_manager->Focus(nullptr);
 		instance->Scan();
 
 		return instance;
@@ -297,7 +304,7 @@ namespace flow::X11
 	{
 
 		unsigned int i, num;
-		Window d1, d2, * wins = NULL;
+		Window d1, d2, * wins = nullptr;
 		XWindowAttributes wa;
 
 		if (XQueryTree(display, root_window, &d1, &d2, &wins, &num))
@@ -308,7 +315,7 @@ namespace flow::X11
 					|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
 					continue;
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
-					client_manager->Manage(wins[i], &wa);
+					screen_manager->Manage(wins[i], &wa);
 			}
 			for (i = 0; i < num; i++)
 			{
@@ -316,7 +323,7 @@ namespace flow::X11
 					continue;
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
-					client_manager->Manage(wins[i], &wa);
+					screen_manager->Manage(wins[i], &wa);
 			}
 			if (wins)
 				XFree(wins);
@@ -324,10 +331,6 @@ namespace flow::X11
 
 	}
 
-	ClientManager* FlowWindowManagerX11::GetClientManager()
-	{
-		return client_manager;
-	}
 
 	void FlowWindowManagerX11::UpdateStatus()
 	{
@@ -372,6 +375,29 @@ namespace flow::X11
 			close(ConnectionNumber(display));
 		}
 		detached = true;
+	}
+
+
+	Cur** FlowWindowManagerX11::GetCursor()
+	{
+		return cursor;
+	}
+
+
+	ScreenManager* FlowWindowManagerX11::GetScreenManager()
+	{
+		return screen_manager;
+	}
+
+
+	int FlowWindowManagerX11::GetScreenWidth()
+	{
+		return screen_width;
+	}
+
+	int FlowWindowManagerX11::GetScreenHeight()
+	{
+		return screen_height;
 	}
 
 }
