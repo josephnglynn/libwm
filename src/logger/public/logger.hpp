@@ -20,7 +20,6 @@ namespace flow::logger
 	template<typename ...T>
 	void info(T... data)
 	{
-
 		std::cout << _starting_string << Blue;
 		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
