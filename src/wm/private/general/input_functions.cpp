@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include "../../public/general/input_functions.hpp"
 #include "../../../logger/public/logger.hpp"
-#include "../../public/xlib/screens/screens.hpp"
+
 #define BUTTON_MASK              (ButtonPressMask|ButtonReleaseMask)
 #define MOUSEMASK               (BUTTON_MASK|PointerMotionMask)
 
@@ -51,7 +51,7 @@ namespace flow::input_functions
 			}
 
 			strings.push_back(s.substr(0, pos));
-			s.erase(s.begin(), s.begin() + pos);
+			s.erase(s.begin(), s.begin() + static_cast<long>(pos));
 
 		}
 
@@ -140,13 +140,13 @@ namespace flow::input_functions
 				if (abs(selected_monitor->wx - nx) < static_cast<int>(snap))
 					nx = selected_monitor->wx;
 				else if (
-					int_abs(static_cast<int>(selected_monitor->wx + selected_monitor->ww) - (nx + c->position.width))
+					int_abs((selected_monitor->wx + selected_monitor->ww) - (nx + static_cast<int>(c->position.width)))
 						< static_cast<int>(snap))
 					nx = selected_monitor->wx + selected_monitor->ww - static_cast<int>(c->position.width);
 				if (abs(selected_monitor->wy - ny) < static_cast<int>(snap))
 					ny = selected_monitor->wy;
 				else if (
-					int_abs(static_cast<int>(selected_monitor->wy + selected_monitor->wh) - (ny + c->position.height))
+					int_abs((selected_monitor->wy + selected_monitor->wh) - (ny + static_cast<int>(c->position.height)))
 						< static_cast<int>(snap))
 					ny = selected_monitor->wy + selected_monitor->wh - static_cast<int>(c->position.height);
 
@@ -204,19 +204,15 @@ namespace flow::input_functions
 			None, fwm->GetCursor()[hc | (vc) << 1]->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
 			return;
 
-		int a_x, a_y;
-		XQueryPointer(fwm->GetDisplay(), c->window, &dummy, &dummy, &root, &root, &a_x, &a_y, &mask);
-
-		XWarpPointer(
-			fwm->GetDisplay(),
+		XWarpPointer(fwm->GetDisplay(),
 			None,
 			c->window,
 			0,
 			0,
 			0,
 			0,
-			a_x,
-			a_y
+			hc ? 1 : static_cast<int>(c->position.width - 1),
+			vc ? 1 : static_cast<int>(c->position.height - 1)
 		);
 
 		do
@@ -234,8 +230,6 @@ namespace flow::input_functions
 					continue;
 				last_time = event.xmotion.time;
 
-				nw = MAX(event.xmotion.x - ocx + 1, 1);
-				nh = MAX(event.xmotion.y - ocy + 1, 1);
 				nx = hc ? event.xmotion.x : c->position.x;
 				ny = vc ? event.xmotion.y : c->position.y;
 				nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);

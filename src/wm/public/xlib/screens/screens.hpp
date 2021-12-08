@@ -41,7 +41,7 @@ namespace flow
 	class ScreenManager
 	{
 	public:
-		ScreenManager();
+		ScreenManager() = default;
 		int UpdateGeom();
 		int IsUniqueGeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
 		void CleanUpMonitor(Monitor* monitor);

@@ -15,10 +15,6 @@ namespace flow
 
 	using namespace X11;
 
-	ScreenManager::ScreenManager()
-	{
-
-	}
 
 	int ScreenManager::UpdateGeom()
 	{

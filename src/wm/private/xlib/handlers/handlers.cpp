@@ -6,10 +6,9 @@
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../public/xlib/client_manager/client_manager.hpp"
 #include "../../../public/xlib/handler_helpers/handler_helpers.hpp"
 #include "../../../../logger/public/logger.hpp"
-#include "../../../public/general/input_functions.hpp"
+
 #define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 
 namespace flow::X11
@@ -183,14 +182,15 @@ namespace flow::X11
 		c = screen_manager->WindowToClient(ce.window);
 		m = c ? c->monitor : screen_manager->WindowToMonitor(ce.window);
 
-		if (m != screen_manager->GetSelectedMonitor())
+		Monitor* selected_monitor =  screen_manager->GetSelectedMonitor();
+		if (m != selected_monitor)
 		{
-			if (screen_manager->GetSelectedMonitor()->clients->selected)
-				screen_manager->UnFocus(screen_manager->GetSelectedMonitor()->clients->selected,
+			if (selected_monitor->clients->selected)
+				screen_manager->UnFocus(selected_monitor->clients->selected,
 					1);
 			screen_manager->SetSelectedMonitor(m);
 		}
-		else if (!c || c == screen_manager->GetSelectedMonitor()->clients->selected)
+		else if (!c || c == selected_monitor->clients->selected)
 		{
 			return;
 		}
@@ -198,14 +198,8 @@ namespace flow::X11
 		screen_manager->Focus(c);
 	}
 
-	void FlowWindowManagerX11::OnExpose(XEvent& event)
+	void FlowWindowManagerX11::OnExpose(XEvent&)
 	{
-		Monitor* m;
-		XExposeEvent ee = event.xexpose;
-		if (ee.count == 0 && (m = screen_manager->WindowToMonitor(ee.window)))
-		{
-			//DRAW BARS
-		}
 	}
 
 	void FlowWindowManagerX11::OnFocusIn(XEvent& event)

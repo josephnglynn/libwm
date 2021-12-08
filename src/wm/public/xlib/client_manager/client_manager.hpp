@@ -14,18 +14,20 @@ namespace flow::X11
 		void AddClient(Client* client);
 		bool Exists(Client* client);
 		bool Exists(Window window);
-		unsigned int GetCount() const;
+		[[nodiscard]] unsigned int GetCount() const;
 		Client* GetClient(Window window);
 		void RemoveClient(Client* client);
 		void RemoveClient(Window window);
-
-		static long GetState(Window window);
-		Client* selected;
 
 		Client* GetFirst();
 		Client* GetLast();
 		void SetFirst(Client* client);
 		void SetLast(Client* client);
+
+		static long GetState(Window window);
+
+
+		Client* selected = nullptr;
 	private:
 		Client* first = nullptr;
 		Client* last = nullptr;

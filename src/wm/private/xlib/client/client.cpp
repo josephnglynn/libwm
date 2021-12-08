@@ -8,7 +8,6 @@
 #include "../../../public/xlib/enums/enums.hpp"
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../../logger/public/logger.hpp"
 
 namespace flow::X11
 {
