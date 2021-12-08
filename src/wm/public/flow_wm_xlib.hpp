@@ -18,7 +18,6 @@
 namespace flow::X11
 {
 
-
 	int FlowX11ErrorHandler(Display* display, XErrorEvent* event);
 
 	class FlowWindowManagerX11
@@ -31,38 +30,82 @@ namespace flow::X11
 		void SetConfig(Config* c);
 		void Start();
 		void Detach();
-		bool detached;
-		Display* GetDisplay();
-		Window GetRootWindow();
-		Atom* GetNetAtom();
-		XftColor** GetColorScheme();
-		KeyboardManager* GetKeyboardManager();
-		ScreenManager* GetScreenManager();
-		Atom* GetWmAtom();
-		Cur** GetCursor();
 		void HandleEvent(XEvent& event);
-		int GetScreenWidth();
-		int GetScreenHeight();
-		Config* GetConfig();
-	private:
-		ScreenManager* screen_manager;
-		KeyboardManager* keyboard_manager;
-		Config* config;
-		Display* display = nullptr;
-		Window root_window;
-		bool quit = false;
-		Atom wm_atom[WMLast], net_atom[NetLast];
-		Cur* cursor[CurLast];
-		DrawableWindow* drw;
-		XftColor** color_scheme;
-		Window wm_check_window;
-		int screen;
-		int screen_width;
-		int screen_height;
 
+		inline Display* GetDisplay()
+		{
+			return display;
+		}
+
+		[[nodiscard]] inline Window GetRootWindow() const
+		{
+			return root_window;
+		}
+
+		inline Atom* GetNetAtom()
+		{
+			return net_atom;
+		}
+
+		inline XftColor** GetColorScheme()
+		{
+			return color_scheme;
+		}
+
+		inline KeyboardManager* GetKeyboardManager()
+		{
+			return keyboard_manager;
+		}
+
+		inline ScreenManager* GetScreenManager()
+		{
+			return screen_manager;
+		}
+
+		inline Atom* GetWmAtom()
+		{
+			return wm_atom;
+		};
+
+		inline Cur** GetCursor()
+		{
+			return cursor;
+		}
+
+		[[nodiscard]]  inline int GetScreenWidth() const
+		{
+			return screen_width;
+		}
+
+		[[nodiscard]]  inline int GetScreenHeight() const
+		{
+			return screen_height;
+		}
+
+		inline Config* GetConfig()
+		{
+			return config;
+		}
+
+		bool detached = false;
+	private:
+		ScreenManager* screen_manager{};
+		KeyboardManager* keyboard_manager{};
+		Config* config{};
+		Display* display = nullptr;
+		Window root_window{};
+		bool quit = false;
+		Atom wm_atom[WMLast]{}, net_atom[NetLast]{};
+		Cur* cursor[CurLast]{};
+		DrawableWindow* drw{};
+		XftColor** color_scheme{};
+		Window wm_check_window{};
+		int screen{};
+		int screen_width{};
+		int screen_height{};
 
 		void Scan();
-		int GetTextProp(Window w, Atom atom, char *text, unsigned int size);
+		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
 		void UpdateStatus();
 
 		static FlowWindowManagerX11* instance;
@@ -81,7 +124,6 @@ namespace flow::X11
 		void OnMotionNotify(XEvent& event);
 		void OnPropertyNotify(XEvent& event);
 		void OnUnmapNotify(XEvent& event);
-
 
 	};
 }

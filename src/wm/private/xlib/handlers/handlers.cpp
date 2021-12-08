@@ -324,11 +324,6 @@ namespace flow::X11
 		}
 	}
 
-	Config* FlowWindowManagerX11::GetConfig()
-	{
-		return config;
-	}
-
 }
 
 #endif //FLOW_WM_HANDLERS_HPP
