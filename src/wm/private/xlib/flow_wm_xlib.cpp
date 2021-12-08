@@ -271,34 +271,7 @@ namespace flow::X11
 		this->config = c;
 	}
 
-	Display* FlowWindowManagerX11::GetDisplay()
-	{
-		return display;
-	}
 
-	Window FlowWindowManagerX11::GetRootWindow()
-	{
-		return root_window;
-	}
-
-	Atom* FlowWindowManagerX11::GetNetAtom()
-	{
-		return net_atom;
-	}
-
-	XftColor** FlowWindowManagerX11::GetColorScheme()
-	{
-		return color_scheme;
-	}
-	KeyboardManager* FlowWindowManagerX11::GetKeyboardManager()
-	{
-		return keyboard_manager;
-	}
-
-	Atom* FlowWindowManagerX11::GetWmAtom()
-	{
-		return wm_atom;
-	}
 
 	void FlowWindowManagerX11::Scan()
 	{
@@ -378,26 +351,6 @@ namespace flow::X11
 	}
 
 
-	Cur** FlowWindowManagerX11::GetCursor()
-	{
-		return cursor;
-	}
 
-
-	ScreenManager* FlowWindowManagerX11::GetScreenManager()
-	{
-		return screen_manager;
-	}
-
-
-	int FlowWindowManagerX11::GetScreenWidth()
-	{
-		return screen_width;
-	}
-
-	int FlowWindowManagerX11::GetScreenHeight()
-	{
-		return screen_height;
-	}
 
 }
