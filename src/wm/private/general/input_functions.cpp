@@ -24,6 +24,8 @@ namespace flow::input_functions
 			return moveMouse;
 		case ResizeMouse:
 			return resizeMouse;
+		case KillClient:
+			return killClient;
 
 		}
 	}
@@ -137,14 +139,23 @@ namespace flow::input_functions
 				Monitor* selected_monitor = fwm->GetScreenManager()->GetSelectedMonitor();
 				if (abs(selected_monitor->wx - nx) < static_cast<int>(snap))
 					nx = selected_monitor->wx;
-				else if (int_abs(static_cast<int>(selected_monitor->wx + selected_monitor->ww) - (nx + c->position.width)) < static_cast<int>(snap))
+				else if (
+					int_abs(static_cast<int>(selected_monitor->wx + selected_monitor->ww) - (nx + c->position.width))
+						< static_cast<int>(snap))
 					nx = selected_monitor->wx + selected_monitor->ww - static_cast<int>(c->position.width);
 				if (abs(selected_monitor->wy - ny) < static_cast<int>(snap))
 					ny = selected_monitor->wy;
-				else if (int_abs(static_cast<int>(selected_monitor->wy + selected_monitor->wh) - (ny + c->position.height)) < static_cast<int>(snap))
+				else if (
+					int_abs(static_cast<int>(selected_monitor->wy + selected_monitor->wh) - (ny + c->position.height))
+						< static_cast<int>(snap))
 					ny = selected_monitor->wy + selected_monitor->wh - static_cast<int>(c->position.height);
 
-				fwm->GetScreenManager()->Resize(c, nx, ny, static_cast<int>(c->position.width), static_cast<int>(c->position.height), 1);
+				fwm->GetScreenManager()->Resize(c,
+					nx,
+					ny,
+					static_cast<int>(c->position.width),
+					static_cast<int>(c->position.height),
+					1);
 				break;
 			}
 		} while (event.type != ButtonRelease);
@@ -195,7 +206,6 @@ namespace flow::input_functions
 
 		int a_x, a_y;
 		XQueryPointer(fwm->GetDisplay(), c->window, &dummy, &dummy, &root, &root, &a_x, &a_y, &mask);
-
 
 		XWarpPointer(
 			fwm->GetDisplay(),
@@ -254,6 +264,23 @@ namespace flow::input_functions
 			c->SendMonitor(m);
 			sm->SetSelectedMonitor(m);
 			sm->Focus(nullptr);
+		}
+	}
+
+	void killClient(const std::string&)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		Client* selected = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected;
+		if (!selected) return;
+		if (!selected->SendEvent(fwm->GetWmAtom()[WMDelete]))
+		{
+			XGrabServer(fwm->GetDisplay());
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int {return 0;});
+			XSetCloseDownMode(fwm->GetDisplay(), DestroyAll);
+			XKillClient(fwm->GetDisplay(), selected->window);
+			XSync(fwm->GetDisplay(), false);
+			XSetErrorHandler(nullptr);
+			XUngrabServer(fwm->GetDisplay());
 		}
 	}
 }

@@ -18,6 +18,12 @@
       "function": 0,
       "key": 116,
       "mod": 64
+    },
+    {
+      "arg": "",
+      "function": 3,
+      "key": 113,
+      "mod": 64
     }
   ],
   "client_key_bindings": [

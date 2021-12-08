@@ -17,6 +17,7 @@ namespace flow
 		Spawn, //Run a command with argument being name of program.
 		MoveMouse,
 		ResizeMouse,
+		KillClient,
 	};
 
 
