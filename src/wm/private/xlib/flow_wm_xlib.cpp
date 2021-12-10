@@ -165,8 +165,13 @@ namespace flow::X11
 
 		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->drw, XC_left_ptr);
 		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->drw, XC_top_left_corner);
+		instance->cursor[CurResizeTopMiddle] = CursorUtils::CreateCursor(instance->drw, XC_top_side);
 		instance->cursor[CurResizeTopRight] = CursorUtils::CreateCursor(instance->drw, XC_top_right_corner);
+		instance->cursor[CurResizeCenterLeft] = CursorUtils::CreateCursor(instance->drw,  XC_left_side);
+		instance->cursor[CurResizeCenterMiddle] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
+		instance->cursor[CurResizeCenterRight] = CursorUtils::CreateCursor(instance->drw, XC_right_side);
 		instance->cursor[CurResizeBottomRight] = CursorUtils::CreateCursor(instance->drw, XC_bottom_right_corner);
+		instance->cursor[CurResizeBottomMiddle]  = CursorUtils::CreateCursor(instance->drw, XC_bottom_side);
 		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
 		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
 

@@ -170,6 +170,59 @@ namespace flow::input_functions
 		}
 	}
 
+	enum MousePlacement
+	{
+		TOP_OR_LEFT,
+		CENTER_MIDDLE,
+		BOTTOM_OR_RIGHT
+	};
+
+
+	struct PositionOfMouse
+	{
+		MousePlacement vertical;
+		MousePlacement horizontal;
+		Cur* cursor;
+
+
+
+
+		PositionOfMouse(int x, int y, int w, int h)
+		{
+			int a_third_x = w / 3;
+			int a_third_y = h / 3;
+
+			if (x < a_third_x)
+			{
+				horizontal = TOP_OR_LEFT;
+			}
+			else if (x < a_third_x * 2)
+			{
+				horizontal = CENTER_MIDDLE;
+			}
+			else
+			{
+				horizontal = BOTTOM_OR_RIGHT;
+			}
+
+			if (y < a_third_y)
+			{
+				vertical = TOP_OR_LEFT;
+			}
+			else if (y < a_third_y * 2)
+			{
+				vertical = CENTER_MIDDLE;
+			}
+			else
+			{
+				vertical = BOTTOM_OR_RIGHT;
+			}
+
+			auto fwm = FlowWindowManagerX11::Get();
+			cursor = fwm->GetCursor()[vertical + horizontal * 3];
+		}
+	};
+
 	void resizeMouse(const std::string&)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
@@ -197,12 +250,46 @@ namespace flow::input_functions
 
 		if (!XQueryPointer(fwm->GetDisplay(), c->window, &dummy, &dummy, &root, &root, &nx, &ny, &mask)) return;
 
-		hc = nx < static_cast<int>(c->position.width) / 2;
-		vc = ny < static_cast<int>(c->position.height) / 2;
+		int center_x = static_cast<int>(c->position.width) / 2;
+		int center_y = static_cast<int>(c->position.height) / 2;
+
+		hc = nx < center_x;
+		vc = ny < center_y;
+
+		PositionOfMouse
+			positionOfMouse = PositionOfMouse(nx, ny, c->position.width, c->position.height);
 
 		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-			None, fwm->GetCursor()[hc | (vc) << 1]->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
+			None, positionOfMouse.cursor->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
 			return;
+
+		int x, y;
+
+		switch (positionOfMouse.horizontal)
+		{
+		case TOP_OR_LEFT:
+			x = 1;
+			break;
+		case CENTER_MIDDLE:
+			x = center_x;
+			break;
+		case BOTTOM_OR_RIGHT:
+			x = c->position.width;
+			break;
+		}
+
+		switch (positionOfMouse.vertical)
+		{
+		case TOP_OR_LEFT:
+			y = 1;
+			break;
+		case CENTER_MIDDLE:
+			y = center_y;
+			break;
+		case BOTTOM_OR_RIGHT:
+			y = c->position.height;
+			break;
+		}
 
 		XWarpPointer(fwm->GetDisplay(),
 			None,
@@ -211,8 +298,8 @@ namespace flow::input_functions
 			0,
 			0,
 			0,
-			hc ? 1 : static_cast<int>(c->position.width - 1),
-			vc ? 1 : static_cast<int>(c->position.height - 1)
+			x,
+			y
 		);
 
 		do
@@ -230,12 +317,27 @@ namespace flow::input_functions
 					continue;
 				last_time = event.xmotion.time;
 
-				nx = hc ? event.xmotion.x : c->position.x;
-				ny = vc ? event.xmotion.y : c->position.y;
-				nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
-				nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+				if (positionOfMouse.vertical == CENTER_MIDDLE)
+				{
+					nx = hc ? event.xmotion.x : c->position.x;
+					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
+					sm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
+				}
+				else if (positionOfMouse.horizontal == CENTER_MIDDLE)
+				{
+					ny = vc ? event.xmotion.y : c->position.y;
+					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+					sm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
+				}
+				else
+				{
+					nx = hc ? event.xmotion.x : c->position.x;
+					ny = vc ? event.xmotion.y : c->position.y;
+					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
+					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+					sm->Resize(c, nx, ny, nw, nh, 1);
+				}
 
-				sm->Resize(c, nx, ny, nw, nh, 1);
 				break;
 			}
 		} while (event.type != ButtonRelease);
@@ -247,8 +349,8 @@ namespace flow::input_functions
 			0,
 			0,
 			0,
-			hc ? 1 : static_cast<int>(c->position.width - 1),
-			vc ? 1 : static_cast<int>(c->position.height - 1)
+			x,
+			y
 		);
 
 		XUngrabPointer(fwm->GetDisplay(), CurrentTime);
@@ -269,7 +371,8 @@ namespace flow::input_functions
 		if (!selected->SendEvent(fwm->GetWmAtom()[WMDelete]))
 		{
 			XGrabServer(fwm->GetDisplay());
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int {return 0;});
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int
+			{ return 0; });
 			XSetCloseDownMode(fwm->GetDisplay(), DestroyAll);
 			XKillClient(fwm->GetDisplay(), selected->window);
 			XSync(fwm->GetDisplay(), false);

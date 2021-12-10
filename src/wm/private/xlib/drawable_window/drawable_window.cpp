@@ -8,7 +8,7 @@
 namespace flow {
 	DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)
 	{
-		auto* drw = new DrawableWindow();
+		DrawableWindow* drw = new DrawableWindow();
 
 		drw->dpy = display;
 		drw->screen = screen;
@@ -24,15 +24,16 @@ namespace flow {
 
 	Fnt* DrawableWindow::CreateFontSet(DrawableWindow* drw, std::vector<std::string> fonts)
 	{
-		Fnt* cur, * ret = nullptr;
+		Fnt* cur, *ret = nullptr;
 		size_t i;
 
 		if (!drw || fonts.empty())
 			return nullptr;
 
-		for (i = 0; i < fonts.size(); i++)
+		const unsigned long count = fonts.size();
+		for (i = 1; i <= count; i++)
 		{
-			if ((cur = Fnt::XCreateFont(drw, fonts[i].c_str(), nullptr)))
+			if ((cur = Fnt::XCreateFont(drw, fonts[count - 1].c_str(), nullptr)))
 			{
 				cur->next = ret;
 				ret = cur;

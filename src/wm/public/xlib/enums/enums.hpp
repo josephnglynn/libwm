@@ -7,7 +7,18 @@
 
 enum
 {
-	CurResizeBottomRight, CurResizeBottomLeft, CurResizeTopRight, CurResizeTopLeft, CurNormal, CurMove, CurLast
+	CurResizeTopLeft,
+	CurResizeCenterLeft,
+	CurResizeBottomLeft,
+	CurResizeTopMiddle,
+	CurResizeCenterMiddle,
+	CurResizeBottomMiddle,
+	CurResizeTopRight,
+	CurResizeCenterRight,
+	CurResizeBottomRight,
+	CurNormal,
+	CurMove,
+	CurLast
 };
 
 enum
