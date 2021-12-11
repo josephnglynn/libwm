@@ -6,7 +6,11 @@
 
 int main()
 {
-	auto config = flow::Config::FromFilePath("config.json"); //flow::Config::GetDefault();
+#ifdef DEBUG
+	auto config = flow::Config::FromFilePath("config.json");
+#else
+	auto config = flow::Config::GetDefault();
+#endif
 	auto wm = flow::X11::FlowWindowManagerX11::Init(config);
 	wm->Start();
 
