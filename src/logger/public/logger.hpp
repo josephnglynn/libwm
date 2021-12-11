@@ -16,7 +16,7 @@
 
 namespace flow::logger
 {
-
+#ifdef DEBUG
 	template<typename ...T>
 	void info(T... data)
 	{
@@ -48,7 +48,31 @@ namespace flow::logger
 		((std::cout << std::forward<T>(data) << " "), ...);
 		std::cout << RESET << std::endl;
 	}
+#else
+	template<typename ...T>
+	void info(T... data)
+	{
 
+	}
+
+	template<typename ...T>
+	void warn(T... data)
+	{
+
+	}
+
+	template<typename ...T>
+	void error(T... data)
+	{
+
+	}
+
+	template<typename ...T>
+	void success(T... data)
+	{
+
+	}
+#endif
 }
 
 #endif //FLOW_WM_LOGGER_HPP
