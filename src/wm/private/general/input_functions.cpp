@@ -26,7 +26,8 @@ namespace flow::input_functions
 			return resizeMouse;
 		case KillClient:
 			return killClient;
-
+		case FocusClient:
+			return focusClient;
 		}
 	}
 
@@ -57,6 +58,14 @@ namespace flow::input_functions
 
 		return strings;
 	}
+
+	void focusClient(const std::string&) {
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		auto sm = fwm->GetScreenManager();
+		logger::info("FOCUS CLIENT");
+		sm->Focus(sm->GetSelectedMonitor()->clients->selected);
+	}
+
 
 	void spawn(const std::string& arg)
 	{
@@ -96,15 +105,18 @@ namespace flow::input_functions
 	void moveMouse(const std::string&)
 	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
+		ScreenManager* sm = fwm->GetScreenManager();
 		int x, y, ocx, ocy, nx, ny;
 		Client* c;
 		Monitor* m;
 		XEvent event;
 		Time last_time;
+		Monitor* sel_mon = sm->GetSelectedMonitor();
 
-		if (!(c = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected)) return;
+		if (!(c = sel_mon->clients->selected)) return;
 		if (c->full_screen) return;
 
+		sm->ReStack(sel_mon);
 		ocx = c->position.x;
 		ocy = c->position.y;
 
@@ -161,7 +173,6 @@ namespace flow::input_functions
 		} while (event.type != ButtonRelease);
 
 		XUngrabPointer(fwm->GetDisplay(), CurrentTime);
-		auto sm = fwm->GetScreenManager();
 		if ((m = sm->RectToMonitor(c->position)) != sm->GetSelectedMonitor())
 		{
 			c->SendMonitor(m);
@@ -177,21 +188,14 @@ namespace flow::input_functions
 		BOTTOM_OR_RIGHT
 	};
 
-
 	struct PositionOfMouse
 	{
 		MousePlacement vertical;
 		MousePlacement horizontal;
 		Cur* cursor;
 
-
-
-
-		PositionOfMouse(int x, int y, int w, int h)
+		inline void WorkOut(int x, int y, int a_third_x, int a_third_y)
 		{
-			int a_third_x = w / 3;
-			int a_third_y = h / 3;
-
 			if (x < a_third_x)
 			{
 				horizontal = TOP_OR_LEFT;
@@ -217,6 +221,22 @@ namespace flow::input_functions
 			{
 				vertical = BOTTOM_OR_RIGHT;
 			}
+		}
+
+		PositionOfMouse(int x, int y, int w, int h)
+		{
+			int a_third_x = w / 3;
+			int a_third_y = h / 3;
+
+			WorkOut(x, y, a_third_x, a_third_y);
+			while (vertical == CENTER_MIDDLE && horizontal == CENTER_MIDDLE)
+			{
+				x -= a_third_x;
+				y -= a_third_y;
+				a_third_x /= 3;
+				a_third_y /= 3;
+				WorkOut(x, y, a_third_x, a_third_y);
+			}
 
 			auto fwm = FlowWindowManagerX11::Get();
 			cursor = fwm->GetCursor()[vertical + horizontal * 3];
@@ -237,11 +257,13 @@ namespace flow::input_functions
 		unsigned int mask;
 		Window dummy;
 		Time last_time = 0;
+		Monitor* sel_mon = sm->GetSelectedMonitor();
 
-		if (!(c = sm->GetSelectedMonitor()->clients->selected))
+		if (!(c = sel_mon->clients->selected))
 			return;
 		if (c->full_screen)
 			return;
+		sm->ReStack(sel_mon);
 
 		ocx = c->position.x;
 		ocy = c->position.y;
@@ -256,8 +278,7 @@ namespace flow::input_functions
 		hc = nx < center_x;
 		vc = ny < center_y;
 
-		PositionOfMouse
-			positionOfMouse = PositionOfMouse(nx, ny, c->position.width, c->position.height);
+		PositionOfMouse positionOfMouse = PositionOfMouse(nx, ny, c->position.width, c->position.height);
 
 		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 			None, positionOfMouse.cursor->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
@@ -268,26 +289,26 @@ namespace flow::input_functions
 		switch (positionOfMouse.horizontal)
 		{
 		case TOP_OR_LEFT:
-			x = 1;
+			x = -c->border_width;
 			break;
 		case CENTER_MIDDLE:
 			x = center_x;
 			break;
 		case BOTTOM_OR_RIGHT:
-			x = c->position.width;
+			x = c->position.width + c->border_width;
 			break;
 		}
 
 		switch (positionOfMouse.vertical)
 		{
 		case TOP_OR_LEFT:
-			y = 1;
+			y = -c->border_width;
 			break;
 		case CENTER_MIDDLE:
 			y = center_y;
 			break;
 		case BOTTOM_OR_RIGHT:
-			y = c->position.height;
+			y = c->position.height + c->border_width;
 			break;
 		}
 
@@ -320,21 +341,21 @@ namespace flow::input_functions
 				if (positionOfMouse.vertical == CENTER_MIDDLE)
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
-					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
+					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
 					sm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
 				}
 				else if (positionOfMouse.horizontal == CENTER_MIDDLE)
 				{
 					ny = vc ? event.xmotion.y : c->position.y;
-					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
 					sm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
 				}
 				else
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
 					ny = vc ? event.xmotion.y : c->position.y;
-					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx + 1), 1);
-					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy + 1), 1);
+					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
+					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
 					sm->Resize(c, nx, ny, nw, nh, 1);
 				}
 

@@ -6,7 +6,7 @@
 
 int main()
 {
-	auto config = new flow::Config("/etc/flow-wm/config.json");
+	auto config = flow::Config::FromFilePath("config.json"); //flow::Config::GetDefault();
 	auto wm = flow::X11::FlowWindowManagerX11::Init(config);
 	wm->Start();
 

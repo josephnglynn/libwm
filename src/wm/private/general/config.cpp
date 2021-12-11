@@ -8,8 +8,9 @@
 namespace flow
 {
 
-	void InflateFromJson(Config* config, const json& j)
+	Config* InflateFromJson(const json& j)
 	{
+		Config* config = new Config();
 		logger::info("Starting config inflation");
 		j.at("config_name").get_to(config->config_name);
 		j.at("time").get_to(config->time);
@@ -34,25 +35,26 @@ namespace flow
 
 		logger::success("Config", config->config_name, "successfully read");
 		logger::info("", *config);
+		return config;
 	}
 
-	Config::Config(const std::string& file_name)
+	Config* ParseConfigFromFile(std::ifstream& file, const std::string file_name)
 	{
-		std::ifstream file(file_name);
+		Config* config;
 		json j;
 
 		try
 		{
 			file >> j;
+			config = InflateFromJson(j);
 		}
 		catch (const std::exception& e)
 		{
 			logger::error(e.what());
 			logger::error("The file", file_name, "is not a valid config!");
-			return;
 		}
 
-		InflateFromJson(this, j);
+		return config;
 	}
 
 	std::ostream& operator<<(std::ostream& os, const Config& config)
@@ -72,6 +74,33 @@ namespace flow
 		}
 
 		return os;
+	}
+
+	const std::array<const char*, 2> location = { "~/config/flow-wm/config.json", "/etc/flow-wm/config.json" };
+	Config* Config::GetDefault()
+	{
+		Config* config;
+		for (const auto& item: location)
+		{
+			std::ifstream file(item);
+			if (file.good())
+			{
+				config = ParseConfigFromFile(file, item);
+				logger::error("Oh dear... there was an error in", item);
+				if (config) return config;
+			}
+			else
+			{
+				logger::info("Hmm...", item, "does not exist");
+			}
+		}
+		throw std::runtime_error("Config files both had errors");
+	}
+
+	Config* Config::FromFilePath(const std::string& file_path)
+	{
+		std::ifstream file(file_path);
+		return ParseConfigFromFile(file, file_path);
 	}
 
 }

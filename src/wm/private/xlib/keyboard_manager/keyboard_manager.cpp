@@ -5,7 +5,7 @@
 #include "../../../public/xlib/keyboard_manager/keyboard_manager.hpp"
 #include <X11/keysym.h>
 #include <flow_wm_xlib.hpp>
-
+#include "../../logger/public/logger.hpp"
 namespace flow
 {
 
@@ -72,10 +72,11 @@ namespace flow
 
 	void KeyboardManager::Update(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk)
 	{
-		this->mod_key = mk;
+		mod_key = mk;
 		key_bindings_root = kb;
 		key_bindings_client = ckb;
 	}
+
 	void KeyboardManager::GrabButtons(X11::Client* client, int focused)
 	{
 		if (!client) return;
@@ -105,6 +106,7 @@ namespace flow
 				None
 			);
 		}
+
 		for (i = 0; i < km->key_bindings_client.size(); i++)
 		{
 			if (km->key_bindings_client[i].click == ClkClientWin)

@@ -18,7 +18,8 @@ namespace flow
 	struct Config
 	{
 		Config() = default;
-		Config(const std::string& file_name);
+		static Config* GetDefault();
+		static Config* FromFilePath(const std::string& file_path);
 
 		std::string config_name;
 		int64_t time;
