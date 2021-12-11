@@ -18,7 +18,6 @@ namespace flow::X11
 	FlowWindowManagerX11* FlowWindowManagerX11::instance;
 
 	void FlowWindowManagerX11::HandleEvent(XEvent& event) {
-		bool output = true;
 		switch (event.type)
 		{
 		case KeyPress:
@@ -65,10 +64,8 @@ namespace flow::X11
 			break;
 		default:
 			logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
-			output = false;
 			break;
 		}
-		if (output) logger::success(event.type);
 	}
 
 
