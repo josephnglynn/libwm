@@ -5,7 +5,7 @@
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/input_functions.hpp"
 #include <X11/Xatom.h>
-
+#include <xlib/screens/screens.hpp>
 
 #define INTERSECT(x, y, w, h, m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
@@ -14,7 +14,6 @@ namespace flow
 {
 
 	using namespace X11;
-
 
 	int ScreenManager::UpdateGeom()
 	{
@@ -183,6 +182,7 @@ namespace flow
 		client->position.width = wa->width;
 		client->position.height = wa->height;
 		client->old_position = client->position;
+		client->old_border_width = wa->border_width;
 
 		if (XGetTransientForHint(fwm->GetDisplay(), window, &trans) && (t = WindowToClient(trans)))
 		{
@@ -209,9 +209,12 @@ namespace flow
 		client->position.y = MAX(client->position.y,
 			((client->monitor->by == client->monitor->my)
 				&& (client->position.x + (static_cast<int>(client->position.width) / 2) >= client->monitor->wx)
-				&& (client->position.x + (static_cast<int>(client->position.width) / 2) < client->monitor->wx + client->monitor->ww)) ? 0
-																													: client->monitor->my
+				&& (client->position.x + (static_cast<int>(client->position.width) / 2)
+					< client->monitor->wx + client->monitor->ww)) ? 0
+																  : client->monitor->my
 		);
+		client->border_width = fwm->GetConfig()->border_size_in_pixels;
+		wc.border_width = client->border_width;
 
 		XConfigureWindow(fwm->GetDisplay(), window, CWBorderWidth, &wc);
 		XSetWindowBorder(fwm->GetDisplay(), window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
@@ -292,10 +295,11 @@ namespace flow
 	void ScreenManager::UnManage(Client* client, int destroyed)
 	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
+		Monitor* m = client->monitor;
 		if (!destroyed)
 		{
 			XWindowChanges wc;
-			wc.border_width = 0;
+			wc.border_width = client->old_border_width;
 			XGrabServer(fwm->GetDisplay());
 			XSetErrorHandler([](Display*, XErrorEvent*) -> int
 			{ return 0; });
@@ -306,8 +310,9 @@ namespace flow
 			XSetErrorHandler(FlowX11ErrorHandler);
 			XUngrabServer(fwm->GetDisplay());
 		}
-		client->monitor->clients->RemoveClient(client);
+		m->clients->RemoveClient(client);
 		fwm->GetScreenManager()->Focus(nullptr);
+		Arrange(m);
 	}
 
 	void ScreenManager::UnFocus(X11::Client* client, int set_focus)
@@ -324,9 +329,28 @@ namespace flow
 
 	}
 
-	void ScreenManager::Resize(X11::Client* client,int x, int y, int w, int h, int interact)
+	void ScreenManager::Resize(X11::Client* client, int x, int y, int w, int h, int interact)
 	{
 		if (client->ApplySizeHints(&x, &y, &w, &h, interact)) client->ResizeClient(x, y, w, h);
+	}
+
+	void ScreenManager::ReStack(Monitor* m)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		Client* c = m->clients->selected;
+		XEvent ev;
+		XWindowChanges wc;
+
+		if (!c)
+			return;
+		XRaiseWindow(fwm->GetDisplay(), c->window);
+		XSync(fwm->GetDisplay(), False);
+		while (XCheckMaskEvent(fwm->GetDisplay(), EnterWindowMask, &ev));
+	}
+
+	void ScreenManager::Arrange(Monitor* m)
+	{
+		if (m) ReStack(m);
 	}
 
 }

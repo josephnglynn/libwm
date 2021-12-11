@@ -11,20 +11,7 @@
 
 namespace flow::X11
 {
-	Client::Client(Window window) : window(window), visible(true)
-	{
-		XGetGeometry(
-			FlowWindowManagerX11::Get()->GetDisplay(),
-			window,
-			nullptr,
-			&position.x,
-			&position.y,
-			&position.width,
-			&position.height,
-			&border,
-			&depth
-		);
-	}
+	Client::Client(Window window) : window(window), visible(true){}
 
 	void Client::SetUrgent(int urgency)
 	{
@@ -123,8 +110,10 @@ namespace flow::X11
 			XChangeProperty(fwm->GetDisplay(), window, fwm->GetNetAtom()[NetWMState], XA_ATOM, 32,
 				PropModeReplace, (unsigned char*)&fwm->GetNetAtom()[NetWMFullscreen], 1);
 			full_screen = true;
-			border = 0;
-			ResizeClient(position);
+			old_border_width = border_width;
+			border_width = 0;
+			shapes::Rectangle rec_mon = shapes::Rectangle(monitor->mx, monitor->my, monitor->mw, monitor->mh);
+			ResizeClient(rec_mon);
 			XRaiseWindow(fwm->GetDisplay(), window);
 		}
 		else if (!fs && full_screen)
@@ -132,9 +121,10 @@ namespace flow::X11
 			XChangeProperty(fwm->GetDisplay(), window, fwm->GetNetAtom()[NetWMState], XA_ATOM, 32,
 				PropModeReplace, (unsigned char*)0, 0);
 			full_screen = false;
-			border = 0;//TODO
+			border_width = old_border_width;
 			position = old_position;
 			ResizeClient(position);
+			fwm->GetScreenManager()->Arrange(monitor);
 		}
 	}
 
@@ -150,7 +140,7 @@ namespace flow::X11
 		wc.y = detail.y;
 		wc.width = static_cast<int>(detail.width);
 		wc.height = static_cast<int>(detail.height);
-		wc.border_width = static_cast<int>(border);
+		wc.border_width = static_cast<int>(border_width);
 
 		XConfigureWindow(fwm->GetDisplay(), window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 		Configure();
@@ -178,7 +168,7 @@ namespace flow::X11
 		ce.y = position.y;
 		ce.width = static_cast<int>(position.width);
 		ce.height = static_cast<int>(position.height);
-		ce.border_width = static_cast<int>(border);
+		ce.border_width = static_cast<int>(border_width);
 		ce.above = None;
 		ce.override_redirect = False;
 		XSendEvent(fwm->GetDisplay(), window, False, StructureNotifyMask, (XEvent*)&ce);
@@ -242,22 +232,22 @@ namespace flow::X11
 	int Client::ApplySizeHints(int* x, int* y, int* w, int* h, int interact)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
-		int sw = fwm->GetScreenWidth();
-		int sh = fwm->GetScreenHeight();
-		int baseismin;
+		int screen_width = fwm->GetScreenWidth();
+		int screen_height = fwm->GetScreenHeight();
+		int base_min;
 
 		/* set minimum possible */
 		*w = MAX(1, *w);
 		*h = MAX(1, *h);
 		if (interact)
 		{
-			if (*x > sw)
-				*x = sw - position.width;
-			if (*y > sh)
-				*y = sh - position.height;
-			if (*x + *w < 0)
+			if (*x > screen_width)
+				*x = screen_width - position.width;
+			if (*y > screen_height)
+				*y = screen_height - position.height;
+			if (*x + *w + 2 * border_width < 0)
 				*x = 0;
-			if (*y + *h < 0)
+			if (*y + *h + 2 * border_width < 0)
 				*y = 0;
 		}
 		else
@@ -266,14 +256,14 @@ namespace flow::X11
 				*x = monitor->wx + monitor->ww - position.width;
 			if (*y >= monitor->wy + monitor->wh)
 				*y = monitor->wy + monitor->wh - position.height;
-			if (*x + *w <= monitor->wx)
+			if (*x + *w + 2 * border_width <= monitor->wx)
 				*x = monitor->wx;
-			if (*y + *h <= monitor->wy)
+			if (*y + *h + 2 * border_width <= monitor->wy)
 				*y = monitor->wy;
 		}
 
-		baseismin = base_width == min_width && base_height == min_height;
-		if (!baseismin)
+		base_min = base_width == min_width && base_height == min_height;
+		if (!base_min)
 		{
 			*w -= base_width;
 			*h -= base_height;
@@ -286,7 +276,7 @@ namespace flow::X11
 			else if (min_a < (float)*h / *w)
 				*h = *w * min_a + 0.5;
 		}
-		if (baseismin)
+		if (base_min)
 		{
 			*w -= base_width;
 			*h -= base_height;

@@ -32,6 +32,7 @@ namespace flow::X11
 		if ((client = screen_manager->WindowToClient(xb.window)))
 		{
 			screen_manager->Focus(client);
+			screen_manager->ReStack(sel_mon);
 			XAllowEvents(display, ReplayPointer, CurrentTime);
 			click = ClkClientWin;
 		}
@@ -83,7 +84,7 @@ namespace flow::X11
 		if ((c = screen_manager->WindowToClient(ev.window)))
 		{
 			if (ev.value_mask & CWBorderWidth)
-				c->border = ev.border_width;
+				c->border_width = ev.border_width;
 			else if (c->configured)
 			{
 				m = screen_manager->GetSelectedMonitor();
@@ -186,8 +187,7 @@ namespace flow::X11
 		if (m != selected_monitor)
 		{
 			if (selected_monitor->clients->selected)
-				screen_manager->UnFocus(selected_monitor->clients->selected,
-					1);
+				screen_manager->UnFocus(selected_monitor->clients->selected,1);
 			screen_manager->SetSelectedMonitor(m);
 		}
 		else if (!c || c == selected_monitor->clients->selected)

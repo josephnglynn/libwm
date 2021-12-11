@@ -35,10 +35,9 @@ namespace flow::X11
 		Client* previous;
 		Window window;
 		float min_a, max_a;
-		int base_width, base_height, inc_width, inc_height, min_width, min_height, max_width, max_height;
+		int base_width, base_height, inc_width, inc_height, min_width, min_height, max_width, max_height, border_width, old_border_width;
 		shapes::Rectangle position;
 		shapes::Rectangle old_position;
-		unsigned int border;
 		unsigned int depth;
 		bool is_urgent;
 		bool visible;

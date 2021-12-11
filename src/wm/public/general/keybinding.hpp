@@ -18,6 +18,7 @@ namespace flow
 		MoveMouse,
 		ResizeMouse,
 		KillClient,
+		FocusClient,
 	};
 
 

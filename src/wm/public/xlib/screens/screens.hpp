@@ -55,6 +55,9 @@ namespace flow
 		Monitor* GetSelectedMonitor();
 		Monitor* GetMons();
 		void SetSelectedMonitor(Monitor* monitor);
+		void ReStack(Monitor* m);
+		void Arrange(Monitor* m);
+
 
 		Monitor* WindowToMonitor(Window w);
 		Monitor* CreateMonitor();

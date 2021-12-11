@@ -40,6 +40,13 @@
       "button": 3,
       "function": 2,
       "arg": ""
+    },
+    {
+      "click": 4,
+      "event_mask": 0,
+      "button": 1,
+      "function": 3,
+      "arg": ""
     }
   ]
 }

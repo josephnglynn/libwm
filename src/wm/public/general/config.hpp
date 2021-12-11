@@ -24,6 +24,7 @@ namespace flow
 		int64_t time;
 		Key mod_key;
 		unsigned int snap;
+		unsigned int border_size_in_pixels;
 		std::vector<KeyBinding> key_bindings;
 		std::vector<ClientKeyBinding> client_key_bindings;
 		std::vector<std::string> fonts;
