@@ -63,7 +63,7 @@ namespace flow::X11
 			OnMappingNotify(event);
 			break;
 		default:
-			logger::warn("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
+			logger::info("WHATEVER EVENT ", std::to_string(event.type), " IS, WE MUST HAVE IGNORED IT");
 			break;
 		}
 	}
@@ -84,7 +84,7 @@ namespace flow::X11
 
 	int FlowX11ErrorHandler(Display*, XErrorEvent* event)
 	{
-		logger::error(
+		logger::warn(
 			"An X11 Error Occurred! Don't worry though, it will not stop execution\nError code: ",
 			std::to_string(event->error_code),
 			"\nType: " + std::to_string(event->type)
