@@ -14,6 +14,7 @@
 #include "xlib/cursor/cursor.hpp"
 #include "xlib/drawable_window/drawable_window.hpp"
 #include "xlib/enums/enums.hpp"
+#include "xlib/border/border.hpp"
 
 namespace flow::X11
 {
@@ -100,6 +101,7 @@ namespace flow::X11
 		DrawableWindow* drw{};
 		XftColor** color_scheme{};
 		Window wm_check_window{};
+		Border border;
 		int screen{};
 		int screen_width{};
 		int screen_height{};

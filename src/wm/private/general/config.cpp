@@ -17,6 +17,7 @@ namespace flow
 		j.at("mod_key").get_to(config->mod_key);
 		j.at("fonts").get_to(config->fonts);
 		j.at("snap").get_to(config->snap);
+		j.at("border_size").get_to(config->border_size_in_pixels);
 		config->key_bindings = std::vector<KeyBinding>();
 		config->client_key_bindings = std::vector<ClientKeyBinding>();
 

@@ -17,6 +17,7 @@ wm_sources = [
                 'private/xlib/fnt/fnt.cpp',
                 'private/xlib/color_scheme/color_scheme.cpp',
                 'private/general/input_functions.cpp',
+                'private/xlib/border/border.cpp',
 ]
 
 wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads')]

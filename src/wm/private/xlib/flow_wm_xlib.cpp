@@ -17,7 +17,8 @@ namespace flow::X11
 
 	FlowWindowManagerX11* FlowWindowManagerX11::instance;
 
-	void FlowWindowManagerX11::HandleEvent(XEvent& event) {
+	void FlowWindowManagerX11::HandleEvent(XEvent& event)
+	{
 		switch (event.type)
 		{
 		case KeyPress:
@@ -68,7 +69,6 @@ namespace flow::X11
 		}
 	}
 
-
 	void FlowWindowManagerX11::Start()
 	{
 
@@ -96,7 +96,6 @@ namespace flow::X11
 	{
 		if (!detached) XCloseDisplay(display);
 	}
-
 
 	FlowWindowManagerX11* FlowWindowManagerX11::Init(Config* config)
 	{
@@ -167,13 +166,16 @@ namespace flow::X11
 		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->drw, XC_top_left_corner);
 		instance->cursor[CurResizeTopMiddle] = CursorUtils::CreateCursor(instance->drw, XC_top_side);
 		instance->cursor[CurResizeTopRight] = CursorUtils::CreateCursor(instance->drw, XC_top_right_corner);
-		instance->cursor[CurResizeCenterLeft] = CursorUtils::CreateCursor(instance->drw,  XC_left_side);
+		instance->cursor[CurResizeCenterLeft] = CursorUtils::CreateCursor(instance->drw, XC_left_side);
 		instance->cursor[CurResizeCenterMiddle] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
 		instance->cursor[CurResizeCenterRight] = CursorUtils::CreateCursor(instance->drw, XC_right_side);
 		instance->cursor[CurResizeBottomRight] = CursorUtils::CreateCursor(instance->drw, XC_bottom_right_corner);
-		instance->cursor[CurResizeBottomMiddle]  = CursorUtils::CreateCursor(instance->drw, XC_bottom_side);
+		instance->cursor[CurResizeBottomMiddle] = CursorUtils::CreateCursor(instance->drw, XC_bottom_side);
 		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
 		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
+
+		//TODO FIX BORDER
+		instance->border = Border();
 
 		//TODO FIX THIS STARTING HERE
 		static const char col_gray1[] = "#222222";
@@ -183,8 +185,8 @@ namespace flow::X11
 		static const char col_cyan[] = "#005577";
 		static const char* colors[][3] = {
 			/*               fg         bg         border   */
-			[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-			[SchemeSel]  = { col_gray4, col_cyan, col_cyan },
+			{ col_gray3, col_gray1, col_gray2 },
+			{ col_gray4, col_cyan, col_cyan },
 		};
 
 		instance->color_scheme =
@@ -276,8 +278,6 @@ namespace flow::X11
 		this->config = c;
 	}
 
-
-
 	void FlowWindowManagerX11::Scan()
 	{
 
@@ -308,7 +308,6 @@ namespace flow::X11
 		}
 
 	}
-
 
 	void FlowWindowManagerX11::UpdateStatus()
 	{
@@ -354,8 +353,5 @@ namespace flow::X11
 		}
 		detached = true;
 	}
-
-
-
 
 }
