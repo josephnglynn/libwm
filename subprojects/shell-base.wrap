@@ -1,0 +1,4 @@
+[wrap-git]
+directory=shell-base
+url=https://github.com/FlowSpatialOs/shell-base
+revision=head

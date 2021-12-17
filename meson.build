@@ -11,5 +11,6 @@ if get_option('buildtype').startswith('debug')
 endif
 
 subdir('src')
+subproject('shell-base')
 
 run_command('scripts/move_config.sh')
