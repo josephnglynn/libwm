@@ -7,7 +7,6 @@ wm_sources = [
                 'private/xlib/client/client.cpp',
                 'private/xlib/client_manager/client_manager.cpp',
                 'private/xlib/screens/screens.cpp',
-                'private/xlib/handlers/handler_helpers.cpp',
                 'private/xlib/handlers/handlers.cpp',
                 'private/xlib/keyboard_manager/keyboard_manager.cpp',
                 'private/general/config.cpp',

@@ -6,7 +6,6 @@
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../public/xlib/handler_helpers/handler_helpers.hpp"
 #include "../../../../logger/public/logger.hpp"
 
 #define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
@@ -87,16 +86,16 @@ namespace flow::X11
 				c->border_width = ev.border_width;
 			else if (c->configured)
 			{
-				m = screen_manager->GetSelectedMonitor();
+				m = c->monitor;
 				if (ev.value_mask & CWX)
 				{
 					c->old_position.x = c->position.x;
-					c->position.x = ev.x;
+					c->position.x = m->mx + ev.x;
 				}
 				if (ev.value_mask & CWY)
 				{
 					c->old_position.y = c->position.y;
-					c->position.y = ev.y;
+					c->position.y = m->my + ev.y;
 				}
 				if (ev.value_mask & CWWidth)
 				{
@@ -109,12 +108,13 @@ namespace flow::X11
 					c->position.height = ev.height;
 				}
 
-				if ((c->position.x + static_cast<int>(c->position.width)) > m->mx + m->mw)
-					c->position.x = m->mx + (m->mw / 2 - static_cast<int>(c->position.width) / 2);
+				if ((c->position.x + c->position.width) > m->mx + m->mw)
+					c->position.x = m->mx + (m->mw / 2 - ((c->position.width + 2 * c->border_width) / 2));
 				if ((c->position.y + static_cast<int>(c->position.height)) > m->my + m->mh)
-					c->position.y = m->my + (m->mh / 2 - static_cast<int>(c->position.height) / 2);
+					c->position.y = m->my + (m->mh / 2 - ((c->position.height + 2 * c->border_width) / 2));
 
 				if ((ev.value_mask & (CWX | CWY)) && !(ev.value_mask & (CWWidth | CWHeight))) c->Configure();
+				if (c->visible)XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(), c->window, c->position.x, c->position.y, c->position.width, c->position.height);
 			}
 			else
 			{

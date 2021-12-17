@@ -8,10 +8,13 @@
 #include "../../../public/xlib/enums/enums.hpp"
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
+#include "../../../public/general/inline_functions.hpp"
 
 namespace flow::X11
 {
-	Client::Client(Window window) : window(window), visible(true){}
+	Client::Client(Window window) : window(window), visible(true)
+	{
+	}
 
 	void Client::SetUrgent(int urgency)
 	{
@@ -138,9 +141,9 @@ namespace flow::X11
 
 		wc.x = detail.x;
 		wc.y = detail.y;
-		wc.width = static_cast<int>(detail.width);
-		wc.height = static_cast<int>(detail.height);
-		wc.border_width = static_cast<int>(border_width);
+		wc.width = detail.width;
+		wc.height = detail.height;
+		wc.border_width = border_width;
 
 		XConfigureWindow(fwm->GetDisplay(), window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 		Configure();
@@ -166,9 +169,9 @@ namespace flow::X11
 		ce.window = window;
 		ce.x = position.x;
 		ce.y = position.y;
-		ce.width = static_cast<int>(position.width);
-		ce.height = static_cast<int>(position.height);
-		ce.border_width = static_cast<int>(border_width);
+		ce.width = position.width;
+		ce.height = position.height;
+		ce.border_width = border_width;
 		ce.above = None;
 		ce.override_redirect = False;
 		XSendEvent(fwm->GetDisplay(), window, False, StructureNotifyMask, (XEvent*)&ce);
@@ -192,11 +195,19 @@ namespace flow::X11
 				XSetWMHints(fwm->GetDisplay(), window, wmh);
 			}
 			else
+			{
 				is_urgent = (wmh->flags & XUrgencyHint) ? 1 : 0;
+			}
+
 			if (wmh->flags & InputHint)
+			{
 				never_focus = !wmh->input;
+			}
 			else
+			{
 				never_focus = false;
+			}
+
 			XFree(wmh);
 		}
 
@@ -218,17 +229,6 @@ namespace flow::X11
 		);
 	}
 
-
-	static inline constexpr int MAX(int A, int B)
-	{
-		return A > B ? A : B;
-	}
-
-	static inline constexpr int MIN(int A, int B)
-	{
-		return A < B ? A : B;
-	}
-
 	int Client::ApplySizeHints(int* x, int* y, int* w, int* h, int interact)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
@@ -237,8 +237,8 @@ namespace flow::X11
 		int base_min;
 
 		/* set minimum possible */
-		*w = MAX(1, *w);
-		*h = MAX(1, *h);
+		*w = Max(1, *w);
+		*h = Max(1, *h);
 		if (interact)
 		{
 			if (*x > screen_width)
@@ -287,14 +287,15 @@ namespace flow::X11
 		if (inc_height)
 			*h -= *h % inc_height;
 		/* restore base dimensions */
-		*w = MAX(*w + base_width, min_width);
-		*h = MAX(*h + base_height, min_height);
+		*w = Max(*w + base_width, min_width);
+		*h = Max(*h + base_height, min_height);
 		if (max_width)
-			*w = MIN(*w, max_width);
+			*w = Min(*w, max_width);
 		if (max_height)
-			*h = MIN(*h, max_height);
+			*h = Min(*h, max_height);
 
-		return *x != position.x || *y != position.y || *w != static_cast<int>(position.width) || *h != static_cast<int>(position.height);
+		return *x != position.x || *y != position.y || *w != static_cast<int>(position.width)
+			|| *h != static_cast<int>(position.height);
 	}
 	void Client::SendMonitor(Monitor* m)
 	{

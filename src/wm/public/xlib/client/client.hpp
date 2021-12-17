@@ -13,7 +13,6 @@ namespace flow::X11
 	{
 
 		Client() = default;
-
 		explicit Client(Window window);
 
 		void SetUrgent(int urgency);

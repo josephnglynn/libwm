@@ -6,9 +6,7 @@
 #include "../../../public/general/input_functions.hpp"
 #include <X11/Xatom.h>
 #include <xlib/screens/screens.hpp>
-
-#define INTERSECT(x, y, w, h, m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
-                               * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
+#include "../../../public/general/inline_functions.hpp"
 
 namespace flow
 {
@@ -148,7 +146,7 @@ namespace flow
 		int a, area = 0;
 
 		for (m = mons; m; m = m->next)
-			if ((a = INTERSECT(rectangle.x, rectangle.y, rectangle.width, rectangle.height, m)) > area)
+			if ((a = Intersect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, m)) > area)
 			{
 				area = a;
 				r = m;
@@ -177,11 +175,10 @@ namespace flow
 		XWindowChanges wc;
 
 		client->window = window;
-		client->position.x = wa->x;
-		client->position.y = wa->y;
-		client->position.width = wa->width;
-		client->position.height = wa->height;
-		client->old_position = client->position;
+		client->position.x = client->old_position.x = wa->x;
+		client->position.y =client->old_position.y = wa->y;
+		client->position.width = client->old_position.width = wa->width;
+		client->position.height = client->old_position.height =wa->height;
 		client->old_border_width = wa->border_width;
 
 		if (XGetTransientForHint(fwm->GetDisplay(), window, &trans) && (t = WindowToClient(trans)))
@@ -194,27 +191,37 @@ namespace flow
 			//TODO APPLY RULES HERE WE SHOULD CHECK FOR OUR SHELL
 		}
 
-		if (client->position.x + static_cast<int>(client->position.width) > client->monitor->mx + client->monitor->mw)
+		/*int width_b = Width(client);
+		int height_b = Height(client);
+
+		if (client->position.x + width_b > client->monitor->mx + client->monitor->mw)
 		{
-			client->position.x = client->monitor->mx + client->monitor->mw - static_cast<int>(client->position.width);
+			client->position.x = client->monitor->mx + client->monitor->mw - width_b;
 		}
 
-		if (client->position.y + static_cast<int>(client->position.height) > client->monitor->my + client->monitor->mh)
+		if (client->position.y + height_b > client->monitor->my + client->monitor->mh)
 		{
-			client->position.y = client->monitor->my + client->monitor->mh - static_cast<int>(client->position.height);
+			client->position.y = client->monitor->my + client->monitor->mh - height_b;
 		}
 
-		client->position.x = MAX(client->position.x, client->monitor->mx);
+		client->position.x = Max(client->position.x, client->monitor->mx);
 
-		client->position.y = MAX(client->position.y,
+		client->position.y = Max(client->position.y,
 			((client->monitor->by == client->monitor->my)
 				&& (client->position.x + (static_cast<int>(client->position.width) / 2) >= client->monitor->wx)
 				&& (client->position.x + (static_cast<int>(client->position.width) / 2)
 					< client->monitor->wx + client->monitor->ww)) ? 0
 																  : client->monitor->my
-		);
+		);*/
+
+
 		client->border_width = fwm->GetConfig()->border_size_in_pixels;
 		wc.border_width = client->border_width;
+
+
+		Monitor* m = client->monitor;
+		if (client->position.width > m->mw) client->position.width = m->mw - 2 * client->border_width;
+		shapes::CenterRectangleOnPlane(shapes::Rectangle(m->mx, m->my, m->mw, m->mh), &client->position);
 
 		XConfigureWindow(fwm->GetDisplay(), window, CWBorderWidth, &wc);
 		XSetWindowBorder(fwm->GetDisplay(), window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
@@ -339,7 +346,6 @@ namespace flow
 		auto fwm = FlowWindowManagerX11::Get();
 		Client* c = m->clients->selected;
 		XEvent ev;
-		XWindowChanges wc;
 
 		if (!c)
 			return;

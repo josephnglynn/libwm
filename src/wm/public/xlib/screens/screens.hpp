@@ -9,15 +9,6 @@
 #include <vector>
 #include "../../general/shapes.hpp"
 
-static inline constexpr int MAX(int A, int B)
-{
-	return A > B ? A : B;
-}
-
-static inline constexpr int MIN(int A, int B)
-{
-	return A < B ? A : B;
-}
 
 namespace flow::X11 {
 	class  ClientManager;

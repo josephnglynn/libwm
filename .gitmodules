@@ -1,0 +1,3 @@
+[submodule "src/wm/external/shell-base"]
+	path = src/wm/external/shell-base
+	url = https://github.com/FlowSpatialOs/shell-base

@@ -9,4 +9,9 @@ namespace flow {
 	{
 		return 0;
 	}
+
+	Border::~Border()
+	{
+
+	}
 }

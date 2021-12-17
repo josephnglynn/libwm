@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include "../../public/general/input_functions.hpp"
+#include "../../public/general/inline_functions.hpp"
 #include "../../../logger/public/logger.hpp"
 
 #define BUTTON_MASK              (ButtonPressMask|ButtonReleaseMask)
@@ -341,21 +342,21 @@ namespace flow::input_functions
 				if (positionOfMouse.vertical == CENTER_MIDDLE)
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
-					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
+					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
 					sm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
 				}
 				else if (positionOfMouse.horizontal == CENTER_MIDDLE)
 				{
 					ny = vc ? event.xmotion.y : c->position.y;
-					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
+					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
 					sm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
 				}
 				else
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
 					ny = vc ? event.xmotion.y : c->position.y;
-					nw = MAX(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
-					nh = MAX(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
+					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
+					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
 					sm->Resize(c, nx, ny, nw, nh, 1);
 				}
 

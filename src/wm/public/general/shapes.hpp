@@ -10,11 +10,10 @@ namespace flow::shapes
 
 	struct Rectangle
 	{
-		int x, y;
-		unsigned int width, height;
+		int x, y, width, height;
 
 		Rectangle() = default;
-		Rectangle(int x, int y, unsigned int w, unsigned int h) : x(x), y(y), width(w), height(h)
+		Rectangle(int x, int y, int w, int h) : x(x), y(y), width(w), height(h)
 		{
 		}
 
