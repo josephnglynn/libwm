@@ -114,7 +114,7 @@ namespace flow::X11
 					c->position.y = m->my + (m->mh / 2 - ((c->position.height + 2 * c->border_width) / 2));
 
 				if ((ev.value_mask & (CWX | CWY)) && !(ev.value_mask & (CWWidth | CWHeight))) c->Configure();
-				if (c->visible)XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(), c->window, c->position.x, c->position.y, c->position.width, c->position.height);
+				if (c->visible) XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(), c->window, c->position.x, c->position.y, c->position.width, c->position.height);
 			}
 			else
 			{
@@ -272,7 +272,6 @@ namespace flow::X11
 	{
 		Client* c;
 		XPropertyEvent pe = event.xproperty;
-
 		if ((pe.window == root_window) && (pe.atom == XA_WM_NAME))
 		{
 			UpdateStatus();

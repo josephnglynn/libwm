@@ -44,6 +44,7 @@ namespace flow::X11
 		bool full_screen;
 		bool configured = false;
 		Monitor* monitor;
+		Window border;
 	};
 }
 

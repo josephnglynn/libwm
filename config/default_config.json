@@ -3,6 +3,7 @@
   "time": 0,
   "mod_key": 64,
   "snap": 0,
+  "shell_location": "/home/joseph/CLionProjects/shell-borders-base/build/example/libsbbe.so",
   "border_size": 10,
   "fonts": [
     "monospace:size=10"

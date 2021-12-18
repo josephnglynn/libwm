@@ -26,6 +26,7 @@ namespace flow
 		Key mod_key;
 		unsigned int snap;
 		unsigned int border_size_in_pixels;
+		std::string shell_location;
 		std::vector<KeyBinding> key_bindings;
 		std::vector<ClientKeyBinding> client_key_bindings;
 		std::vector<std::string> fonts;

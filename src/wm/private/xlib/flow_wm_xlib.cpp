@@ -143,6 +143,11 @@ namespace flow::X11
 			std::exit(-1);
 		}
 
+
+		//TODO FIX SHELL
+		instance->shell = new Shell(config->shell_location);
+		instance->shell->OnLoad();
+
 		instance->screen_manager = new ScreenManager();
 		instance->screen_manager->UpdateGeom();
 
@@ -174,8 +179,6 @@ namespace flow::X11
 		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
 		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
 
-		//TODO FIX BORDER
-		instance->border = Border();
 
 		//TODO FIX THIS STARTING HERE
 		static const char col_gray1[] = "#222222";
@@ -289,22 +292,36 @@ namespace flow::X11
 		{
 			for (i = 0; i < num; i++)
 			{
-				if (!XGetWindowAttributes(display, wins[i], &wa)
-					|| wa.override_redirect || XGetTransientForHint(display, wins[i], &d1))
+				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect
+					|| XGetTransientForHint(display, wins[i], &d1))
+				{
 					continue;
+				}
+
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
+				{
 					screen_manager->Manage(wins[i], &wa);
+				}
+
 			}
 			for (i = 0; i < num; i++)
 			{
 				if (!XGetWindowAttributes(display, wins[i], &wa))
+				{
 					continue;
+				}
+
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
+				{
 					screen_manager->Manage(wins[i], &wa);
+				}
+
 			}
-			if (wins)
+			if (wins) {
 				XFree(wins);
+			}
+
 		}
 
 	}

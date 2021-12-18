@@ -7,6 +7,7 @@
 #include <X11/Xatom.h>
 #include <xlib/screens/screens.hpp>
 #include "../../../public/general/inline_functions.hpp"
+#include "../../../../logger/public/logger.hpp"
 
 namespace flow
 {
@@ -30,9 +31,14 @@ namespace flow
 			for (n = 0, m = mons; m; m = m->next, n++);
 			unique = static_cast<XineramaScreenInfo*>(calloc(nn, sizeof(XineramaScreenInfo)));
 			for (i = 0, j = 0; i < nn; i++)
+			{
 				if (IsUniqueGeom(unique, j, &info[i]))
+				{
 					memcpy(&unique[j++], &info[i], sizeof(XineramaScreenInfo));
+				}
+			}
 			XFree(info);
+
 			nn = j;
 			if (n <= nn)
 			{ /* new monitors available */
@@ -40,9 +46,15 @@ namespace flow
 				{
 					for (m = mons; m && m->next; m = m->next);
 					if (m)
+					{
 						m->next = CreateMonitor();
+					}
+
 					else
+					{
 						mons = CreateMonitor();
+					}
+
 				}
 				for (i = 0, m = mons; i < nn && m; m = m->next, i++)
 					if (i >= n
@@ -55,6 +67,7 @@ namespace flow
 						m->my = m->wy = unique[i].y_org;
 						m->mw = m->ww = unique[i].width;
 						m->mh = m->wh = unique[i].height;
+						m->screen = unique[i].screen_number;
 					}
 			}
 			else
@@ -176,9 +189,9 @@ namespace flow
 
 		client->window = window;
 		client->position.x = client->old_position.x = wa->x;
-		client->position.y =client->old_position.y = wa->y;
+		client->position.y = client->old_position.y = wa->y;
 		client->position.width = client->old_position.width = wa->width;
-		client->position.height = client->old_position.height =wa->height;
+		client->position.height = client->old_position.height = wa->height;
 		client->old_border_width = wa->border_width;
 
 		if (XGetTransientForHint(fwm->GetDisplay(), window, &trans) && (t = WindowToClient(trans)))
@@ -191,33 +204,8 @@ namespace flow
 			//TODO APPLY RULES HERE WE SHOULD CHECK FOR OUR SHELL
 		}
 
-		/*int width_b = Width(client);
-		int height_b = Height(client);
-
-		if (client->position.x + width_b > client->monitor->mx + client->monitor->mw)
-		{
-			client->position.x = client->monitor->mx + client->monitor->mw - width_b;
-		}
-
-		if (client->position.y + height_b > client->monitor->my + client->monitor->mh)
-		{
-			client->position.y = client->monitor->my + client->monitor->mh - height_b;
-		}
-
-		client->position.x = Max(client->position.x, client->monitor->mx);
-
-		client->position.y = Max(client->position.y,
-			((client->monitor->by == client->monitor->my)
-				&& (client->position.x + (static_cast<int>(client->position.width) / 2) >= client->monitor->wx)
-				&& (client->position.x + (static_cast<int>(client->position.width) / 2)
-					< client->monitor->wx + client->monitor->ww)) ? 0
-																  : client->monitor->my
-		);*/
-
-
 		client->border_width = fwm->GetConfig()->border_size_in_pixels;
 		wc.border_width = client->border_width;
-
 
 		Monitor* m = client->monitor;
 		if (client->position.width > m->mw) client->position.width = m->mw - 2 * client->border_width;

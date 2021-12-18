@@ -16,10 +16,10 @@ wm_sources = [
                 'private/xlib/fnt/fnt.cpp',
                 'private/xlib/color_scheme/color_scheme.cpp',
                 'private/general/input_functions.cpp',
-                'private/xlib/border/border.cpp',
+                'private/xlib/shell/shell.cpp'
 ]
 
-wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads')]
+wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads'), meson.get_compiler('cpp').find_library('dl')]
 
 add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
 

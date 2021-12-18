@@ -14,7 +14,7 @@
 #include "xlib/cursor/cursor.hpp"
 #include "xlib/drawable_window/drawable_window.hpp"
 #include "xlib/enums/enums.hpp"
-#include "xlib/border/border.hpp"
+#include "xlib/shell/shell.hpp"
 
 namespace flow::X11
 {
@@ -88,6 +88,11 @@ namespace flow::X11
 			return config;
 		}
 
+		inline Shell* GetShell()
+		{
+			return shell;
+		}
+
 		bool detached = false;
 	private:
 		ScreenManager* screen_manager{};
@@ -101,7 +106,7 @@ namespace flow::X11
 		DrawableWindow* drw{};
 		XftColor** color_scheme{};
 		Window wm_check_window{};
-		Border border;
+		Shell* shell;
 		int screen{};
 		int screen_width{};
 		int screen_height{};
