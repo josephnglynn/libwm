@@ -131,7 +131,7 @@ namespace flow::X11
 			wc.stack_mode = ev.detail;
 			XConfigureWindow(display, ev.window, ev.value_mask, &wc);
 		}
-		XSync(display, False);
+		XSync(display, false);
 	}
 
 	//TODO COME BACK HERE
