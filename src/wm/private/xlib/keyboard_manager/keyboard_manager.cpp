@@ -90,7 +90,7 @@ namespace flow
 			km->num_lock_mask,
 			km->num_lock_mask | LockMask
 		};
-		XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client-> window);
+		XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client->window);
 		if (!focused)
 		{
 			XGrabButton(

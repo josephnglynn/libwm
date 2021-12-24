@@ -7,8 +7,7 @@
 #include <X11/Xatom.h>
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../../logger/public/logger.hpp"
-
-#define CLEAN_MASK(mask)         (mask & ~(keyboard_manager->num_lock_mask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
+#include "../../../public/general/masks.hpp"
 
 namespace flow::X11
 {
@@ -272,6 +271,7 @@ namespace flow::X11
 	{
 		Client* c;
 		XPropertyEvent pe = event.xproperty;
+		auto fwm = FlowWindowManagerX11::Get();
 		if ((pe.window == root_window) && (pe.atom == XA_WM_NAME))
 		{
 			UpdateStatus();
@@ -292,7 +292,13 @@ namespace flow::X11
 			case XA_WM_HINTS:
 				c->UpdateWindowType();
 				break;
+			case XA_WM_NAME:
+				c->UpdateTitle();
+				break;
 			default:
+				if (fwm->GetNetAtom()[NetWMName]) {
+					c->UpdateTitle();
+				}
 				break;
 			}
 			if (pe.atom == net_atom[NetWMWindowType]) c->UpdateWindowType();

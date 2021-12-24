@@ -9,6 +9,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include "../../../external/shell-base/src/shell_base.hpp"
 
 using json = nlohmann::json;
 
@@ -26,6 +27,8 @@ namespace flow
 		Key mod_key;
 		unsigned int snap;
 		unsigned int border_size_in_pixels;
+		unsigned int opacity = UINT32_MAX; //TODO
+		unsigned int outline = 0; //TODO
 		std::string shell_location;
 		std::vector<KeyBinding> key_bindings;
 		std::vector<ClientKeyBinding> client_key_bindings;

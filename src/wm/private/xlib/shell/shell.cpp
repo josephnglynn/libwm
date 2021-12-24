@@ -20,8 +20,7 @@ namespace flow
 
 		OnLoad = (OnLoad_t) dlsym(handle, "oL");
 		GetBorderInfo = (GetBorderInfo_t) dlsym(handle, "gBI");
-		CreateWindowBorder = (CreateWindowBorder_t) dlsym(handle, "cWB");
-		CreateShell = (CreateShell_t) dlsym(handle, "cS");
+		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
 
 	}
 
