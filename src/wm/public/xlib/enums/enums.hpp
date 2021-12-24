@@ -25,12 +25,12 @@ enum
 {
 	NetSupported, NetWMName, NetWMState, NetWMCheck,
 	NetWMFullscreen, NetActiveWindow, NetWMWindowType,
-	NetWMWindowTypeDialog, NetClientList, NetLast
+	NetWMWindowTypeDialog, NetClientList, NetWMTypeDesk, NetWMTypeDock, NetWMStateFs, NetWMStateModel, NetMWMHints, NetWindowOpacity, NetLast
 };
 
 enum
 {
-	WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast
+	WMProtocols, WMDelete, WMState, WMTakeFocus, WMName, WMLast
 };
 
 enum
@@ -40,7 +40,7 @@ enum
 
 enum
 {
-	ColFg, ColBg, ColBorder
+	ColFg, ColBg, ColBorder, ColButton, ColLast
 };
 
 enum

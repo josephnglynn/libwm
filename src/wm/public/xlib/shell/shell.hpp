@@ -7,7 +7,7 @@
 #include <string>
 #include <X11/Xlib.h>
 #include <functional>
-#include "../../../../external/shell-base/src/sbb.hpp"
+#include "../../../../external/shell-base/src/shell_base.hpp"
 
 namespace flow
 {
@@ -15,8 +15,7 @@ namespace flow
 	extern "C" {
 		typedef void (* OnLoad_t)();
 		typedef BorderInfo (* GetBorderInfo_t)();
-		typedef Window (* CreateWindowBorder_t)(int, int, int, int, int);
-		typedef Window (* CreateShell_t)(int, int, int, int, int);
+		typedef Offsets (* GetOffsets_t)(int);
 	}
 
 
@@ -25,8 +24,7 @@ namespace flow
 		void* handle{};
 		OnLoad_t OnLoad;
 		GetBorderInfo_t  GetBorderInfo;
-		CreateWindowBorder_t CreateWindowBorder;
-		CreateShell_t CreateShell;
+		GetOffsets_t GetOffsets;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

@@ -36,7 +36,7 @@ namespace flow
 		ScreenManager() = default;
 		int UpdateGeom();
 		int IsUniqueGeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
-		void CleanUpMonitor(Monitor* monitor);
+
 
 		void Focus(X11::Client* client);
 		void UnFocus(X11::Client* client, int set_focus);
@@ -46,14 +46,24 @@ namespace flow
 
 		Monitor* GetSelectedMonitor();
 		Monitor* GetMons();
-		void SetSelectedMonitor(Monitor* monitor);
-		void ReStack(Monitor* m);
-		void Arrange(Monitor* m);
-
 		Monitor* WindowToMonitor(Window w);
 		Monitor* CreateMonitor();
 		Monitor* RectToMonitor(shapes::Rectangle rectangle);
+		Monitor* GetCursorMonitor();
+		Monitor* GetMonitor(int x, int y);
+
+		void SetSelectedMonitor(Monitor* monitor);
+		void ReStack(Monitor* m);
+		void Arrange(Monitor* m);
+		void CleanUpMonitor(Monitor* monitor);
+
 		X11::Client* WindowToClient(Window w);
+
+		bool CheckAtom(Window window, Atom big_atom, Atom small_atom);
+		void * GetAtom(Window window, Atom atom, unsigned long *items);
+		void ProcessAtom(X11::Client* client, Atom state, int set);
+		void ModernWindowManagerProcessAtom(X11::Client *client);
+
 	private:
 		Monitor* mons = nullptr;
 		Monitor* selected_monitor = nullptr;

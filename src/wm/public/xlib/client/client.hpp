@@ -4,7 +4,10 @@
 
 #ifndef FLOW_WM_CLIENT_HPP
 #define FLOW_WM_CLIENT_HPP
+#include <X11/Xft/Xft.h>
 #include "../screens/screens.hpp"
+#include <string>
+#include "../../../../external/shell-base/src/shell_base.hpp"
 
 namespace flow::X11
 {
@@ -29,6 +32,10 @@ namespace flow::X11
 		void SetState(long state);
 		int ApplySizeHints(int* x, int* y, int* w, int* h, int interact);
 		void SendMonitor(Monitor* m);
+		void UpdateFrame() const;
+		void Ban();
+		void UnBan();
+		void UpdateTitle();
 
 		Client* next;
 		Client* previous;
@@ -44,7 +51,17 @@ namespace flow::X11
 		bool full_screen;
 		bool configured = false;
 		Monitor* monitor;
-		Window border;
+		Window framer;
+		Window base;
+		Pixmap drawable;
+		XftDraw *xft_draw;
+		long flags;
+		bool is_annoying;
+		int banned;
+		int ignore_un_map;
+		std::string name;
+		bool is_icon;
+		Offsets frame_offsets;
 	};
 }
 

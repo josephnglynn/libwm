@@ -9,6 +9,9 @@
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
+#include <X11/Xutil.h>
+#include "../../../public/general/masks.hpp"
+
 
 namespace flow::X11
 {
@@ -167,19 +170,62 @@ namespace flow::X11
 		ce.display = fwm->GetDisplay();
 		ce.event = window;
 		ce.window = window;
-		ce.x = position.x;
-		ce.y = position.y;
-		ce.width = position.width;
-		ce.height = position.height;
-		ce.border_width = border_width;
+		ce.x = position.x - frame_offsets.left;
+		ce.y = position.y - frame_offsets.top;
+		ce.width = position.width - frame_offsets.right;
+		ce.height = position.height - frame_offsets.bottom;
+		ce.border_width = 0;
 		ce.above = None;
-		ce.override_redirect = False;
-		XSendEvent(fwm->GetDisplay(), window, False, StructureNotifyMask, (XEvent*)&ce);
+		ce.override_redirect = false;
+		XSendEvent(fwm->GetDisplay(), window, false, StructureNotifyMask, (XEvent*)&ce);
 	}
 
 	void Client::UpdateSizeHints()
 	{
+		long msize;
+		XSizeHints size;
 
+		if (!XGetWMNormalHints(FlowWindowManagerX11::Get()->GetDisplay(), window, &size, &msize) || !size.flags)
+			size.flags = PSize;
+		flags = size.flags;
+		if (flags & PBaseSize)
+		{
+			base_width = size.base_width;
+			base_height = size.base_height;
+		}
+		else if (flags & PMinSize)
+		{
+			base_width = size.min_width;
+			base_height = size.min_height;
+		}
+		else
+			base_width = base_height = 0;
+		if (flags & PResizeInc)
+		{
+			inc_width = size.width_inc;
+			inc_height = size.height_inc;
+		}
+		else
+			inc_width = inc_height = 0;
+		if (flags & PMaxSize)
+		{
+			max_width = size.max_width;
+			max_height = size.max_height;
+		}
+		else
+			max_width = max_height = 0;
+		if (flags & PMinSize)
+		{
+			min_width = size.min_width;
+			min_height = size.min_height;
+		}
+		else if (flags & PBaseSize)
+		{
+			min_width = size.base_width;
+			min_height = size.base_height;
+		}
+		else
+			min_width = min_height = 0;
 	}
 
 	void Client::UpdateWmHints()
@@ -306,5 +352,63 @@ namespace flow::X11
 		monitor = m;
 		sm->Focus(nullptr);
 	}
+
+	void Client::UpdateFrame() const
+	{
+
+		if (!framer) return;
+
+		Display* display = FlowWindowManagerX11::Get()->GetDisplay();
+		if (!frame_offsets.top && !frame_offsets.left && !frame_offsets.right && !frame_offsets.bottom)
+		{
+			XUnmapWindow(display, framer);
+		}
+		else
+		{
+			XMapWindow(display, framer);
+		}
+	}
+
+	void Client::Ban()
+	{
+		if (banned) return;
+		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
+		ignore_un_map++;
+		SetState(IconicState);
+		XSelectInput(dpy, base, NoEventMask);
+		XUnmapWindow(dpy, base);
+		XUnmapWindow(dpy, window);
+		XSelectInput(dpy, window, CLIENT_MASK);
+		XSelectInput(dpy, base, FRAME_MASK);
+		banned = true;
+	}
+
+	void Client::UpdateTitle()
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		if (!fwm->GetTextProp(window, fwm->GetNetAtom()[NetWMName], name.data(), name.length()))
+		{
+			fwm->GetTextProp(window, fwm->GetWmAtom()[WMName], name.data(), name.length());
+		}
+	}
+
+	void Client::UnBan()
+	{
+		if (!banned)
+			return;
+		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
+		XSelectInput(dpy, window, EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
+		XSelectInput(dpy, base, NoEventMask);
+		XMapWindow(dpy, window);
+		XMapWindow(dpy, base);
+		XSelectInput(dpy, window, EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
+		XSelectInput(dpy, base, FRAME_MASK);
+		SetState(NormalState);
+		banned = false;
+	}
+
+
+
+
 
 }
