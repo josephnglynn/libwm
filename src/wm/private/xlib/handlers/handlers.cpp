@@ -255,7 +255,7 @@ namespace flow::X11
 			return;
 		if (wa.override_redirect)
 			return;
-		if (!screen_manager->WindowToClient(mre.window))
+		if (!screen_manager->DontTouchWindow(mre.window))
 		{
 			screen_manager->Manage(mre.window, &wa);
 		}
