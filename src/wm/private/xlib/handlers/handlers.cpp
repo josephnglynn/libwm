@@ -57,7 +57,8 @@ namespace flow::X11
 		if (!client) return;
 		if (cme.message_type == net_atom[NetWMState])
 		{
-			if (static_cast<Atom>(cme.data.l[1]) == net_atom[NetWMFullscreen] || static_cast<Atom>(cme.data.l[2]) == net_atom[NetWMFullscreen])
+			if (static_cast<Atom>(cme.data.l[1]) == net_atom[NetWMFullscreen]
+				|| static_cast<Atom>(cme.data.l[2]) == net_atom[NetWMFullscreen])
 			{
 				client->SetFullScreen((cme.data.l[0] == 1 || (cme.data.l[0] == 2 && !client->full_screen)));
 			}
@@ -113,7 +114,13 @@ namespace flow::X11
 					c->position.y = m->my + (m->mh / 2 - ((c->position.height + 2 * c->border_width) / 2));
 
 				if ((ev.value_mask & (CWX | CWY)) && !(ev.value_mask & (CWWidth | CWHeight))) c->Configure();
-				if (c->visible) XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(), c->window, c->position.x, c->position.y, c->position.width, c->position.height);
+				if (c->visible)
+					XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(),
+						c->window,
+						c->position.x,
+						c->position.y,
+						c->position.width,
+						c->position.height);
 			}
 			else
 			{
@@ -131,7 +138,7 @@ namespace flow::X11
 			wc.stack_mode = ev.detail;
 			XConfigureWindow(display, ev.window, ev.value_mask, &wc);
 		}
-		XSync(display, False);
+		XSync(display, false);
 	}
 
 	//TODO COME BACK HERE
@@ -182,11 +189,11 @@ namespace flow::X11
 		c = screen_manager->WindowToClient(ce.window);
 		m = c ? c->monitor : screen_manager->WindowToMonitor(ce.window);
 
-		Monitor* selected_monitor =  screen_manager->GetSelectedMonitor();
+		Monitor* selected_monitor = screen_manager->GetSelectedMonitor();
 		if (m != selected_monitor)
 		{
 			if (selected_monitor->clients->selected)
-				screen_manager->UnFocus(selected_monitor->clients->selected,1);
+				screen_manager->UnFocus(selected_monitor->clients->selected, 1);
 			screen_manager->SetSelectedMonitor(m);
 		}
 		else if (!c || c == selected_monitor->clients->selected)
@@ -218,10 +225,10 @@ namespace flow::X11
 		KeySym keysym;
 		XKeyEvent ev = event.xkey;
 
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 		keysym = XKeycodeToKeysym(display, (KeyCode)ev.keycode, 0);
-		#pragma clang diagnostic pop
+#pragma clang diagnostic pop
 
 		logger::success(keysym, "AND MASK", CLEAN_MASK(ev.state));
 		for (i = 0; i < keyboard_manager->key_bindings_root.size(); i++)
@@ -255,7 +262,7 @@ namespace flow::X11
 			return;
 		if (wa.override_redirect)
 			return;
-		if (!screen_manager->WindowToClient(mre.window))
+		if (!screen_manager->DontTouchWindow(mre.window))
 		{
 			screen_manager->Manage(mre.window, &wa);
 		}
@@ -296,7 +303,8 @@ namespace flow::X11
 				c->UpdateTitle();
 				break;
 			default:
-				if (fwm->GetNetAtom()[NetWMName]) {
+				if (fwm->GetNetAtom()[NetWMName])
+				{
 					c->UpdateTitle();
 				}
 				break;
@@ -309,6 +317,15 @@ namespace flow::X11
 	{
 		Client* c;
 		XUnmapEvent ume = event.xunmap;
+
+		for (unsigned int i = 0; i < suicide_list.size(); ++i)
+		{
+			if (suicide_list[i] == ume.window)
+			{
+				suicide_list.erase(suicide_list.begin() + i);
+				return;
+			}
+		}
 
 		if ((c = screen_manager->WindowToClient(ume.window)))
 		{

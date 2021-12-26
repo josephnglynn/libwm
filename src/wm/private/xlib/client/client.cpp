@@ -12,7 +12,6 @@
 #include <X11/Xutil.h>
 #include "../../../public/general/masks.hpp"
 
-
 namespace flow::X11
 {
 	Client::Client(Window window) : window(window), visible(true)
@@ -148,10 +147,15 @@ namespace flow::X11
 		wc.height = detail.height;
 		wc.border_width = border_width;
 
+		XConfigureWindow(fwm->GetDisplay(), frame, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
+
+		wc.x = frame_offsets.left;
+		wc.y = frame_offsets.top;
+		wc.width -= (frame_offsets.right + frame_offsets.left);
+		wc.height -= (frame_offsets.bottom + frame_offsets.top);
 		XConfigureWindow(fwm->GetDisplay(), window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 		Configure();
 		XSync(fwm->GetDisplay(), False);
-
 	}
 
 	void Client::ResizeClient(int x, int y, int w, int h)
@@ -161,20 +165,19 @@ namespace flow::X11
 	}
 
 	void Client::Configure()
-	{
-		auto fwm = FlowWindowManagerX11::Get();
+	{auto fwm = FlowWindowManagerX11::Get();
 		configured = true;
 		XConfigureEvent ce;
 
 		ce.type = ConfigureNotify;
 		ce.display = fwm->GetDisplay();
-		ce.event = window;
-		ce.window = window;
-		ce.x = position.x - frame_offsets.left;
-		ce.y = position.y - frame_offsets.top;
-		ce.width = position.width - frame_offsets.right;
-		ce.height = position.height - frame_offsets.bottom;
-		ce.border_width = 0;
+		ce.event = frame;
+		ce.window = frame;
+		ce.x = position.x;
+		ce.y = position.y;
+		ce.width = position.width;
+		ce.height = position.height;
+		ce.border_width = border_width;
 		ce.above = None;
 		ce.override_redirect = false;
 		XSendEvent(fwm->GetDisplay(), window, false, StructureNotifyMask, (XEvent*)&ce);
@@ -353,36 +356,6 @@ namespace flow::X11
 		sm->Focus(nullptr);
 	}
 
-	void Client::UpdateFrame() const
-	{
-
-		if (!framer) return;
-
-		Display* display = FlowWindowManagerX11::Get()->GetDisplay();
-		if (!frame_offsets.top && !frame_offsets.left && !frame_offsets.right && !frame_offsets.bottom)
-		{
-			XUnmapWindow(display, framer);
-		}
-		else
-		{
-			XMapWindow(display, framer);
-		}
-	}
-
-	void Client::Ban()
-	{
-		if (banned) return;
-		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
-		ignore_un_map++;
-		SetState(IconicState);
-		XSelectInput(dpy, base, NoEventMask);
-		XUnmapWindow(dpy, base);
-		XUnmapWindow(dpy, window);
-		XSelectInput(dpy, window, CLIENT_MASK);
-		XSelectInput(dpy, base, FRAME_MASK);
-		banned = true;
-	}
-
 	void Client::UpdateTitle()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
@@ -391,24 +364,5 @@ namespace flow::X11
 			fwm->GetTextProp(window, fwm->GetWmAtom()[WMName], name.data(), name.length());
 		}
 	}
-
-	void Client::UnBan()
-	{
-		if (!banned)
-			return;
-		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
-		XSelectInput(dpy, window, EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
-		XSelectInput(dpy, base, NoEventMask);
-		XMapWindow(dpy, window);
-		XMapWindow(dpy, base);
-		XSelectInput(dpy, window, EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
-		XSelectInput(dpy, base, FRAME_MASK);
-		SetState(NormalState);
-		banned = false;
-	}
-
-
-
-
 
 }

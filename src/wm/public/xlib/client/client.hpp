@@ -32,9 +32,6 @@ namespace flow::X11
 		void SetState(long state);
 		int ApplySizeHints(int* x, int* y, int* w, int* h, int interact);
 		void SendMonitor(Monitor* m);
-		void UpdateFrame() const;
-		void Ban();
-		void UnBan();
 		void UpdateTitle();
 
 		Client* next;
@@ -51,14 +48,9 @@ namespace flow::X11
 		bool full_screen;
 		bool configured = false;
 		Monitor* monitor;
-		Window framer;
-		Window base;
-		Pixmap drawable;
-		XftDraw *xft_draw;
 		long flags;
+		Window frame;
 		bool is_annoying;
-		int banned;
-		int ignore_un_map;
 		std::string name;
 		bool is_icon;
 		Offsets frame_offsets;
