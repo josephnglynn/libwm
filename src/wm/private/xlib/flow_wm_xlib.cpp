@@ -318,7 +318,9 @@ namespace flow::X11
 				}
 
 			}
-			if (wins) {
+
+			if (wins)
+			{
 				XFree(wins);
 			}
 
