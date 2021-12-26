@@ -19,10 +19,6 @@ namespace flow
 	{
 
 		KeyboardManager(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk);
-		void Start(Display* display, Window root_window);
-		void Update(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk);
-		void GrabButtons(X11::Client* client, int focused);
-
 
 		Key mod_key;
 		unsigned int num_lock_mask;
@@ -30,7 +26,9 @@ namespace flow
 		std::vector<ClientKeyBinding> key_bindings_client;
 
 
-
+		void Start(Display* display, Window root_window);
+		void Update(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk);
+		void GrabButtons(X11::Client* client, int focused);
 		void UpdateNumLockMask(Display* display);
 	};
 }

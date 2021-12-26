@@ -112,8 +112,16 @@ namespace flow::X11
 		auto fwm = FlowWindowManagerX11::Get();
 		if (fs && !full_screen)
 		{
-			XChangeProperty(fwm->GetDisplay(), window, fwm->GetNetAtom()[NetWMState], XA_ATOM, 32,
-				PropModeReplace, (unsigned char*)&fwm->GetNetAtom()[NetWMFullscreen], 1);
+			XChangeProperty(
+				fwm->GetDisplay(),
+				window,
+				fwm->GetNetAtom()[NetWMState],
+				XA_ATOM,
+				32,
+				PropModeReplace,
+				(unsigned char*)&fwm->GetNetAtom()[NetWMFullscreen],
+				1
+			);
 			full_screen = true;
 			old_border_width = border_width;
 			border_width = 0;
@@ -123,8 +131,16 @@ namespace flow::X11
 		}
 		else if (!fs && full_screen)
 		{
-			XChangeProperty(fwm->GetDisplay(), window, fwm->GetNetAtom()[NetWMState], XA_ATOM, 32,
-				PropModeReplace, (unsigned char*)0, 0);
+			XChangeProperty(
+				fwm->GetDisplay(),
+				window,
+				fwm->GetNetAtom()[NetWMState],
+				XA_ATOM,
+				32,
+				PropModeReplace,
+				(unsigned char*)0,
+				0
+			);
 			full_screen = false;
 			border_width = old_border_width;
 			position = old_position;
@@ -165,7 +181,8 @@ namespace flow::X11
 	}
 
 	void Client::Configure()
-	{auto fwm = FlowWindowManagerX11::Get();
+	{
+		auto fwm = FlowWindowManagerX11::Get();
 		configured = true;
 		XConfigureEvent ce;
 
@@ -189,7 +206,10 @@ namespace flow::X11
 		XSizeHints size;
 
 		if (!XGetWMNormalHints(FlowWindowManagerX11::Get()->GetDisplay(), window, &size, &msize) || !size.flags)
+		{
 			size.flags = PSize;
+		}
+
 		flags = size.flags;
 		if (flags & PBaseSize)
 		{
@@ -267,7 +287,8 @@ namespace flow::X11
 		auto fwm = FlowWindowManagerX11::Get();
 		long data[] = { state, None };
 
-		XChangeProperty(fwm->GetDisplay(),
+		XChangeProperty(
+			fwm->GetDisplay(),
 			window,
 			fwm->GetWmAtom()[WMState],
 			fwm->GetWmAtom()[WMState],

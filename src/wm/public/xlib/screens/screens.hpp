@@ -34,9 +34,9 @@ namespace flow
 	{
 	public:
 		ScreenManager() = default;
+
 		int UpdateGeom();
 		int IsUniqueGeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
-
 
 		void Focus(X11::Client* client);
 		void UnFocus(X11::Client* client, int set_focus);
@@ -60,7 +60,6 @@ namespace flow
 
 		X11::Client* WindowToClient(Window w);
 		bool DontTouchWindow(Window w);
-
 
 		bool CheckAtom(Window window, Atom big_atom, Atom small_atom);
 		void * GetAtom(Window window, Atom atom, unsigned long *items);

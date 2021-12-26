@@ -8,7 +8,6 @@
 #include "../../../logger/public/logger.hpp"
 #include "../../public/general/masks.hpp"
 
-
 using namespace flow::X11;
 
 namespace flow::input_functions
@@ -59,13 +58,13 @@ namespace flow::input_functions
 		return strings;
 	}
 
-	void focusClient(const std::string&) {
+	void focusClient(const std::string&)
+	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
 		auto sm = fwm->GetScreenManager();
 		logger::info("FOCUS CLIENT");
 		sm->Focus(sm->GetSelectedMonitor()->clients->selected);
 	}
-
 
 	void spawn(const std::string& arg)
 	{
@@ -162,12 +161,14 @@ namespace flow::input_functions
 						< static_cast<int>(snap))
 					ny = selected_monitor->wy + selected_monitor->wh - static_cast<int>(c->position.height);
 
-				fwm->GetScreenManager()->Resize(c,
+				fwm->GetScreenManager()->Resize(
+					c,
 					nx,
 					ny,
 					static_cast<int>(c->position.width),
 					static_cast<int>(c->position.height),
-					1);
+					1
+				);
 				break;
 			}
 		} while (event.type != ButtonRelease);
@@ -312,7 +313,8 @@ namespace flow::input_functions
 			break;
 		}
 
-		XWarpPointer(fwm->GetDisplay(),
+		XWarpPointer(
+			fwm->GetDisplay(),
 			None,
 			c->window,
 			0,
@@ -363,7 +365,8 @@ namespace flow::input_functions
 			}
 		} while (event.type != ButtonRelease);
 
-		XWarpPointer(fwm->GetDisplay(),
+		XWarpPointer(
+			fwm->GetDisplay(),
 			None,
 			c->window,
 			0,

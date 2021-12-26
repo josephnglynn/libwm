@@ -13,9 +13,7 @@ namespace flow::shapes
 		int x, y, width, height;
 
 		Rectangle() = default;
-		Rectangle(int x, int y, int w, int h) : x(x), y(y), width(w), height(h)
-		{
-		}
+		Rectangle(int x, int y, int w, int h) : x(x), y(y), width(w), height(h) {}
 
 	};
 

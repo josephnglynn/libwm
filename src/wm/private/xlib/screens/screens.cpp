@@ -7,19 +7,6 @@
 #include <X11/Xatom.h>
 #include <xlib/screens/screens.hpp>
 #include "../../../public/general/inline_functions.hpp"
-#include "../../../../logger/public/logger.hpp"
-#include "../../../public/general/masks.hpp"
-#include <X11/Xmd.h>
-
-#define _NET_WM_STATE_REMOVE    0
-#define _NET_WM_STATE_ADD    1
-#define _NET_WM_STATE_TOGGLE    2
-
-#define MWM_HINTS_ELEMENTS 5
-#define MWM_DECOR_ALL(x) ((x) & (1L << 0))
-#define MWM_DECOR_TITLE(x) ((x) & (1L << 3))
-#define MWM_DECOR_BORDER(x) ((x) & (1L << 1))
-#define MWM_HINTS_DECOR(x) ((x) & (1L << 1))
 
 namespace flow
 {
@@ -123,9 +110,13 @@ namespace flow
 	int ScreenManager::IsUniqueGeom(XineramaScreenInfo* unique, size_t n, XineramaScreenInfo* info)
 	{
 		while (n--)
-			if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
-				&& unique[n].width == info->width && unique[n].height == info->height)
+		{
+			if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org && unique[n].width == info->width
+				&& unique[n].height == info->height)
+			{
 				return 0;
+			}
+		}
 		return 1;
 	}
 
@@ -171,11 +162,14 @@ namespace flow
 		int a, area = 0;
 
 		for (m = mons; m; m = m->next)
+		{
 			if ((a = Intersect(rectangle.x, rectangle.y, rectangle.width, rectangle.height, m)) > area)
 			{
 				area = a;
 				r = m;
 			}
+		}
+
 		return r;
 	}
 
@@ -185,9 +179,13 @@ namespace flow
 		Monitor* m;
 
 		for (m = mons; m; m = m->next)
+		{
 			for (c = m->clients->GetFirst(); c; c = c->next)
-				if (c->window == w)
-					return c;
+			{
+				if (c->window == w) return c;
+			}
+		}
+
 		return nullptr;
 	}
 
@@ -197,9 +195,13 @@ namespace flow
 		Monitor* m;
 
 		for (m = mons; m; m = m->next)
+		{
 			for (c = m->clients->GetFirst(); c; c = c->next)
-				if (c->window == w || c->frame == w)
-					return true;
+			{
+				if (c->window == w || c->frame == w)return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -250,13 +252,18 @@ namespace flow
 		client->UpdateWindowType();
 		client->UpdateSizeHints();
 		client->UpdateWmHints();
-		XSelectInput(display,
+
+		XSelectInput(
+			display,
 			window,
 			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
 		);
+
 		XRaiseWindow(display, window);
 		client->monitor->clients->AddClient(client);
-		XChangeProperty(display,
+
+		XChangeProperty(
+			display,
 			root,
 			fwm->GetNetAtom()[NetClientList],
 			XA_WINDOW,
@@ -265,6 +272,7 @@ namespace flow
 			(unsigned char*)&(client->window),
 			1
 		);
+
 		XMoveResizeWindow(
 			display,
 			client->window,
@@ -272,7 +280,8 @@ namespace flow
 			client->position.y + client->frame_offsets.top,
 			client->position.width - client->frame_offsets.right,
 			client->position.height - client->frame_offsets.bottom
-		);//TODO COME BACK HERE IF X POS IS MESSED UP
+		);
+
 		client->SetState(NormalState);
 		if (client->monitor == selected_monitor)
 		{
@@ -292,8 +301,7 @@ namespace flow
 			UnFocus(selected_monitor->clients->selected, 1);
 		if (client)
 		{
-			if (client->monitor != selected_monitor)
-				selected_monitor = client->monitor;
+			if (client->monitor != selected_monitor) selected_monitor = client->monitor;
 			if (client->is_urgent) client->SetUrgent(0);
 			fwm->GetKeyboardManager()->GrabButtons(client, 1);
 			client->SetFocus();

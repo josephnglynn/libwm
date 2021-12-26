@@ -115,12 +115,14 @@ namespace flow::X11
 
 				if ((ev.value_mask & (CWX | CWY)) && !(ev.value_mask & (CWWidth | CWHeight))) c->Configure();
 				if (c->visible)
-					XMoveResizeWindow(FlowWindowManagerX11::Get()->GetDisplay(),
+					XMoveResizeWindow(
+						FlowWindowManagerX11::Get()->GetDisplay(),
 						c->window,
 						c->position.x,
 						c->position.y,
 						c->position.width,
-						c->position.height);
+						c->position.height
+					);
 			}
 			else
 			{
@@ -193,7 +195,10 @@ namespace flow::X11
 		if (m != selected_monitor)
 		{
 			if (selected_monitor->clients->selected)
+			{
 				screen_manager->UnFocus(selected_monitor->clients->selected, 1);
+			}
+
 			screen_manager->SetSelectedMonitor(m);
 		}
 		else if (!c || c == selected_monitor->clients->selected)

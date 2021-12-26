@@ -15,7 +15,9 @@ namespace flow::ColorScheme
 		/* need at least two colors for a scheme */
 		if (!drw || !colour_names || colour_count < 2
 			|| !(ret = static_cast<XftColor*>(malloc(colour_count * sizeof(XftColor)))))
+		{
 			return nullptr;
+		}
 
 		for (i = 0; i < colour_count; i++)
 		{
@@ -30,7 +32,12 @@ namespace flow::ColorScheme
 		if (!drw || !destination || !color_name)
 			return;
 
-		if (!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen), color_name, destination)) {
+		if (!XftColorAllocName(drw->dpy,
+			DefaultVisual(drw->dpy, drw->screen),
+			DefaultColormap(drw->dpy, drw->screen),
+			color_name,
+			destination))
+		{
 			logger::error("An error occurred allocating colour", color_name);
 			std::exit(0);
 		}

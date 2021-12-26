@@ -127,26 +127,29 @@ namespace flow::X11
 		unsigned long n, extra;
 		Atom real;
 
-		if (XGetWindowProperty(fwm->GetDisplay(),
-			window,
-			fwm->GetWmAtom()[WMState],
-			0L,
-			2L,
-			False,
-			fwm->GetWmAtom()[WMState],
-			&real,
-			&format,
-			&n,
-			&extra,
-			(unsigned char**)&p) != Success)
+		if (
+			XGetWindowProperty(
+				fwm->GetDisplay(),
+				window,
+				fwm->GetWmAtom()[WMState],
+				0L,
+				2L,
+				False,
+				fwm->GetWmAtom()[WMState],
+				&real,
+				&format,
+				&n,
+				&extra,
+				(unsigned char**)&p
+			) != Success)
+		{
 			return -1;
-		if (n != 0)
-			result = *p;
+		}
+
+		if (n != 0) result = *p;
 		XFree(p);
 		return result;
 	}
-
-
 
 	Client* ClientManager::GetFirst()
 	{

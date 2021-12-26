@@ -100,17 +100,20 @@ namespace flow::X11
 	FlowWindowManagerX11* FlowWindowManagerX11::Init(Config* config)
 	{
 		if (instance) return instance;
-		instance = new FlowWindowManagerX11();
 
+		instance = new FlowWindowManagerX11();
 		instance->display = XOpenDisplay(nullptr);
+
 		if (!instance->display)
 		{
 			logger::error("Sorry, we failed to open a X display");
 		}
+
 		if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
 		{
 			logger::warn("No locale support");
 		}
+
 		instance->root_window = DefaultRootWindow(instance->display);
 		instance->screen = DefaultScreen(instance->display);
 		instance->screen_width = DisplayWidth(instance->display, instance->screen);
@@ -213,7 +216,8 @@ namespace flow::X11
 		instance->UpdateStatus();
 		instance->wm_check_window = XCreateSimpleWindow(instance->display, instance->root_window, 0, 0, 1, 1, 0, 0, 0);
 
-		XChangeProperty(instance->display,
+		XChangeProperty(
+			instance->display,
 			instance->wm_check_window,
 			instance->net_atom[NetWMCheck],
 			XA_WINDOW,
@@ -223,7 +227,8 @@ namespace flow::X11
 			1
 		);
 
-		XChangeProperty(instance->display,
+		XChangeProperty(
+			instance->display,
 			instance->wm_check_window,
 			instance->net_atom[NetWMName],
 			utf8string,
@@ -233,7 +238,8 @@ namespace flow::X11
 			3
 		);
 
-		XChangeProperty(instance->display,
+		XChangeProperty(
+			instance->display,
 			instance->root_window,
 			instance->net_atom[NetWMCheck],
 			XA_WINDOW,
@@ -243,7 +249,8 @@ namespace flow::X11
 			1
 		);
 
-		XChangeProperty(instance->display,
+		XChangeProperty(
+			instance->display,
 			instance->root_window,
 			instance->net_atom[NetSupported],
 			XA_ATOM,

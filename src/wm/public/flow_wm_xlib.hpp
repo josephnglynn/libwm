@@ -92,31 +92,25 @@ namespace flow::X11
 		{
 			return shell;
 		}
-
-		[[nodiscard]]    inline DrawableWindow* GetDRW()
-		{
-			return drw;
-		}
-
 		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
 
 		bool detached = false;
 	private:
-		ScreenManager* screen_manager{};
-		KeyboardManager* keyboard_manager{};
-		Config* config{};
+		ScreenManager* screen_manager;
+		KeyboardManager* keyboard_manager;
+		Config* config;
 		Display* display = nullptr;
-		Window root_window{};
+		Window root_window;
 		bool quit = false;
-		Atom wm_atom[WMLast]{}, net_atom[NetLast]{};
-		Cur* cursor[CurLast]{};
-		DrawableWindow* drw{};
-		XftColor** color_scheme{};
-		Window wm_check_window{};
+		Atom wm_atom[WMLast], net_atom[NetLast];
+		Cur* cursor[CurLast];
+		DrawableWindow* drw;
+		XftColor** color_scheme;
+		Window wm_check_window;
 		Shell* shell;
-		int screen{};
-		int screen_width{};
-		int screen_height{};
+		int screen;
+		int screen_width;
+		int screen_height;
 		std::vector<Window> suicide_list;
 
 		void Scan();
