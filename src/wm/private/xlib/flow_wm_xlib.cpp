@@ -116,6 +116,10 @@ namespace flow::X11
 		instance->screen_width = DisplayWidth(instance->display, instance->screen);
 		instance->screen_height = DisplayHeight(instance->display, instance->screen);
 
+#ifdef DEBUG
+		XSynchronize(instance->display, true);
+#endif
+
 		XSetErrorHandler([](Display*, XErrorEvent*) -> int
 		{
 		  logger::error("OH NO, another wm is currently open");
@@ -143,7 +147,6 @@ namespace flow::X11
 			std::exit(-1);
 		}
 
-
 		//TODO FIX SHELL
 		instance->shell = new Shell(config->shell_location);
 		instance->shell->OnLoad();
@@ -153,19 +156,26 @@ namespace flow::X11
 
 		XSetWindowAttributes wa;
 		Atom utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
-		instance->wm_atom[WMProtocols] = XInternAtom(instance->display, "WM_PROTOCOLS", False);
-		instance->wm_atom[WMDelete] = XInternAtom(instance->display, "WM_DELETE_WINDOW", False);
-		instance->wm_atom[WMState] = XInternAtom(instance->display, "WM_STATE", False);
-		instance->wm_atom[WMTakeFocus] = XInternAtom(instance->display, "WM_TAKE_FOCUS", False);
-		instance->net_atom[NetActiveWindow] = XInternAtom(instance->display, "_NET_ACTIVE_WINDOW", False);
-		instance->net_atom[NetSupported] = XInternAtom(instance->display, "_NET_SUPPORTED", False);
-		instance->net_atom[NetWMName] = XInternAtom(instance->display, "_NET_WM_NAME", False);
-		instance->net_atom[NetWMState] = XInternAtom(instance->display, "_NET_WM_STATE", False);
-		instance->net_atom[NetWMCheck] = XInternAtom(instance->display, "_NET_SUPPORTING_WM_CHECK", False);
-		instance->net_atom[NetWMFullscreen] = XInternAtom(instance->display, "_NET_WM_STATE_FULLSCREEN", False);
-		instance->net_atom[NetWMWindowType] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE", False);
-		instance->net_atom[NetWMWindowTypeDialog] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
-		instance->net_atom[NetClientList] = XInternAtom(instance->display, "_NET_CLIENT_LIST", False);
+		instance->wm_atom[WMProtocols] = XInternAtom(instance->display, "WM_PROTOCOLS", false);
+		instance->wm_atom[WMDelete] = XInternAtom(instance->display, "WM_DELETE_WINDOW", false);
+		instance->wm_atom[WMState] = XInternAtom(instance->display, "WM_STATE", false);
+		instance->wm_atom[WMTakeFocus] = XInternAtom(instance->display, "WM_TAKE_FOCUS", false);
+		instance->wm_atom[WMName] = XInternAtom(instance->display, "WM_NAME", false);
+		instance->net_atom[NetActiveWindow] = XInternAtom(instance->display, "_NET_ACTIVE_WINDOW", false);
+		instance->net_atom[NetSupported] = XInternAtom(instance->display, "_NET_SUPPORTED", false);
+		instance->net_atom[NetWMName] = XInternAtom(instance->display, "_NET_WM_NAME", false);
+		instance->net_atom[NetWMState] = XInternAtom(instance->display, "_NET_WM_STATE", false);
+		instance->net_atom[NetWMCheck] = XInternAtom(instance->display, "_NET_SUPPORTING_WM_CHECK", false);
+		instance->net_atom[NetWMFullscreen] = XInternAtom(instance->display, "_NET_WM_STATE_FULLSCREEN", false);
+		instance->net_atom[NetWMWindowType] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE", false);
+		instance->net_atom[NetWMWindowTypeDialog] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
+		instance->net_atom[NetClientList] = XInternAtom(instance->display, "_NET_CLIENT_LIST", false);
+		instance->net_atom[NetWMTypeDesk] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DESKTOP", false);
+		instance->net_atom[NetWMTypeDock] = XInternAtom(instance->display, "_NET_WM_WINDOW_TYPE_DESKTOP", false);
+		instance->net_atom[NetWMStateFs] = XInternAtom(instance->display, "_NET_WM_STATE_FULLSCREEN", false);
+		instance->net_atom[NetWMStateModel] = XInternAtom(instance->display, "_NET_WM_STATE_MODAL", false);
+		instance->net_atom[NetMWMHints] = XInternAtom(instance->display, "_MOTIF_WM_HINTS", false);
+		instance->net_atom[NetWindowOpacity] = XInternAtom(instance->display, "_NET_WM_WINDOW_OPACITY", false);
 
 		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->drw, XC_left_ptr);
 		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->drw, XC_top_left_corner);
@@ -186,10 +196,10 @@ namespace flow::X11
 		static const char col_gray3[] = "#bbbbbb";
 		static const char col_gray4[] = "#eeeeee";
 		static const char col_cyan[] = "#005577";
-		static const char* colors[][3] = {
+		static const char* colors[][4] = {
 			/*               fg         bg         border   */
-			{ col_gray3, col_gray1, col_gray2 },
-			{ col_gray4, col_cyan, col_cyan },
+			{ col_gray3, col_gray1, col_gray2, "#ffffff" },
+			{ col_gray4, col_cyan, col_cyan, "#ffffff" },
 		};
 
 		instance->color_scheme =
@@ -259,11 +269,12 @@ namespace flow::X11
 
 		XSelectInput(instance->display, instance->root_window, wa.event_mask);
 
-		instance->keyboard_manager = new KeyboardManager(instance->config->key_bindings,
+		instance->keyboard_manager = new KeyboardManager(
+			instance->config->key_bindings,
 			instance->config->client_key_bindings,
-			instance->config->mod_key);
+			instance->config->mod_key
+		);
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
-
 		instance->screen_manager->Focus(nullptr);
 		instance->Scan();
 
@@ -284,15 +295,15 @@ namespace flow::X11
 	void FlowWindowManagerX11::Scan()
 	{
 
-		unsigned int i, num;
+		unsigned int num;
 		Window d1, d2, * wins = nullptr;
 		XWindowAttributes wa;
 
 		if (XQueryTree(display, root_window, &d1, &d2, &wins, &num))
 		{
-			for (i = 0; i < num; i++)
+			for (unsigned int i = 0; i < num; i++)
 			{
-				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect
+				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect || wa.map_state != IsViewable
 					|| XGetTransientForHint(display, wins[i], &d1))
 				{
 					continue;
@@ -300,11 +311,13 @@ namespace flow::X11
 
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
 				{
+					suicide_list.push_back(wins[i]);
 					screen_manager->Manage(wins[i], &wa);
 				}
 
 			}
-			for (i = 0; i < num; i++)
+
+			for (unsigned int i = 0; i < num; i++)
 			{
 				if (!XGetWindowAttributes(display, wins[i], &wa))
 				{
@@ -314,16 +327,15 @@ namespace flow::X11
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
 				{
+					suicide_list.push_back(wins[i]);
 					screen_manager->Manage(wins[i], &wa);
 				}
 
 			}
-
 			if (wins)
 			{
 				XFree(wins);
 			}
-
 		}
 
 	}

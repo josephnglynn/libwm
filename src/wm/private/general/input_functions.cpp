@@ -6,9 +6,8 @@
 #include "../../public/general/input_functions.hpp"
 #include "../../public/general/inline_functions.hpp"
 #include "../../../logger/public/logger.hpp"
+#include "../../public/general/masks.hpp"
 
-#define BUTTON_MASK              (ButtonPressMask|ButtonReleaseMask)
-#define MOUSEMASK               (BUTTON_MASK|PointerMotionMask)
 
 using namespace flow::X11;
 
@@ -121,7 +120,7 @@ namespace flow::input_functions
 		ocx = c->position.x;
 		ocy = c->position.y;
 
-		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSE_MASK, GrabModeAsync, GrabModeAsync,
 			None, fwm->GetCursor()[CurMove]->cursor, CurrentTime) != GrabSuccess)
 		{
 			return;
@@ -131,7 +130,7 @@ namespace flow::input_functions
 
 		do
 		{
-			XMaskEvent(fwm->GetDisplay(), MOUSEMASK | ExposureMask | SubstructureRedirectMask, &event);
+			XMaskEvent(fwm->GetDisplay(), MOUSE_MASK | ExposureMask | SubstructureRedirectMask, &event);
 			switch (event.type)
 			{
 			case ConfigureRequest:
@@ -281,7 +280,7 @@ namespace flow::input_functions
 
 		PositionOfMouse positionOfMouse = PositionOfMouse(nx, ny, c->position.width, c->position.height);
 
-		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+		if (XGrabPointer(fwm->GetDisplay(), fwm->GetRootWindow(), False, MOUSE_MASK, GrabModeAsync, GrabModeAsync,
 			None, positionOfMouse.cursor->cursor, CurrentTime) != GrabSuccess) // CHECK ENUM IF BAFFED
 			return;
 
@@ -326,7 +325,7 @@ namespace flow::input_functions
 
 		do
 		{
-			XMaskEvent(fwm->GetDisplay(), MOUSEMASK | ExposureMask | SubstructureRedirectMask, &event);
+			XMaskEvent(fwm->GetDisplay(), MOUSE_MASK | ExposureMask | SubstructureRedirectMask, &event);
 			switch (event.type)
 			{
 			case ConfigureRequest:

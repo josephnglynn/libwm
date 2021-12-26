@@ -1,8 +1,13 @@
 includes = []
 main_dep = []
 
-subdir('wm')
+wm_version = '0.0.1'
+add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
+
+subdir('external')
 subdir('logger')
+subdir('wm')
+
 
 exe = executable(
     'main',

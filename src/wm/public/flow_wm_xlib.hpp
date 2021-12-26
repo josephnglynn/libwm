@@ -33,65 +33,72 @@ namespace flow::X11
 		void Detach();
 		void HandleEvent(XEvent& event);
 
-		inline Display* GetDisplay()
+		[[nodiscard]]    inline Display* GetDisplay()
 		{
 			return display;
 		}
 
-		[[nodiscard]] inline Window GetRootWindow() const
+		[[nodiscard]]    inline Window GetRootWindow() const
 		{
 			return root_window;
 		}
 
-		inline Atom* GetNetAtom()
+		[[nodiscard]]    inline Atom* GetNetAtom()
 		{
 			return net_atom;
 		}
 
-		inline XftColor** GetColorScheme()
+		[[nodiscard]]    inline XftColor** GetColorScheme()
 		{
 			return color_scheme;
 		}
 
-		inline KeyboardManager* GetKeyboardManager()
+		[[nodiscard]]    inline KeyboardManager* GetKeyboardManager()
 		{
 			return keyboard_manager;
 		}
 
-		inline ScreenManager* GetScreenManager()
+		[[nodiscard]]    inline ScreenManager* GetScreenManager()
 		{
 			return screen_manager;
 		}
 
-		inline Atom* GetWmAtom()
+		[[nodiscard]]    inline Atom* GetWmAtom()
 		{
 			return wm_atom;
 		};
 
-		inline Cur** GetCursor()
+		[[nodiscard]]    inline Cur** GetCursor()
 		{
 			return cursor;
 		}
 
-		[[nodiscard]]  inline int GetScreenWidth() const
+		[[nodiscard]]    inline int GetScreenWidth() const
 		{
 			return screen_width;
 		}
 
-		[[nodiscard]]  inline int GetScreenHeight() const
+		[[nodiscard]]    inline int GetScreenHeight() const
 		{
 			return screen_height;
 		}
 
-		inline Config* GetConfig()
+		[[nodiscard]]    inline Config* GetConfig()
 		{
 			return config;
 		}
 
-		inline Shell* GetShell()
+		[[nodiscard]]    inline Shell* GetShell()
 		{
 			return shell;
 		}
+
+		[[nodiscard]]    inline DrawableWindow* GetDRW()
+		{
+			return drw;
+		}
+
+		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
 
 		bool detached = false;
 	private:
@@ -110,9 +117,9 @@ namespace flow::X11
 		int screen{};
 		int screen_width{};
 		int screen_height{};
+		std::vector<Window> suicide_list;
 
 		void Scan();
-		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
 		void UpdateStatus();
 
 		static FlowWindowManagerX11* instance;

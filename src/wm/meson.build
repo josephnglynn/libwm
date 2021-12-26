@@ -1,4 +1,3 @@
-wm_version = '0.0.1'
 wm_includes = include_directories('public')
 
 wm_sources = [
@@ -16,17 +15,16 @@ wm_sources = [
                 'private/xlib/fnt/fnt.cpp',
                 'private/xlib/color_scheme/color_scheme.cpp',
                 'private/general/input_functions.cpp',
-                'private/xlib/shell/shell.cpp'
+                'private/xlib/shell/shell.cpp',
 ]
 
 wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'), dependency('xft'), dependency('fontconfig'), dependency('threads'), meson.get_compiler('cpp').find_library('dl')]
-
-add_global_arguments('-DFLOW_WM_VERSION="'+wm_version+'"', language: 'cpp')
 
 flow_wm_lib = shared_library(
     'flow_wm_lib',
      wm_sources,
      include_directories : wm_includes,
      install: true,
+     link_with: [shell_base],
      dependencies: wm_deps
 )

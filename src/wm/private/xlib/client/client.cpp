@@ -9,6 +9,8 @@
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
+#include <X11/Xutil.h>
+#include "../../../public/general/masks.hpp"
 
 namespace flow::X11
 {
@@ -145,10 +147,15 @@ namespace flow::X11
 		wc.height = detail.height;
 		wc.border_width = border_width;
 
+		XConfigureWindow(fwm->GetDisplay(), frame, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
+
+		wc.x = frame_offsets.left;
+		wc.y = frame_offsets.top;
+		wc.width -= (frame_offsets.right + frame_offsets.left);
+		wc.height -= (frame_offsets.bottom + frame_offsets.top);
 		XConfigureWindow(fwm->GetDisplay(), window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 		Configure();
 		XSync(fwm->GetDisplay(), False);
-
 	}
 
 	void Client::ResizeClient(int x, int y, int w, int h)
@@ -158,28 +165,70 @@ namespace flow::X11
 	}
 
 	void Client::Configure()
-	{
-		auto fwm = FlowWindowManagerX11::Get();
+	{auto fwm = FlowWindowManagerX11::Get();
 		configured = true;
 		XConfigureEvent ce;
 
 		ce.type = ConfigureNotify;
 		ce.display = fwm->GetDisplay();
-		ce.event = window;
-		ce.window = window;
+		ce.event = frame;
+		ce.window = frame;
 		ce.x = position.x;
 		ce.y = position.y;
 		ce.width = position.width;
 		ce.height = position.height;
 		ce.border_width = border_width;
 		ce.above = None;
-		ce.override_redirect = False;
-		XSendEvent(fwm->GetDisplay(), window, False, StructureNotifyMask, (XEvent*)&ce);
+		ce.override_redirect = false;
+		XSendEvent(fwm->GetDisplay(), window, false, StructureNotifyMask, (XEvent*)&ce);
 	}
 
 	void Client::UpdateSizeHints()
 	{
+		long msize;
+		XSizeHints size;
 
+		if (!XGetWMNormalHints(FlowWindowManagerX11::Get()->GetDisplay(), window, &size, &msize) || !size.flags)
+			size.flags = PSize;
+		flags = size.flags;
+		if (flags & PBaseSize)
+		{
+			base_width = size.base_width;
+			base_height = size.base_height;
+		}
+		else if (flags & PMinSize)
+		{
+			base_width = size.min_width;
+			base_height = size.min_height;
+		}
+		else
+			base_width = base_height = 0;
+		if (flags & PResizeInc)
+		{
+			inc_width = size.width_inc;
+			inc_height = size.height_inc;
+		}
+		else
+			inc_width = inc_height = 0;
+		if (flags & PMaxSize)
+		{
+			max_width = size.max_width;
+			max_height = size.max_height;
+		}
+		else
+			max_width = max_height = 0;
+		if (flags & PMinSize)
+		{
+			min_width = size.min_width;
+			min_height = size.min_height;
+		}
+		else if (flags & PBaseSize)
+		{
+			min_width = size.base_width;
+			min_height = size.base_height;
+		}
+		else
+			min_width = min_height = 0;
 	}
 
 	void Client::UpdateWmHints()
@@ -305,6 +354,15 @@ namespace flow::X11
 		sm->UnFocus(this, 1);
 		monitor = m;
 		sm->Focus(nullptr);
+	}
+
+	void Client::UpdateTitle()
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		if (!fwm->GetTextProp(window, fwm->GetNetAtom()[NetWMName], name.data(), name.length()))
+		{
+			fwm->GetTextProp(window, fwm->GetWmAtom()[WMName], name.data(), name.length());
+		}
 	}
 
 }
