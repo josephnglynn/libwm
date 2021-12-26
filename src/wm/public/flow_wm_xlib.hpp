@@ -117,6 +117,7 @@ namespace flow::X11
 		int screen{};
 		int screen_width{};
 		int screen_height{};
+		std::vector<Window> suicide_list;
 
 		void Scan();
 		void UpdateStatus();

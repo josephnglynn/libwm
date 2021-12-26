@@ -198,7 +198,7 @@ namespace flow::X11
 		static const char col_cyan[] = "#005577";
 		static const char* colors[][4] = {
 			/*               fg         bg         border   */
-			{ col_gray3, col_gray1, col_gray2, "#ffffff"  },
+			{ col_gray3, col_gray1, col_gray2, "#ffffff" },
 			{ col_gray4, col_cyan, col_cyan, "#ffffff" },
 		};
 
@@ -295,15 +295,15 @@ namespace flow::X11
 	void FlowWindowManagerX11::Scan()
 	{
 
-		unsigned int i, num;
+		unsigned int num;
 		Window d1, d2, * wins = nullptr;
 		XWindowAttributes wa;
 
 		if (XQueryTree(display, root_window, &d1, &d2, &wins, &num))
 		{
-			for (i = 0; i < num; i++)
+			for (unsigned int i = 0; i < num; i++)
 			{
-				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect
+				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect || wa.map_state != IsViewable
 					|| XGetTransientForHint(display, wins[i], &d1))
 				{
 					continue;
@@ -311,11 +311,13 @@ namespace flow::X11
 
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
 				{
+					suicide_list.push_back(wins[i]);
 					screen_manager->Manage(wins[i], &wa);
 				}
 
 			}
-			for (i = 0; i < num; i++)
+
+			for (unsigned int i = 0; i < num; i++)
 			{
 				if (!XGetWindowAttributes(display, wins[i], &wa))
 				{
@@ -325,6 +327,7 @@ namespace flow::X11
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
 				{
+					suicide_list.push_back(wins[i]);
 					screen_manager->Manage(wins[i], &wa);
 				}
 
@@ -333,7 +336,6 @@ namespace flow::X11
 			{
 				XFree(wins);
 			}
-
 		}
 
 	}
