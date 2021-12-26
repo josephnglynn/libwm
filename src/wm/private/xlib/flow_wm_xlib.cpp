@@ -332,12 +332,12 @@ namespace flow::X11
 				}
 
 			}
+
 			if (wins)
 			{
 				XFree(wins);
 			}
 		}
-
 	}
 
 	void FlowWindowManagerX11::UpdateStatus()
