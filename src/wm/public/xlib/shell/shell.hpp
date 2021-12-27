@@ -14,10 +14,10 @@ namespace flow
 
 	extern "C" {
 		typedef void (* OnLoad_t)();
-		typedef BorderInfo (* GetBorderInfo_t)();
+		typedef ShellInfo (* GetShellInfo_t)();
 		typedef Offsets (* GetOffsets_t)(int);
-		typedef Window (*CreateWindow_t)(int, int, int, int, Display*, Window);
-		typedef void (*RunWindow_t)(Window, Display*, Window);
+		typedef Window (*CreateWindow_t)(int, int, int, int);
+		typedef long (*GetInputMask_t)();
 	}
 
 
@@ -25,10 +25,10 @@ namespace flow
 	{
 		void* handle{};
 		OnLoad_t OnLoad;
-		GetBorderInfo_t  GetBorderInfo;
+		GetShellInfo_t  GetShellInfo;
 		GetOffsets_t GetOffsets;
 		CreateWindow_t CreateWindow;
-		RunWindow_t RunWindow;
+		GetInputMask_t GetInputMask;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

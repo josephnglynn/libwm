@@ -19,10 +19,10 @@ namespace flow
 		}
 
 		OnLoad = (OnLoad_t) dlsym(handle, "oL");
-		GetBorderInfo = (GetBorderInfo_t) dlsym(handle, "gBI");
+		GetShellInfo = (GetShellInfo_t) dlsym(handle, "gBI");
 		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
 		CreateWindow = (CreateWindow_t) dlsym(handle, "cW");
-		RunWindow = (RunWindow_t) dlsym(handle, "rW");
+		GetInputMask = (GetInputMask_t) dlsym(handle, "gIM");
 
 	}
 
