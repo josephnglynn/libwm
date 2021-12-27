@@ -16,6 +16,8 @@ namespace flow
 		typedef void (* OnLoad_t)();
 		typedef BorderInfo (* GetBorderInfo_t)();
 		typedef Offsets (* GetOffsets_t)(int);
+		typedef Window (*CreateWindow_t)(int, int, int, int, Display*, Window);
+		typedef void (*RunWindow_t)(Window, Display*, Window);
 	}
 
 
@@ -25,6 +27,8 @@ namespace flow
 		OnLoad_t OnLoad;
 		GetBorderInfo_t  GetBorderInfo;
 		GetOffsets_t GetOffsets;
+		CreateWindow_t CreateWindow;
+		RunWindow_t RunWindow;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

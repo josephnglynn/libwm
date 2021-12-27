@@ -289,8 +289,6 @@ namespace flow
 		}
 		client->monitor->clients->selected = client;
 		Frame(client);
-		fwm->GetKeyboardManager()->GrabButtons(client, 0);
-		XMapWindow(display, client->window);
 		Focus(nullptr);
 	}
 
@@ -419,29 +417,26 @@ namespace flow
 	{
 		if (client->is_annoying) return;
 		auto fwm = FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
+		Display* display = fwm->GetDisplay();
 		auto root = fwm->GetRootWindow();
 
-		const unsigned int BORDER_WIDTH = 3;
-		const unsigned long BORDER_COLOR = 0xff0000;
-		const unsigned long BG_COLOR = 0x0000ff;
-
-		client->frame = XCreateSimpleWindow(
-			display,
-			root,
+		client->frame = fwm->GetShell()->CreateWindow(
 			client->position.x,
 			client->position.y,
 			client->position.width,
 			client->position.height,
-			0,
-			BORDER_COLOR,
-			BG_COLOR
+			display,
+			root
 		);
 
 		XSelectInput(display, client->frame, SubstructureRedirectMask | SubstructureNotifyMask);
 		XAddToSaveSet(display, client->window);
 		XReparentWindow(display, client->window, client->frame, client->frame_offsets.left, client->frame_offsets.top);
 		XMapWindow(display, client->frame);
+
+		fwm->GetKeyboardManager()->GrabButtons(client, 0);
+		XMapWindow(display, client->window);
+		fwm->GetShell()->RunWindow(client->frame, display, root);
 	}
 
 	bool ScreenManager::CheckAtom(Window window, Atom big_atom, Atom small_atom)
@@ -455,6 +450,7 @@ namespace flow
 		{
 			if (state[i] == small_atom) ret = true;
 		}
+
 		XFree(state);
 		return ret;
 	}
@@ -467,8 +463,21 @@ namespace flow
 		Atom real;
 		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
 
-		status = XGetWindowProperty(dpy, window, atom, 0L, 64L, False, AnyPropertyType,
-			&real, &format, items, &extra, (unsigned char**)&ret);
+		status = XGetWindowProperty(
+			dpy,
+			window,
+			atom,
+			0L,
+			64L,
+			False,
+			AnyPropertyType,
+			&real,
+			&format,
+			items,
+			&extra,
+			(unsigned char**)&ret
+		);
+
 		if (status != Success)
 		{
 			*items = 0;
