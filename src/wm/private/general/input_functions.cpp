@@ -27,6 +27,8 @@ namespace flow::input_functions
 			return killClient;
 		case FocusClient:
 			return focusClient;
+		case ReloadShell:
+			return reloadShell;
 		}
 	}
 
@@ -403,6 +405,21 @@ namespace flow::input_functions
 			XSetErrorHandler(nullptr);
 			XUngrabServer(fwm->GetDisplay());
 		}
+	}
+
+	void reloadShell(const std::string&)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		*fwm->GetShell() = Shell(fwm->GetConfig()->shell_location);
+#ifdef DEBUG
+		auto config = flow::Config::FromFilePath("config.json");
+#else
+		auto config = flow::Config::GetDefault();
+#endif
+		*fwm->GetConfig() = *config;
+		fwm->GetKeyboardManager()->Update(config->key_bindings, config->client_key_bindings, config->mod_key);
+		delete config;
+
 	}
 }
 

@@ -8,13 +8,13 @@
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../../logger/public/logger.hpp"
 #include "../../../public/general/masks.hpp"
+#include "../../../public/general/input_functions.hpp"
 
 namespace flow::X11
 {
 
 	void FlowWindowManagerX11::OnButtonPress(XEvent& event)
 	{
-
 		unsigned int i, click = ClkRootWin;
 		XButtonPressedEvent xb = event.xbutton;
 		Client* client;
@@ -32,6 +32,7 @@ namespace flow::X11
 			screen_manager->Focus(client);
 			screen_manager->ReStack(sel_mon);
 			XAllowEvents(display, ReplayPointer, CurrentTime);
+			XSync(display, false);
 			click = ClkClientWin;
 		}
 

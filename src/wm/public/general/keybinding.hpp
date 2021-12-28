@@ -19,6 +19,7 @@ namespace flow
 		ResizeMouse,
 		KillClient,
 		FocusClient,
+		ReloadShell
 	};
 
 

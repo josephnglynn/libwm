@@ -419,16 +419,17 @@ namespace flow
 		auto fwm = FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
 		auto root = fwm->GetRootWindow();
-		auto shell =fwm->GetShell();
+		auto shell = fwm->GetShell();
 
 		client->frame = shell->CreateWindow(
 			client->position.x,
 			client->position.y,
 			client->position.width,
-			client->position.height
+			client->position.height,
+			display,
+			root
 		);
 
-		XSelectInput(display, client->frame, ( SubstructureRedirectMask | SubstructureNotifyMask | shell->GetInputMask()));
 		XAddToSaveSet(display, client->window);
 		XReparentWindow(display, client->window, client->frame, client->frame_offsets.left, client->frame_offsets.top);
 		XMapWindow(display, client->frame);
@@ -483,6 +484,25 @@ namespace flow
 		}
 
 		return ret;
+	}
+
+	Client* ScreenManager::GetClientFromFrame(Window window)
+	{
+
+		Monitor* m;
+		Client* c;
+
+		for (m = mons; m; m = m->next)
+		{
+			for (c = m->clients->GetFirst(); c; c = c->next)
+			{
+				if (c->frame == window) {
+					return c;
+				}
+			}
+		}
+
+		return nullptr;
 	}
 
 }

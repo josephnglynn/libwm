@@ -26,6 +26,12 @@
       "function": 3,
       "key": 113,
       "mod": 64
+    },
+    {
+      "arg": "",
+      "function": 5,
+      "key": 114,
+      "mod": 64
     }
   ],
   "client_key_bindings": [
@@ -41,13 +47,6 @@
       "event_mask": 64,
       "button": 3,
       "function": 2,
-      "arg": ""
-    },
-    {
-      "click": 4,
-      "event_mask": 0,
-      "button": 1,
-      "function": 4,
       "arg": ""
     }
   ]

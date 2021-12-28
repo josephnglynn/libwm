@@ -40,8 +40,6 @@ namespace flow
 			num_lock_mask | LockMask
 		};
 
-
-
 		KeyCode key_code;
 		XUngrabKey(display, AnyKey, AnyModifier, root_window);
 
@@ -53,7 +51,7 @@ namespace flow
 				{
 
 					XGrabKey(
- 						display,
+						display,
 						key_code,
 						key_bindings_root[i].mod_key | modifiers[k],
 						root_window,
@@ -66,15 +64,25 @@ namespace flow
 		}
 	}
 
-
-
-
-
 	void KeyboardManager::Update(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk)
 	{
 		mod_key = mk;
 		key_bindings_root = kb;
 		key_bindings_client = ckb;
+
+		auto fwm = X11::FlowWindowManagerX11::Get();
+		Start(fwm->GetDisplay(), fwm->GetRootWindow());
+
+		X11::Client* client = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected;
+		Monitor* m = fwm->GetScreenManager()->GetMons();
+		for (; m; m = m->next)
+		{
+			for (X11::Client* c = m->clients->GetFirst(); c ;c = c->next)
+			{
+				GrabButtons(c, 0);
+			}
+		}
+		GrabButtons(client, 1);
 	}
 
 	void KeyboardManager::GrabButtons(X11::Client* client, int focused)
@@ -113,10 +121,16 @@ namespace flow
 			{
 				for (j = 0; j < sizeof modifiers / sizeof modifiers[0]; j++)
 					XGrabButton(
-						fwm->GetDisplay(), km->key_bindings_client[i].button,
+						fwm->GetDisplay(),
+						km->key_bindings_client[i].button,
 						km->key_bindings_client[i].event_mask | modifiers[j],
-						client->window, False, ButtonPressMask | ButtonReleaseMask,
-						GrabModeAsync, GrabModeSync, None, None
+						client->window,
+						false,
+						ButtonPressMask | ButtonReleaseMask,
+						GrabModeAsync,
+						GrabModeSync,
+						None,
+						None
 					);
 			}
 		}

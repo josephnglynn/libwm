@@ -22,7 +22,7 @@ namespace flow
 		GetShellInfo = (GetShellInfo_t) dlsym(handle, "gBI");
 		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
 		CreateWindow = (CreateWindow_t) dlsym(handle, "cW");
-		GetInputMask = (GetInputMask_t) dlsym(handle, "gIM");
+		HandleEvent = (HandleEvent_t) dlsym(handle, "hE");
 
 	}
 

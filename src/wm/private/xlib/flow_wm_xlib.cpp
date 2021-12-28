@@ -77,7 +77,19 @@ namespace flow::X11
 
 			XEvent event;
 			XNextEvent(display, &event);
+			Client* c;
 			if (event.type == MotionNotify) continue;
+			if ((c = screen_manager->GetClientFromFrame(event.xany.window)))
+			{
+				logger::success(c->position.height);
+				shell->HandleEvent(&event, c->position.x, c->position.y, c->position.width, c->position.height);
+				if (event.xbutton.subwindow == c->window)
+				{
+					event.xbutton.window = c->window;
+					OnButtonPress(event);
+				}
+				continue;
+			}
 			HandleEvent(event);
 		}
 	}
@@ -281,6 +293,7 @@ namespace flow::X11
 			instance->config->client_key_bindings,
 			instance->config->mod_key
 		);
+
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 		instance->screen_manager->Focus(nullptr);
 		instance->Scan();

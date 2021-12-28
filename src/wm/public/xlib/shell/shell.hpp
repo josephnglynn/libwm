@@ -16,8 +16,8 @@ namespace flow
 		typedef void (* OnLoad_t)();
 		typedef ShellInfo (* GetShellInfo_t)();
 		typedef Offsets (* GetOffsets_t)(int);
-		typedef Window (*CreateWindow_t)(int, int, int, int);
-		typedef long (*GetInputMask_t)();
+		typedef Window (*CreateWindow_t)(int, int, int, int, Display*, Window);
+		typedef void (*HandleEvent_t)(XEvent*, int, int, int, int);
 	}
 
 
@@ -28,7 +28,7 @@ namespace flow
 		GetShellInfo_t  GetShellInfo;
 		GetOffsets_t GetOffsets;
 		CreateWindow_t CreateWindow;
-		GetInputMask_t GetInputMask;
+		HandleEvent_t HandleEvent;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

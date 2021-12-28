@@ -63,6 +63,7 @@ namespace flow
 
 		bool CheckAtom(Window window, Atom big_atom, Atom small_atom);
 		void * GetAtom(Window window, Atom atom, unsigned long *items);
+		X11::Client* GetClientFromFrame(Window window);
 	private:
 		Monitor* mons = nullptr;
 		Monitor* selected_monitor = nullptr;
