@@ -81,7 +81,6 @@ namespace flow::X11
 			if (event.type == MotionNotify) continue;
 			if ((c = screen_manager->GetClientFromFrame(event.xany.window)))
 			{
-				logger::success(c->position.height);
 				shell->HandleEvent(&event, c->position.x, c->position.y, c->position.width, c->position.height);
 				if (event.xbutton.subwindow == c->window)
 				{
