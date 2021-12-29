@@ -31,7 +31,7 @@ namespace flow::X11
 		if ((client = client_manager->WindowToClient(xb.window)))
 		{
 			client_manager->Focus(client);
-			screen_manager->ReStack(sel_mon);
+			screen_manager->ReStack();
 			XAllowEvents(display, ReplayPointer, CurrentTime);
 			XSync(display, false);
 			click = ClkClientWin;

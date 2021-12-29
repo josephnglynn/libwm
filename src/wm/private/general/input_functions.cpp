@@ -118,7 +118,7 @@ namespace flow::input_functions
 		if (!(c = cm->selected)) return;
 		if (c->full_screen) return;
 
-		sm->ReStack(sel_mon);
+		sm->ReStack();
 		ocx = c->position.x;
 		ocy = c->position.y;
 
@@ -268,7 +268,7 @@ namespace flow::input_functions
 			return;
 		if (c->full_screen)
 			return;
-		sm->ReStack(sel_mon);
+		sm->ReStack();
 
 		ocx = c->position.x;
 		ocy = c->position.y;

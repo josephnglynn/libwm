@@ -191,7 +191,7 @@ namespace flow
 
 
 
-	void ScreenManager::ReStack(Monitor* m)
+	void ScreenManager::ReStack()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
@@ -209,7 +209,7 @@ namespace flow
 	{
 		if (m)
 		{
-			ReStack(m);
+			ReStack();
 		}
 	}
 

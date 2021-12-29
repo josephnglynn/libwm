@@ -48,7 +48,7 @@ namespace flow
 		Monitor* GetMonitor(int x, int y);
 
 		void SetSelectedMonitor(Monitor* monitor);
-		void ReStack(Monitor* m);
+		void ReStack();
 		void Arrange(Monitor* m);
 		void CleanUpMonitor(Monitor* monitor);
 
