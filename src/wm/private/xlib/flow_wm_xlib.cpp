@@ -83,7 +83,7 @@ namespace flow::X11
 			{
 				shell->HandleEventBase(&event, 0, 0, screen_width, screen_height);
 			}
-			if ((c = screen_manager->GetClientFromFrame(event.xany.window)))
+			if ((c =client_manager->GetClientFromFrame(event.xany.window)))
 			{
 				shell->HandleEventFrame(&event, c->position.x, c->position.y, c->position.width, c->position.height);
 				if (event.xbutton.subwindow == c->window)
@@ -170,6 +170,7 @@ namespace flow::X11
 		instance->shell->OnLoad();
 
 		instance->screen_manager = new ScreenManager();
+		instance->client_manager = new ClientManager();
 		instance->screen_manager->UpdateGeom();
 
 		XSetWindowAttributes wa;
@@ -298,7 +299,7 @@ namespace flow::X11
 		);
 
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
-		instance->screen_manager->Focus(nullptr);
+		instance->client_manager->Focus(nullptr);
 		instance->Scan();
 
 		if (!instance->shell->GetShellInfo().non_c_base)
@@ -359,7 +360,7 @@ namespace flow::X11
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
 				{
 					suicide_list.push_back(wins[i]);
-					screen_manager->Manage(wins[i], &wa);
+					client_manager->Manage(wins[i], &wa);
 				}
 
 			}
@@ -375,7 +376,7 @@ namespace flow::X11
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
 				{
 					suicide_list.push_back(wins[i]);
-					screen_manager->Manage(wins[i], &wa);
+					client_manager->Manage(wins[i], &wa);
 				}
 
 			}

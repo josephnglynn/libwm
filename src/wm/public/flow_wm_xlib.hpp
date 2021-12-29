@@ -93,15 +93,19 @@ namespace flow::X11
 			return shell;
 		}
 
-
-		[[nodiscard]]	inline Atom GetUFT8String()
+		[[nodiscard]]    inline Atom GetUFT8String()
 		{
 			return utf8string;
 		}
 
-		[[nodiscard]]	inline Window GetBase()
+		[[nodiscard]]    inline Window GetBase()
 		{
 			return base;
+		}
+
+		[[nodiscard]]    inline ClientManager* GetClientManager()
+		{
+			return client_manager;
 		}
 
 		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
@@ -111,6 +115,7 @@ namespace flow::X11
 		Atom utf8string;
 		ScreenManager* screen_manager;
 		KeyboardManager* keyboard_manager;
+		ClientManager* client_manager;
 		Config* config;
 		Display* display = nullptr;
 		Window root_window;

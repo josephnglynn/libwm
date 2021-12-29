@@ -11,6 +11,10 @@ namespace flow::X11
 	class ClientManager
 	{
 	public:
+
+
+		Client* selected = nullptr;
+
 		void AddClient(Client* client);
 		bool Exists(Client* client);
 		bool Exists(Window window);
@@ -24,10 +28,20 @@ namespace flow::X11
 		void SetFirst(Client* client);
 		void SetLast(Client* client);
 
+		void Focus(X11::Client* client);
+		void UnFocus(X11::Client* client, int set_focus);
+		void Manage(Window window, XWindowAttributes* wa);
+		void UnManage(X11::Client* client, int destroyed);
+		void Frame(X11::Client* client);
+		void Resize(X11::Client* client, int x, int y, int w, int h, int interact);
 		static long GetState(Window window);
 
+		X11::Client* WindowToClient(Window w);
+		bool DontTouchWindow(Window w);
 
-		Client* selected = nullptr;
+		bool CheckAtom(Window window, Atom big_atom, Atom small_atom);
+		void * GetAtom(Window window, Atom atom, unsigned long *items);
+		X11::Client* GetClientFromFrame(Window window);
 	private:
 		Client* first = nullptr;
 		Client* last = nullptr;

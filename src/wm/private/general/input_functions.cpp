@@ -63,9 +63,9 @@ namespace flow::input_functions
 	void focusClient(const std::string&)
 	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
-		auto sm = fwm->GetScreenManager();
+		auto cm = fwm->GetClientManager();
 		logger::info("FOCUS CLIENT");
-		sm->Focus(sm->GetSelectedMonitor()->clients->selected);
+		cm->Focus(cm->selected);
 	}
 
 	void spawn(const std::string& arg)
@@ -107,6 +107,7 @@ namespace flow::input_functions
 	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
 		ScreenManager* sm = fwm->GetScreenManager();
+		ClientManager* cm = fwm->GetClientManager();
 		int x, y, ocx, ocy, nx, ny;
 		Client* c;
 		Monitor* m;
@@ -114,7 +115,7 @@ namespace flow::input_functions
 		Time last_time;
 		Monitor* sel_mon = sm->GetSelectedMonitor();
 
-		if (!(c = sel_mon->clients->selected)) return;
+		if (!(c = cm->selected)) return;
 		if (c->full_screen) return;
 
 		sm->ReStack(sel_mon);
@@ -163,7 +164,7 @@ namespace flow::input_functions
 						< static_cast<int>(snap))
 					ny = selected_monitor->wy + selected_monitor->wh - static_cast<int>(c->position.height);
 
-				fwm->GetScreenManager()->Resize(
+				cm->Resize(
 					c,
 					nx,
 					ny,
@@ -180,7 +181,7 @@ namespace flow::input_functions
 		{
 			c->SendMonitor(m);
 			sm->SetSelectedMonitor(m);
-			sm->Focus(nullptr);
+			cm->Focus(nullptr);
 		}
 	}
 
@@ -250,6 +251,7 @@ namespace flow::input_functions
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 		ScreenManager* sm = fwm->GetScreenManager();
+		ClientManager* cm = fwm->GetClientManager();
 		int ocx, ocy, nw, nh;
 		int ocx2, ocy2, nx, ny;
 		Client* c;
@@ -262,7 +264,7 @@ namespace flow::input_functions
 		Time last_time = 0;
 		Monitor* sel_mon = sm->GetSelectedMonitor();
 
-		if (!(c = sel_mon->clients->selected))
+		if (!(c = cm->selected))
 			return;
 		if (c->full_screen)
 			return;
@@ -346,13 +348,13 @@ namespace flow::input_functions
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
 					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
-					sm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
+					cm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
 				}
 				else if (positionOfMouse.horizontal == CENTER_MIDDLE)
 				{
 					ny = vc ? event.xmotion.y : c->position.y;
 					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
-					sm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
+					cm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
 				}
 				else
 				{
@@ -360,7 +362,7 @@ namespace flow::input_functions
 					ny = vc ? event.xmotion.y : c->position.y;
 					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
 					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
-					sm->Resize(c, nx, ny, nw, nh, 1);
+					cm->Resize(c, nx, ny, nw, nh, 1);
 				}
 
 				break;
@@ -385,14 +387,14 @@ namespace flow::input_functions
 		{
 			c->SendMonitor(m);
 			sm->SetSelectedMonitor(m);
-			sm->Focus(nullptr);
+			cm->Focus(nullptr);
 		}
 	}
 
 	void killClient(const std::string&)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
-		Client* selected = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected;
+		Client* selected = fwm->GetClientManager()->selected;
 		if (!selected) return;
 		if (!selected->SendEvent(fwm->GetWmAtom()[WMDelete]))
 		{

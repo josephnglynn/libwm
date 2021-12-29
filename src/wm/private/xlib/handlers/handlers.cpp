@@ -23,14 +23,14 @@ namespace flow::X11
 
 		if ((m = screen_manager->WindowToMonitor(xb.window)) && m != sel_mon)
 		{
-			if (sel_mon->clients->selected) screen_manager->UnFocus(sel_mon->clients->selected, 1);
+			if (client_manager->selected) client_manager->UnFocus(client_manager->selected, 1);
 			screen_manager->SetSelectedMonitor(m);
-			screen_manager->Focus(nullptr);
+			client_manager->Focus(nullptr);
 		}
 
-		if ((client = screen_manager->WindowToClient(xb.window)))
+		if ((client = client_manager->WindowToClient(xb.window)))
 		{
-			screen_manager->Focus(client);
+			client_manager->Focus(client);
 			screen_manager->ReStack(sel_mon);
 			XAllowEvents(display, ReplayPointer, CurrentTime);
 			XSync(display, false);
@@ -54,7 +54,7 @@ namespace flow::X11
 	void FlowWindowManagerX11::OnClientMessage(XEvent& event)
 	{
 		XClientMessageEvent cme = event.xclient;
-		Client* client = screen_manager->WindowToClient(cme.window);
+		Client* client = client_manager->WindowToClient(cme.window);
 
 		if (!client) return;
 		if (cme.message_type == net_atom[NetWMState])
@@ -66,7 +66,7 @@ namespace flow::X11
 			}
 			else if (cme.message_type == net_atom[NetActiveWindow])
 			{
-				if (client != screen_manager->GetSelectedMonitor()->clients->selected && !client->is_urgent)
+				if (client != client_manager->selected && !client->is_urgent)
 				{
 					client->SetUrgent(1);
 				}
@@ -82,7 +82,7 @@ namespace flow::X11
 		XConfigureRequestEvent ev = event.xconfigurerequest;
 		XWindowChanges wc;
 
-		if ((c = screen_manager->WindowToClient(ev.window)))
+		if ((c = client_manager->WindowToClient(ev.window)))
 		{
 			if (ev.value_mask & CWBorderWidth)
 				c->border_width = ev.border_width;
@@ -163,12 +163,12 @@ namespace flow::X11
 				drw->Resize(screen_width, screen_height);
 				for (m = screen_manager->GetMons(); m; m = m->next)
 				{
-					for (c = m->clients->GetFirst(); c; c = c->next)
+					for (c = client_manager->GetFirst(); c; c = c->next)
 					{
 						if (c->full_screen) c->ResizeClient(m->mx, m->my, m->mw, m->mh);
 					}
 				}
-				screen_manager->Focus(nullptr);
+				client_manager->Focus(nullptr);
 			}
 		}
 	}
@@ -177,9 +177,9 @@ namespace flow::X11
 	{
 		XDestroyWindowEvent dwe = event.xdestroywindow;
 		Client* c;
-		if ((c = screen_manager->WindowToClient(dwe.window)))
+		if ((c = client_manager->WindowToClient(dwe.window)))
 		{
-			screen_manager->UnManage(c, 1);
+			client_manager->UnManage(c, 1);
 		}
 	}
 
@@ -190,25 +190,25 @@ namespace flow::X11
 		XCrossingEvent ce = event.xcrossing;
 
 		if ((ce.mode != NotifyNormal || ce.detail == NotifyInferior) && ce.window != root_window) return;
-		c = screen_manager->WindowToClient(ce.window);
+		c = client_manager->WindowToClient(ce.window);
 		m = c ? c->monitor : screen_manager->WindowToMonitor(ce.window);
 
 		Monitor* selected_monitor = screen_manager->GetSelectedMonitor();
 		if (m != selected_monitor)
 		{
-			if (selected_monitor->clients->selected)
+			if (client_manager->selected)
 			{
-				screen_manager->UnFocus(selected_monitor->clients->selected, 1);
+				client_manager->UnFocus(client_manager->selected, 1);
 			}
 
 			screen_manager->SetSelectedMonitor(m);
 		}
-		else if (!c || c == selected_monitor->clients->selected)
+		else if (!c || c == client_manager->selected)
 		{
 			return;
 		}
 
-		screen_manager->Focus(c);
+		client_manager->Focus(c);
 	}
 
 	void FlowWindowManagerX11::OnExpose(XEvent&)
@@ -218,10 +218,10 @@ namespace flow::X11
 	void FlowWindowManagerX11::OnFocusIn(XEvent& event)
 	{
 		XFocusChangeEvent fce = event.xfocus;
-		if (screen_manager->GetSelectedMonitor()->clients->selected
-			&& fce.window != screen_manager->GetSelectedMonitor()->clients->selected->window)
+		if (client_manager->selected
+			&& fce.window != client_manager->selected->window)
 		{
-			screen_manager->GetSelectedMonitor()->clients->selected->SetFocus();
+			client_manager->selected->SetFocus();
 		}
 	}
 
@@ -269,7 +269,7 @@ namespace flow::X11
 			return;
 		if (wa.override_redirect)
 			return;
-		if (!screen_manager->DontTouchWindow(mre.window))
+		if (!client_manager->DontTouchWindow(mre.window))
 		{
 			if (!base && shell->GetShellInfo().non_c_base)
 			{
@@ -287,7 +287,7 @@ namespace flow::X11
 				}
 			}
 
-			screen_manager->Manage(mre.window, &wa);
+			client_manager->Manage(mre.window, &wa);
 		}
 	}
 
@@ -310,7 +310,7 @@ namespace flow::X11
 		{
 			return;
 		}
-		else if ((c = screen_manager->WindowToClient(pe.window)))
+		else if ((c = client_manager->WindowToClient(pe.window)))
 		{
 			switch (pe.atom)
 			{
@@ -350,7 +350,7 @@ namespace flow::X11
 			}
 		}
 
-		if ((c = screen_manager->WindowToClient(ume.window)))
+		if ((c = client_manager->WindowToClient(ume.window)))
 		{
 			if (ume.send_event)
 			{
@@ -358,7 +358,7 @@ namespace flow::X11
 			}
 			else
 			{
-				screen_manager->UnManage(c, 0);
+				client_manager->UnManage(c, 0);
 			}
 		}
 	}

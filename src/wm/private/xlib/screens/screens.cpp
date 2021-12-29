@@ -4,7 +4,6 @@
 
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/input_functions.hpp"
-#include <X11/Xatom.h>
 #include <xlib/screens/screens.hpp>
 #include "../../../public/general/inline_functions.hpp"
 
@@ -17,6 +16,7 @@ namespace flow
 	int ScreenManager::UpdateGeom()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto cm = fwm->GetClientManager();
 
 		int dirty = 0;
 
@@ -75,10 +75,10 @@ namespace flow
 				for (i = nn; i < n; i++)
 				{
 					for (m = mons; m && m->next; m = m->next);
-					while ((c = m->clients->GetFirst()))
+					while ((c = cm->GetFirst()))
 					{
 						dirty = 1;
-						m->clients->SetFirst(c->next);
+						cm->SetFirst(c->next);
 						c->monitor = mons;
 					}
 					if (m == selected_monitor) selected_monitor = mons;
@@ -125,7 +125,6 @@ namespace flow
 	{
 		Monitor* m;
 		m = static_cast<Monitor*>(calloc(1, sizeof(Monitor)));
-		m->clients = new ClientManager();
 		return m;
 	}
 
@@ -141,7 +140,6 @@ namespace flow
 			for (m = mons; m && m->next != monitor; m = m->next);
 			m->next = monitor->next;
 		}
-		free(monitor->clients);
 		free(monitor);
 	}
 
@@ -153,7 +151,7 @@ namespace flow
 
 		if (w == fwm->GetRootWindow() && input_functions::GetRootPointer(&x, &y))
 			return RectToMonitor(shapes::Rectangle(x, y, 1, 1));
-		if ((c = WindowToClient(w)))
+		if ((c = fwm->GetClientManager()->WindowToClient(w)))
 			return c->monitor;
 		return selected_monitor;
 	}
@@ -174,154 +172,7 @@ namespace flow
 		return r;
 	}
 
-	X11::Client* ScreenManager::WindowToClient(Window w)
-	{
-		Client* c;
-		Monitor* m;
 
-		for (m = mons; m; m = m->next)
-		{
-			for (c = m->clients->GetFirst(); c; c = c->next)
-			{
-				if (c->window == w) return c;
-			}
-		}
-
-		return nullptr;
-	}
-
-	bool ScreenManager::DontTouchWindow(Window w)
-	{
-		Client* c;
-		Monitor* m;
-
-		for (m = mons; m; m = m->next)
-		{
-			for (c = m->clients->GetFirst(); c; c = c->next)
-			{
-				if (c->window == w || c->frame == w) return true;
-			}
-		}
-
-		if (FlowWindowManagerX11::Get()->GetBase() == w) return true;
-		return false;
-	}
-
-	void ScreenManager::Manage(Window window, XWindowAttributes* wa)
-	{
-		auto fwm = FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
-		auto root = fwm->GetRootWindow();
-		Client* t, * client = new Client();
-		Window trans = None;
-		XWindowChanges wc;
-
-		client->window = window;
-		client->position.x = client->old_position.x = wa->x;
-		client->position.y = client->old_position.y = wa->y;
-		client->position.width = client->old_position.width = wa->width;
-		client->position.height = client->old_position.height = wa->height;
-		client->old_border_width = wa->border_width;
-
-		client->UpdateTitle();
-
-		if (CheckAtom(client->window, fwm->GetNetAtom()[NetWMWindowType], fwm->GetNetAtom()[NetWMTypeDesk]) ||
-			CheckAtom(client->window, fwm->GetNetAtom()[NetWMWindowType], fwm->GetNetAtom()[NetWMTypeDock]))
-		{
-			client->is_annoying = true;
-		}
-
-		if (XGetTransientForHint(display, window, &trans) && (t = WindowToClient(trans)))
-		{
-			client->monitor = t->monitor;
-		}
-		else
-		{
-			client->monitor = selected_monitor;
-			//TODO APPLY RULES HERE WE SHOULD CHECK FOR OUR SHELL
-		}
-
-		client->border_width = fwm->GetConfig()->border_size_in_pixels * 0; //TODO MAYBE CHANGE
-		wc.border_width = client->border_width;
-		client->frame_offsets = fwm->GetShell()->GetOffsets(client->is_annoying);
-
-		Monitor* m = client->monitor;
-		if (client->position.width > m->mw) client->position.width = m->mw - 2 * client->border_width;
-		shapes::CenterRectangleOnPlane(shapes::Rectangle(m->mx, m->my, m->mw, m->mh), &client->position);
-
-		XUnmapWindow(display, client->window);
-		XConfigureWindow(display, window, CWBorderWidth, &wc);
-		XSetWindowBorder(display, window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
-		client->Configure();
-		client->UpdateWindowType();
-		client->UpdateSizeHints();
-		client->UpdateWmHints();
-
-		XSelectInput(
-			display,
-			window,
-			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
-		);
-
-		XRaiseWindow(display, window);
-		client->monitor->clients->AddClient(client);
-
-		XChangeProperty(
-			display,
-			root,
-			fwm->GetNetAtom()[NetClientList],
-			XA_WINDOW,
-			32,
-			PropModeAppend,
-			(unsigned char*)&(client->window),
-			1
-		);
-
-		XMoveResizeWindow(
-			display,
-			client->window,
-			client->position.x + client->frame_offsets.left,
-			client->position.y + client->frame_offsets.top,
-			client->position.width - client->frame_offsets.right,
-			client->position.height - client->frame_offsets.bottom
-		);
-
-		client->SetState(NormalState);
-		if (client->monitor == selected_monitor)
-		{
-			UnFocus(GetSelectedMonitor()->clients->selected, 1);
-		}
-		client->monitor->clients->selected = client;
-		Frame(client);
-		Focus(nullptr);
-	}
-
-	void ScreenManager::Focus(X11::Client* client)
-	{
-		auto fwm = FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
-		auto root = fwm->GetRootWindow();
-
-		if (selected_monitor->clients->selected && selected_monitor->clients->selected != client)
-		{
-			UnFocus(selected_monitor->clients->selected, 1);
-		}
-
-		if (client)
-		{
-			if (client->monitor != selected_monitor) selected_monitor = client->monitor;
-			if (client->is_urgent) client->SetUrgent(0);
-			fwm->GetKeyboardManager()->GrabButtons(client, 1);
-			client->SetFocus();
-			XRaiseWindow(display, client->frame);
-		}
-		else
-		{
-			XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
-			XDeleteProperty(display, root, fwm->GetNetAtom()[NetActiveWindow]);
-		}
-		selected_monitor->clients->selected = client;
-	}
 
 	Monitor* ScreenManager::GetSelectedMonitor()
 	{
@@ -338,60 +189,13 @@ namespace flow
 		selected_monitor = monitor;
 	}
 
-	void ScreenManager::UnManage(Client* client, int destroyed)
-	{
-		auto fwm = X11::FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
-		Monitor* m = client->monitor;
-		if (!destroyed)
-		{
-			XWindowChanges wc;
-			wc.border_width = client->old_border_width;
-			XGrabServer(fwm->GetDisplay());
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int
-			{ return 0; });
-			XUnmapWindow(display, client->frame);
-			XReparentWindow(display, client->window, fwm->GetRootWindow(), 0, 0);
-			XRemoveFromSaveSet(display, client->window);
-			XDestroyWindow(display, client->frame);
-			XConfigureWindow(display, client->window, CWBorderWidth, &wc);
-			XUngrabButton(display, AnyButton, AnyModifier, client->window);
-			client->SetState(WithdrawnState);
-			XSync(display, False);
-			XSetErrorHandler(FlowX11ErrorHandler);
-			XUngrabServer(display);
-		}
-		m->clients->RemoveClient(client);
-		fwm->GetScreenManager()->Focus(nullptr);
-		Arrange(m);
-	}
 
-	void ScreenManager::UnFocus(X11::Client* client, int set_focus)
-	{
-		if (!client) return;
-		auto fwm = FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
-		auto root = fwm->GetRootWindow();
-		fwm->GetKeyboardManager()->GrabButtons(client, 0);
-		XSetWindowBorder(display, client->window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
-		if (set_focus)
-		{
-			XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
-			XDeleteProperty(display, root, fwm->GetNetAtom()[NetActiveWindow]);
-		}
-
-	}
-
-	void ScreenManager::Resize(X11::Client* client, int x, int y, int w, int h, int interact)
-	{
-		if (client->ApplySizeHints(&x, &y, &w, &h, interact)) client->ResizeClient(x, y, w, h);
-	}
 
 	void ScreenManager::ReStack(Monitor* m)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
-		Client* c = m->clients->selected;
+		Client* c = fwm->GetClientManager()->selected;
 		XEvent ev;
 
 		if (!c)
@@ -429,97 +233,7 @@ namespace flow
 		return nullptr;
 	}
 
-	void ScreenManager::Frame(X11::Client* client)
-	{
-		if (client->is_annoying) return;
-		auto fwm = FlowWindowManagerX11::Get();
-		auto display = fwm->GetDisplay();
-		auto root = fwm->GetRootWindow();
-		auto shell = fwm->GetShell();
 
-		client->frame = shell->CreateWindow(
-			client->position.x,
-			client->position.y,
-			client->position.width,
-			client->position.height,
-			display,
-			root
-		);
 
-		XAddToSaveSet(display, client->window);
-		XReparentWindow(display, client->window, client->frame, client->frame_offsets.left, client->frame_offsets.top);
-		XMapWindow(display, client->frame);
-
-		fwm->GetKeyboardManager()->GrabButtons(client, 0);
-		XMapWindow(display, client->window);
-	}
-
-	bool ScreenManager::CheckAtom(Window window, Atom big_atom, Atom small_atom)
-	{
-		Atom* state;
-		unsigned long i, n;
-		bool ret = false;
-
-		state = (Atom*)GetAtom(window, big_atom, &n);
-		for (i = 0; i < n; i++)
-		{
-			if (state[i] == small_atom) ret = true;
-		}
-
-		XFree(state);
-		return ret;
-	}
-
-	void* ScreenManager::GetAtom(Window window, Atom atom, unsigned long* items)
-	{
-		int format, status;
-		unsigned char* ret = NULL;
-		unsigned long extra;
-		Atom real;
-		Display* dpy = FlowWindowManagerX11::Get()->GetDisplay();
-
-		status = XGetWindowProperty(
-			dpy,
-			window,
-			atom,
-			0L,
-			64L,
-			False,
-			AnyPropertyType,
-			&real,
-			&format,
-			items,
-			&extra,
-			(unsigned char**)&ret
-		);
-
-		if (status != Success)
-		{
-			*items = 0;
-			return nullptr;
-		}
-
-		return ret;
-	}
-
-	Client* ScreenManager::GetClientFromFrame(Window window)
-	{
-
-		Monitor* m;
-		Client* c;
-
-		for (m = mons; m; m = m->next)
-		{
-			for (c = m->clients->GetFirst(); c; c = c->next)
-			{
-				if (c->frame == window)
-				{
-					return c;
-				}
-			}
-		}
-
-		return nullptr;
-	}
 
 }

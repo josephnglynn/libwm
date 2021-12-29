@@ -71,17 +71,16 @@ namespace flow
 		key_bindings_client = ckb;
 
 		auto fwm = X11::FlowWindowManagerX11::Get();
+		X11::ClientManager* cm = fwm->GetClientManager();
 		Start(fwm->GetDisplay(), fwm->GetRootWindow());
 
-		X11::Client* client = fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected;
-		Monitor* m = fwm->GetScreenManager()->GetMons();
-		for (; m; m = m->next)
+		X11::Client* client = cm->selected;
+
+		for (X11::Client* c = cm->GetFirst(); c; c = c->next)
 		{
-			for (X11::Client* c = m->clients->GetFirst(); c ;c = c->next)
-			{
-				GrabButtons(c, 0);
-			}
+			GrabButtons(c, 0);
 		}
+
 		GrabButtons(client, 1);
 	}
 

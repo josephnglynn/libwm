@@ -258,7 +258,7 @@ namespace flow::X11
 
 		if ((wmh = XGetWMHints(fwm->GetDisplay(), window)))
 		{
-			if (this == fwm->GetScreenManager()->GetSelectedMonitor()->clients->selected && wmh->flags & XUrgencyHint)
+			if (this == fwm->GetClientManager()->selected && wmh->flags & XUrgencyHint)
 			{
 				wmh->flags &= ~XUrgencyHint;
 				XSetWMHints(fwm->GetDisplay(), window, wmh);
@@ -371,11 +371,11 @@ namespace flow::X11
 	void Client::SendMonitor(Monitor* m)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
-		auto sm = fwm->GetScreenManager();
+		auto cm = fwm->GetClientManager();
 		if (monitor == m) return;
-		sm->UnFocus(this, 1);
+		cm->UnFocus(this, 1);
 		monitor = m;
-		sm->Focus(nullptr);
+		cm->Focus(nullptr);
 	}
 
 

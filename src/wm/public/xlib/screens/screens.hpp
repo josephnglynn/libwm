@@ -25,7 +25,6 @@ namespace flow
 		int by;
 		int mx, my, mw, mh;
 		int wx, wy, ww, wh;
-		X11::ClientManager* clients;
 		Monitor *next;
 		int screen;
 	};
@@ -38,12 +37,7 @@ namespace flow
 		int UpdateGeom();
 		int IsUniqueGeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
 
-		void Focus(X11::Client* client);
-		void UnFocus(X11::Client* client, int set_focus);
-		void Manage(Window window, XWindowAttributes* wa);
-		void UnManage(X11::Client* client, int destroyed);
-		void Frame(X11::Client* client);
-		void Resize(X11::Client* client, int x, int y, int w, int h, int interact);
+
 
 		Monitor* GetSelectedMonitor();
 		Monitor* GetMons();
@@ -58,15 +52,10 @@ namespace flow
 		void Arrange(Monitor* m);
 		void CleanUpMonitor(Monitor* monitor);
 
-		X11::Client* WindowToClient(Window w);
-		bool DontTouchWindow(Window w);
-
-		bool CheckAtom(Window window, Atom big_atom, Atom small_atom);
-		void * GetAtom(Window window, Atom atom, unsigned long *items);
-		X11::Client* GetClientFromFrame(Window window);
+		Monitor* selected_monitor = nullptr;
 	private:
 		Monitor* mons = nullptr;
-		Monitor* selected_monitor = nullptr;
+
 	};
 
 }
