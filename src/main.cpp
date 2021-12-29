@@ -6,6 +6,7 @@
 
 int main()
 {
+
 #ifdef DEBUG
 	auto config = flow::Config::FromFilePath("config.json");
 #else

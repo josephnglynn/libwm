@@ -295,14 +295,26 @@ namespace flow
 	void ScreenManager::Focus(X11::Client* client)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+		auto root = fwm->GetRootWindow();
+
 		if (selected_monitor->clients->selected && selected_monitor->clients->selected != client)
+		{
 			UnFocus(selected_monitor->clients->selected, 1);
+		}
+
 		if (client)
 		{
 			if (client->monitor != selected_monitor) selected_monitor = client->monitor;
 			if (client->is_urgent) client->SetUrgent(0);
 			fwm->GetKeyboardManager()->GrabButtons(client, 1);
 			client->SetFocus();
+			XRaiseWindow(display, client->frame);
+		}
+		else
+		{
+			XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
+			XDeleteProperty(display, root, fwm->GetNetAtom()[NetActiveWindow]);
 		}
 		selected_monitor->clients->selected = client;
 	}
@@ -496,7 +508,8 @@ namespace flow
 		{
 			for (c = m->clients->GetFirst(); c; c = c->next)
 			{
-				if (c->frame == window) {
+				if (c->frame == window)
+				{
 					return c;
 				}
 			}

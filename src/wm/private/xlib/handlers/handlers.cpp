@@ -20,6 +20,7 @@ namespace flow::X11
 		Client* client;
 		Monitor* m;
 		Monitor* sel_mon = screen_manager->GetSelectedMonitor();
+
 		if ((m = screen_manager->WindowToMonitor(xb.window)) && m != sel_mon)
 		{
 			if (sel_mon->clients->selected) screen_manager->UnFocus(sel_mon->clients->selected, 1);
