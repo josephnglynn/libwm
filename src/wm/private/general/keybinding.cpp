@@ -6,6 +6,7 @@
 #include <utility>
 #include "../../public/general/input_functions.hpp"
 
+#define SPREAD "    "
 
 namespace flow
 {
@@ -20,8 +21,8 @@ namespace flow
 
 	std::ostream& operator<<(std::ostream& os, const KeyBinding& kb)
 	{
-		os << "modkey: "<< kb.mod_key << std::endl
-				  << "key: " << kb.key << std::endl
+		os << "modkey: "<< kb.mod_key << "\n"  << SPREAD
+				  << "key: " << kb.key << "\n"  << SPREAD
 			//	  << "function: " << kb.function << std::endl
 				  << "args: " << kb.arg << std::endl;
 		return os;
@@ -34,9 +35,9 @@ namespace flow
 
 	std::ostream& operator<<(std::ostream& os, const ClientKeyBinding& ckb)
 	{
-		os << "click: "<< ckb.click << std::endl
-		   << "event_mask: " << ckb.event_mask << std::endl
-		   << "button: " << ckb.button << std::endl
+		os << "click: "<< ckb.click << "\n" << SPREAD
+		   << "event_mask: " << ckb.event_mask << "\n" << SPREAD
+		   << "button: " << ckb.button << "\n" << SPREAD
 	//	   << "function: " << ckb.function << std::endl
 		   << "args: " << ckb.arg << std::endl;
 		return os;
