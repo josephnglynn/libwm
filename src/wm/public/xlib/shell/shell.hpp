@@ -7,7 +7,7 @@
 #include <string>
 #include <X11/Xlib.h>
 #include <functional>
-#include "../../../../external/shell-base/src/shell_base.hpp"
+#include "../../../../external/shell-base/src/types/types.hpp"
 
 namespace flow
 {
@@ -20,6 +20,7 @@ namespace flow
 		typedef void (*HandleEventFrame_t)(XEvent*, int, int, int, int);
 		typedef Window (*CreateBackWindow_t)(int, int, int, int, Display*, Window);
 		typedef void (*HandleEventBase_t)(XEvent*, int, int, int, int);
+		typedef NonConformingWB (*GetNCWB_t)();
 	}
 
 
@@ -33,6 +34,7 @@ namespace flow
 		HandleEventFrame_t HandleEventFrame;
 		CreateBackWindow_t CreateBackWindow;
 		HandleEventBase_t HandleEventBase;
+		GetNCWB_t GetNCWB;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

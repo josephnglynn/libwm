@@ -9,7 +9,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include "../../../external/shell-base/src/shell_base.hpp"
+#include "../../../external/shell-base/src/types/types.hpp"
 
 using json = nlohmann::json;
 

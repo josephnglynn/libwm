@@ -92,10 +92,23 @@ namespace flow::X11
 		{
 			return shell;
 		}
+
+
+		[[nodiscard]]	inline Atom GetUFT8String()
+		{
+			return utf8string;
+		}
+
+		[[nodiscard]]	inline Window GetBase()
+		{
+			return base;
+		}
+
 		int GetTextProp(Window w, Atom atom, char* text, unsigned int size);
 
 		bool detached = false;
 	private:
+		Atom utf8string;
 		ScreenManager* screen_manager;
 		KeyboardManager* keyboard_manager;
 		Config* config;

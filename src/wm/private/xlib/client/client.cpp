@@ -10,7 +10,7 @@
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
 #include <X11/Xutil.h>
-#include "../../../public/general/masks.hpp"
+#include "../../../../logger/public/logger.hpp"
 
 namespace flow::X11
 {
@@ -367,6 +367,7 @@ namespace flow::X11
 		return *x != position.x || *y != position.y || *w != static_cast<int>(position.width)
 			|| *h != static_cast<int>(position.height);
 	}
+
 	void Client::SendMonitor(Monitor* m)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
@@ -377,13 +378,24 @@ namespace flow::X11
 		sm->Focus(nullptr);
 	}
 
+
+
 	void Client::UpdateTitle()
 	{
+		char c_name[256];
+		strcpy(c_name, name.data());
 		auto fwm = FlowWindowManagerX11::Get();
-		if (!fwm->GetTextProp(window, fwm->GetNetAtom()[NetWMName], name.data(), name.length()))
+		if (!fwm->GetTextProp(window, fwm->GetNetAtom()[NetWMName], c_name, sizeof c_name))
 		{
-			fwm->GetTextProp(window, fwm->GetWmAtom()[WMName], name.data(), name.length());
+			fwm->GetTextProp(window, XA_WM_NAME, c_name, sizeof c_name);
 		}
+		if (name[0] == '\0') {
+			strcpy(c_name, "broken");
+		}
+
+		name = std::string (c_name);
+		logger::success("NAME IS NOW: ", name);
+
 	}
 
 }

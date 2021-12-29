@@ -7,7 +7,7 @@
 #include <X11/Xft/Xft.h>
 #include "../screens/screens.hpp"
 #include <string>
-#include "../../../../external/shell-base/src/shell_base.hpp"
+#include "../../../../external/shell-base/src/types/types.hpp"
 
 namespace flow::X11
 {

@@ -173,7 +173,7 @@ namespace flow::X11
 		instance->screen_manager->UpdateGeom();
 
 		XSetWindowAttributes wa;
-		Atom utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
+		instance->utf8string = XInternAtom(instance->display, "UFT8_STRING", false);
 		instance->wm_atom[WMProtocols] = XInternAtom(instance->display, "WM_PROTOCOLS", false);
 		instance->wm_atom[WMDelete] = XInternAtom(instance->display, "WM_DELETE_WINDOW", false);
 		instance->wm_atom[WMState] = XInternAtom(instance->display, "WM_STATE", false);
@@ -246,7 +246,7 @@ namespace flow::X11
 			instance->display,
 			instance->wm_check_window,
 			instance->net_atom[NetWMName],
-			utf8string,
+			instance->utf8string,
 			8,
 			PropModeReplace,
 			(unsigned char*)"flow-wm",
@@ -301,13 +301,29 @@ namespace flow::X11
 		instance->screen_manager->Focus(nullptr);
 		instance->Scan();
 
-		instance->base = instance->shell->CreateBackWindow(0,
-			0,
-			instance->screen_width,
-			instance->screen_height,
-			instance->display,
-			instance->root_window);
-		XMapWindow(instance->display, instance->base);
+		if (!instance->shell->GetShellInfo().non_c_base)
+		{
+			instance->base = instance->shell->CreateBackWindow(0,
+				0,
+				instance->screen_width,
+				instance->screen_height,
+				instance->display,
+				instance->root_window
+			);
+			XMapWindow(instance->display, instance->base);
+		}
+		else
+		{
+			//We don't care any more
+			instance->shell->CreateBackWindow(
+				0,
+				0,
+				0,
+				0,
+				nullptr,
+				0
+			);
+		}
 
 		return instance;
 	}

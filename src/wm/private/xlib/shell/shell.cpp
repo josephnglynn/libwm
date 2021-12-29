@@ -25,6 +25,7 @@ namespace flow
 		HandleEventFrame = (HandleEventFrame_t) dlsym(handle, "hEF");
 		CreateBackWindow = (CreateBackWindow_t) dlsym(handle, "cBW");
 		HandleEventBase = (HandleEventBase_t) dlsym(handle, "hEB");
+		GetNCWB = (GetNCWB_t) dlsym(handle, "gNCWB");
 	}
 
 	Shell::~Shell()

@@ -8,6 +8,7 @@
 #include <xlib/screens/screens.hpp>
 #include "../../../public/general/inline_functions.hpp"
 
+
 namespace flow
 {
 
@@ -198,10 +199,11 @@ namespace flow
 		{
 			for (c = m->clients->GetFirst(); c; c = c->next)
 			{
-				if (c->window == w || c->frame == w)return true;
+				if (c->window == w || c->frame == w) return true;
 			}
 		}
 
+		if (FlowWindowManagerX11::Get()->GetBase() == w) return true;
 		return false;
 	}
 
@@ -220,6 +222,8 @@ namespace flow
 		client->position.width = client->old_position.width = wa->width;
 		client->position.height = client->old_position.height = wa->height;
 		client->old_border_width = wa->border_width;
+
+		client->UpdateTitle();
 
 		if (CheckAtom(client->window, fwm->GetNetAtom()[NetWMWindowType], fwm->GetNetAtom()[NetWMTypeDesk]) ||
 			CheckAtom(client->window, fwm->GetNetAtom()[NetWMWindowType], fwm->GetNetAtom()[NetWMTypeDock]))
