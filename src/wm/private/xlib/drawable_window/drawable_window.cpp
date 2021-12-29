@@ -8,7 +8,7 @@
 namespace flow {
 	DrawableWindow* DrawableWindow::Create(Display* display, int screen, Window root, unsigned int w, unsigned int h)
 	{
-		DrawableWindow* drw = new DrawableWindow();
+		auto drw = new DrawableWindow();
 
 		drw->dpy = display;
 		drw->screen = screen;

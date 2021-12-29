@@ -11,7 +11,7 @@ namespace flow::X11
 	class ClientManager
 	{
 	public:
-
+		ClientManager() = default;
 
 		Client* selected = nullptr;
 

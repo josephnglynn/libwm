@@ -148,7 +148,7 @@ namespace flow::X11
 		void OnKeyPress(XEvent& event);
 		void OnMappingNotify(XEvent& event);
 		void OnMapRequest(XEvent& event);
-		void OnMotionNotify(XEvent& event);
+		void OnMotionNotify(XEvent& event) const;
 		void OnPropertyNotify(XEvent& event);
 		void OnUnmapNotify(XEvent& event);
 

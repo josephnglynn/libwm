@@ -17,7 +17,7 @@ namespace flow {
 		FcPattern* pattern;
 		struct Fnt* next;
 
-		static Fnt* XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern);
+		static Fnt* XCreateFont(DrawableWindow* drw, const char* font_name, FcPattern* font_pattern);
 
 	};
 }

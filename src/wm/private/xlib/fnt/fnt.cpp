@@ -6,30 +6,30 @@
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow {
-	Fnt* Fnt::XCreateFont(DrawableWindow* drw, const char* fontname, FcPattern* fontpattern)
+	Fnt* Fnt::XCreateFont(DrawableWindow* drw, const char* font_name, FcPattern* font_pattern)
 	{
 		{
 			Fnt* font;
 			XftFont* xfont;
 			FcPattern* pattern = nullptr;
 
-			if (fontname)
+			if (font_name)
 			{
-				if (!(xfont = XftFontOpenName(drw->dpy, drw->screen, fontname)))
+				if (!(xfont = XftFontOpenName(drw->dpy, drw->screen, font_name)))
 				{
-					logger::error("error, cannot load font from name: ", fontname);
+					logger::error("error, cannot load font from name: ", font_name);
 					return nullptr;
 				}
-				if (!(pattern = FcNameParse((FcChar8*)fontname)))
+				if (!(pattern = FcNameParse((FcChar8*)font_name)))
 				{
-					logger::error("error, cannot parse font name to pattern: ", fontname);
+					logger::error("error, cannot parse font name to pattern: ", font_name);
 					XftFontClose(drw->dpy, xfont);
 					return nullptr;
 				}
 			}
-			else if (fontpattern)
+			else if (font_pattern)
 			{
-				if (!(xfont = XftFontOpenPattern(drw->dpy, fontpattern)))
+				if (!(xfont = XftFontOpenPattern(drw->dpy, font_pattern)))
 				{
 					logger::error("error, cannot load font from pattern.");
 					return nullptr;

@@ -43,17 +43,17 @@ namespace flow
 		KeyCode key_code;
 		XUngrabKey(display, AnyKey, AnyModifier, root_window);
 
-		for (unsigned int i = 0; i < key_bindings_root.size(); i++)
+		for (auto & i : key_bindings_root)
 		{
-			if ((key_code = XKeysymToKeycode(display, key_bindings_root[i].key)))
+			if ((key_code = XKeysymToKeycode(display, i.key)))
 			{
-				for (unsigned int k = 0; k < sizeof modifiers / sizeof modifiers[0]; ++k)
+				for (unsigned int modifier : modifiers)
 				{
 
 					XGrabKey(
 						display,
 						key_code,
-						key_bindings_root[i].mod_key | modifiers[k],
+						i.mod_key | modifier,
 						root_window,
 						True,
 						GrabModeAsync,

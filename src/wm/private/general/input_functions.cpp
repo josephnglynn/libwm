@@ -113,7 +113,6 @@ namespace flow::input_functions
 		Monitor* m;
 		XEvent event;
 		Time last_time;
-		Monitor* sel_mon = sm->GetSelectedMonitor();
 
 		if (!(c = cm->selected)) return;
 		if (c->full_screen) return;
@@ -262,7 +261,6 @@ namespace flow::input_functions
 		unsigned int mask;
 		Window dummy;
 		Time last_time = 0;
-		Monitor* sel_mon = sm->GetSelectedMonitor();
 
 		if (!(c = cm->selected))
 			return;

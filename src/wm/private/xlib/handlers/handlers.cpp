@@ -8,7 +8,6 @@
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../../logger/public/logger.hpp"
 #include "../../../public/general/masks.hpp"
-#include "../../../public/general/input_functions.hpp"
 
 namespace flow::X11
 {
@@ -291,7 +290,7 @@ namespace flow::X11
 		}
 	}
 
-	void FlowWindowManagerX11::OnMotionNotify(XEvent& event)
+	void FlowWindowManagerX11::OnMotionNotify(XEvent& event) const
 	{
 		XMotionEvent me = event.xmotion;
 		if (me.window != root_window) return;
@@ -316,10 +315,7 @@ namespace flow::X11
 			{
 			case XA_WM_TRANSIENT_FOR:
 				break;
-			case XA_WM_NORMAL_HINTS:
-				c->UpdateWindowType();
-				break;
-			case XA_WM_HINTS:
+			case XA_WM_NORMAL_HINTS | XA_WM_HINTS:
 				c->UpdateWindowType();
 				break;
 			case XA_WM_NAME:

@@ -10,7 +10,7 @@ namespace flow
 
 	Config* InflateFromJson(const json& j)
 	{
-		Config* config = new Config();
+		auto config = new Config();
 		logger::info("Starting config inflation");
 		j.at("config_name").get_to(config->config_name);
 		j.at("time").get_to(config->time);
@@ -40,7 +40,7 @@ namespace flow
 		return config;
 	}
 
-	Config* ParseConfigFromFile(std::ifstream& file, const std::string file_name)
+	Config* ParseConfigFromFile(std::ifstream& file, const std::string& file_name)
 	{
 		Config* config;
 		json j;

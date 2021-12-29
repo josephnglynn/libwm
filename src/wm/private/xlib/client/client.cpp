@@ -5,11 +5,12 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xutil.h>
 #include "../../../public/xlib/enums/enums.hpp"
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
-#include <X11/Xutil.h>
+
 #include "../../../../logger/public/logger.hpp"
 
 namespace flow::X11

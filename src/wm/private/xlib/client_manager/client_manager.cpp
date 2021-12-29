@@ -231,7 +231,7 @@ namespace flow::X11
 			//TODO APPLY RULES HERE WE SHOULD CHECK FOR OUR SHELL
 		}
 
-		client->border_width = fwm->GetConfig()->border_size_in_pixels * 0; //TODO MAYBE CHANGE
+		client->border_width = static_cast<int>(fwm->GetConfig()->border_size_in_pixels) * 0; //TODO MAYBE CHANGE
 		wc.border_width = client->border_width;
 		client->frame_offsets = fwm->GetShell()->GetOffsets(client->is_annoying);
 
@@ -270,8 +270,8 @@ namespace flow::X11
 		XMoveResizeWindow(
 			display,
 			client->window,
-			client->position.x + client->frame_offsets.left,
-			client->position.y + client->frame_offsets.top,
+			client->position.x + static_cast<int>(client->frame_offsets.left),
+			client->position.y + static_cast<int>(client->frame_offsets.top),
 			client->position.width - client->frame_offsets.right,
 			client->position.height - client->frame_offsets.bottom
 		);
