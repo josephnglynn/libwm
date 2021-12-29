@@ -79,9 +79,13 @@ namespace flow::X11
 			XNextEvent(display, &event);
 			Client* c;
 			if (event.type == MotionNotify) continue;
+			if (event.xany.window == base)
+			{
+				shell->HandleEventBase(&event, 0, 0, screen_width, screen_height);
+			}
 			if ((c = screen_manager->GetClientFromFrame(event.xany.window)))
 			{
-				shell->HandleEvent(&event, c->position.x, c->position.y, c->position.width, c->position.height);
+				shell->HandleEventFrame(&event, c->position.x, c->position.y, c->position.width, c->position.height);
 				if (event.xbutton.subwindow == c->window)
 				{
 					event.xbutton.window = c->window;
@@ -296,6 +300,14 @@ namespace flow::X11
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 		instance->screen_manager->Focus(nullptr);
 		instance->Scan();
+
+		instance->base = instance->shell->CreateBackWindow(0,
+			0,
+			instance->screen_width,
+			instance->screen_height,
+			instance->display,
+			instance->root_window);
+		XMapWindow(instance->display, instance->base);
 
 		return instance;
 	}

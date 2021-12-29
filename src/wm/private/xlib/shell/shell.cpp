@@ -22,9 +22,9 @@ namespace flow
 		GetShellInfo = (GetShellInfo_t) dlsym(handle, "gBI");
 		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
 		CreateWindow = (CreateWindow_t) dlsym(handle, "cW");
-		HandleEvent = (HandleEvent_t) dlsym(handle, "hE");
+		HandleEventFrame = (HandleEventFrame_t) dlsym(handle, "hEF");
 		CreateBackWindow = (CreateBackWindow_t) dlsym(handle, "cBW");
-
+		HandleEventBase = (HandleEventBase_t) dlsym(handle, "hEB");
 	}
 
 	Shell::~Shell()
