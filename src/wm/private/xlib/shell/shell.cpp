@@ -23,6 +23,7 @@ namespace flow
 		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
 		CreateWindow = (CreateWindow_t) dlsym(handle, "cW");
 		HandleEvent = (HandleEvent_t) dlsym(handle, "hE");
+		CreateBackWindow = (CreateBackWindow_t) dlsym(handle, "cBW");
 
 	}
 

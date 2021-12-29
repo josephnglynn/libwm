@@ -18,6 +18,7 @@ namespace flow
 		typedef Offsets (* GetOffsets_t)(int);
 		typedef Window (*CreateWindow_t)(int, int, int, int, Display*, Window);
 		typedef void (*HandleEvent_t)(XEvent*, int, int, int, int);
+		typedef Window (*CreateBackWindow_t)(int, int, int, int, Display*, Window);
 	}
 
 
@@ -29,6 +30,7 @@ namespace flow
 		GetOffsets_t GetOffsets;
 		CreateWindow_t CreateWindow;
 		HandleEvent_t HandleEvent;
+		CreateBackWindow_t CreateBackWindow;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();
