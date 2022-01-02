@@ -48,10 +48,7 @@ namespace flow::X11
 			return net_atom;
 		}
 
-		[[nodiscard]]    inline XftColor** GetColorScheme()
-		{
-			return color_scheme;
-		}
+
 
 		[[nodiscard]]    inline KeyboardManager* GetKeyboardManager()
 		{
@@ -112,25 +109,24 @@ namespace flow::X11
 
 		bool detached = false;
 	private:
-		Atom utf8string;
-		ScreenManager* screen_manager;
-		KeyboardManager* keyboard_manager;
-		ClientManager* client_manager;
-		Config* config;
+		Atom utf8string = 0;
+		ScreenManager* screen_manager = nullptr;
+		KeyboardManager* keyboard_manager = nullptr;
+		ClientManager* client_manager = nullptr;
+		Config* config = nullptr;
 		Display* display = nullptr;
-		Window root_window;
+		Window root_window = 0;
 		bool quit = false;
 		Atom wm_atom[WMLast], net_atom[NetLast];
 		Cur* cursor[CurLast];
-		DrawableWindow* drw;
-		XftColor** color_scheme;
-		Window wm_check_window;
-		Shell* shell;
-		int screen;
-		int screen_width;
-		int screen_height;
+		DrawableWindow* drw = nullptr;
+		Window wm_check_window = 0;
+		Shell* shell = nullptr;
+		int screen = 0;
+		int screen_width = 0;
+		int screen_height = 0;
 		std::vector<Window> suicide_list;
-		Window base;
+		Window base = 0;
 
 		void Scan();
 		void UpdateStatus();
@@ -152,6 +148,9 @@ namespace flow::X11
 		void OnPropertyNotify(XEvent& event);
 		void OnUnmapNotify(XEvent& event);
 
+		bool IsBaseWindow(Window window);
+		bool IsFrameWindow(Window window);
+		void Scanner(Window window);
 	};
 }
 

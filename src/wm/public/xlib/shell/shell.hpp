@@ -13,14 +13,14 @@ namespace flow
 {
 
 	extern "C" {
-		typedef void (* OnLoad_t)();
+		typedef void (* Handler)(XEvent*);
+		typedef void (* OnLoad_t)(Handler);
 		typedef ShellInfo (* GetShellInfo_t)();
 		typedef Offsets (* GetOffsets_t)(int);
-		typedef Window (*CreateWindow_t)(int, int, int, int, Display*, Window);
+		typedef Window (*CreateFrame_t)(int, int, int, int, Display*, Window);
 		typedef void (*HandleEventFrame_t)(XEvent*, int, int, int, int);
 		typedef Window (*CreateBackWindow_t)(int, int, int, int, Display*, Window);
 		typedef void (*HandleEventBase_t)(XEvent*, int, int, int, int);
-		typedef NonConformingWB (*GetNCWB_t)();
 	}
 
 
@@ -30,11 +30,10 @@ namespace flow
 		OnLoad_t OnLoad;
 		GetShellInfo_t  GetShellInfo;
 		GetOffsets_t GetOffsets;
-		CreateWindow_t CreateWindow;
+		CreateFrame_t CreateFrame;
 		HandleEventFrame_t HandleEventFrame;
 		CreateBackWindow_t CreateBackWindow;
 		HandleEventBase_t HandleEventBase;
-		GetNCWB_t GetNCWB;
 
 		explicit Shell(const std::string& file_name);
 		~Shell();

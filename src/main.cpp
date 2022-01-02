@@ -8,7 +8,7 @@ int main()
 {
 
 #ifdef DEBUG
-	auto config = flow::Config::FromFilePath("config.json");
+	auto config = flow::Config::FromFilePath("/home/joseph/CLionProjects/flow-wm/build/src/config.json");
 #else
 	auto config = flow::Config::GetDefault();
 #endif

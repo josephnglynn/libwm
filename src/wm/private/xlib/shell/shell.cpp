@@ -21,11 +21,10 @@ namespace flow
 		OnLoad = (OnLoad_t) dlsym(handle, "oL");
 		GetShellInfo = (GetShellInfo_t) dlsym(handle, "gBI");
 		GetOffsets = (GetOffsets_t) dlsym(handle, "gOWA");
-		CreateWindow = (CreateWindow_t) dlsym(handle, "cW");
+		CreateFrame = (CreateFrame_t) dlsym(handle, "cF");
 		HandleEventFrame = (HandleEventFrame_t) dlsym(handle, "hEF");
 		CreateBackWindow = (CreateBackWindow_t) dlsym(handle, "cBW");
 		HandleEventBase = (HandleEventBase_t) dlsym(handle, "hEB");
-		GetNCWB = (GetNCWB_t) dlsym(handle, "gNCWB");
 	}
 
 	Shell::~Shell()

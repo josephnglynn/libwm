@@ -22,22 +22,26 @@ namespace flow::X11
 	void Client::SetUrgent(int urgency)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		XWMHints* wmh;
 		is_urgent = urgency;
-		if (!(wmh = XGetWMHints(fwm->GetDisplay(), window))) return;
+		if (!(wmh = XGetWMHints(display, window))) return;
 		wmh->flags = urgency ? (wmh->flags | XUrgencyHint) : (wmh->flags & ~XUrgencyHint);
-		XSetWMHints(fwm->GetDisplay(), window, wmh);
+		XSetWMHints(display, window, wmh);
 		XFree(wmh);
 	}
 
 	void Client::SetFocus()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		if (!never_focus)
 		{
-			XSetInputFocus(fwm->GetDisplay(), window, RevertToPointerRoot, CurrentTime);
+			XSetInputFocus(display, window, RevertToPointerRoot, CurrentTime);
 			XChangeProperty(
-				fwm->GetDisplay(),
+				display,
 				fwm->GetRootWindow(),
 				fwm->GetNetAtom()[NetActiveWindow],
 				XA_WINDOW,
@@ -54,12 +58,14 @@ namespace flow::X11
 	int Client::SendEvent(Atom protocol)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		int n;
 		Atom* protocols;
 		int exists = 0;
 		XEvent ev;
 
-		if (XGetWMProtocols(fwm->GetDisplay(), window, &protocols, &n))
+		if (XGetWMProtocols(display, window, &protocols, &n))
 		{
 			while (!exists && n--)
 			{
@@ -76,7 +82,7 @@ namespace flow::X11
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = protocol;
 			ev.xclient.data.l[1] = CurrentTime;
-			XSendEvent(fwm->GetDisplay(), window, False, NoEventMask, &ev);
+			XSendEvent(display, window, False, NoEventMask, &ev);
 		}
 
 		return exists;
@@ -94,12 +100,14 @@ namespace flow::X11
 	Atom Client::GetAtomProp(Atom prop)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		int di;
 		unsigned long dl;
 		unsigned char* p = nullptr;
 		Atom da, atom = None;
 
-		if (XGetWindowProperty(fwm->GetDisplay(), window, prop, 0L, sizeof atom, False, XA_ATOM,
+		if (XGetWindowProperty(display, window, prop, 0L, sizeof atom, False, XA_ATOM,
 			&da, &di, &dl, &dl, &p) == Success && p)
 		{
 			atom = *(Atom*)p;
@@ -111,10 +119,13 @@ namespace flow::X11
 	void Client::SetFullScreen(int fs)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+		auto cm = fwm->GetClientManager();
+
 		if (fs && !full_screen)
 		{
 			XChangeProperty(
-				fwm->GetDisplay(),
+				display,
 				window,
 				fwm->GetNetAtom()[NetWMState],
 				XA_ATOM,
@@ -126,26 +137,28 @@ namespace flow::X11
 			full_screen = true;
 			old_border_width = border_width;
 			border_width = 0;
+			cm->UnFrame(this);
 			shapes::Rectangle rec_mon = shapes::Rectangle(monitor->mx, monitor->my, monitor->mw, monitor->mh);
 			ResizeClient(rec_mon);
-			XRaiseWindow(fwm->GetDisplay(), window);
+			XRaiseWindow(display, window);
 		}
 		else if (!fs && full_screen)
 		{
 			XChangeProperty(
-				fwm->GetDisplay(),
+				display,
 				window,
 				fwm->GetNetAtom()[NetWMState],
 				XA_ATOM,
 				32,
 				PropModeReplace,
-				(unsigned char*)0,
+				(unsigned char*)nullptr,
 				0
 			);
 			full_screen = false;
 			border_width = old_border_width;
 			position = old_position;
 			ResizeClient(position);
+			cm->Frame(this);
 			fwm->GetScreenManager()->Arrange(monitor);
 		}
 	}
@@ -153,26 +166,34 @@ namespace flow::X11
 	void Client::ResizeClient(flow::shapes::Rectangle& detail)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
+		if (detail.width <= frame_offsets.left + frame_offsets.right)
+		{
+			detail.width = frame_offsets.left + frame_offsets.right + 1;
+
+		}
+
+		if (detail.height <= frame_offsets.top + frame_offsets.bottom)
+		{
+			detail.height = frame_offsets.top + frame_offsets.bottom + 1;
+		}
+
 		XWindowChanges wc;
 
 		old_position = position;
 		position = detail;
 
-		wc.x = detail.x;
-		wc.y = detail.y;
-		wc.width = detail.width;
-		wc.height = detail.height;
-		wc.border_width = border_width;
-
-		XConfigureWindow(fwm->GetDisplay(), frame, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
-
-		wc.x = frame_offsets.left;
-		wc.y = frame_offsets.top;
-		wc.width -= (frame_offsets.right + frame_offsets.left);
-		wc.height -= (frame_offsets.bottom + frame_offsets.top);
-		XConfigureWindow(fwm->GetDisplay(), window, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
+		XMoveResizeWindow(display, frame, detail.x, detail.y, detail.width, detail.height);
+		XMoveResizeWindow(display,
+			window,
+			frame_offsets.left,
+			frame_offsets.top,
+			detail.width - (frame_offsets.right + frame_offsets.left),
+			detail.height - (frame_offsets.bottom + frame_offsets.top)
+		);
 		Configure();
-		XSync(fwm->GetDisplay(), False);
+		XSync(display, false);
 	}
 
 	void Client::ResizeClient(int x, int y, int w, int h)
@@ -184,11 +205,13 @@ namespace flow::X11
 	void Client::Configure()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		configured = true;
 		XConfigureEvent ce;
 
 		ce.type = ConfigureNotify;
-		ce.display = fwm->GetDisplay();
+		ce.display = display;
 		ce.event = frame;
 		ce.window = frame;
 		ce.x = position.x;
@@ -198,7 +221,15 @@ namespace flow::X11
 		ce.border_width = border_width;
 		ce.above = None;
 		ce.override_redirect = false;
-		XSendEvent(fwm->GetDisplay(), window, false, StructureNotifyMask, (XEvent*)&ce);
+		XSendEvent(display, frame, false, StructureNotifyMask, (XEvent*)&ce);
+
+		ce.event = window;
+		ce.window = window;
+		ce.x = frame_offsets.left;
+		ce.y = frame_offsets.top;
+		ce.width -= (frame_offsets.right + frame_offsets.left);
+		ce.height -= (frame_offsets.bottom + frame_offsets.top);
+		XSendEvent(display, window, false, StructureNotifyMask, (XEvent*)&ce);
 	}
 
 	void Client::UpdateSizeHints()
@@ -255,14 +286,16 @@ namespace flow::X11
 	void Client::UpdateWmHints()
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+
 		XWMHints* wmh;
 
-		if ((wmh = XGetWMHints(fwm->GetDisplay(), window)))
+		if ((wmh = XGetWMHints(display, window)))
 		{
 			if (this == fwm->GetClientManager()->selected && wmh->flags & XUrgencyHint)
 			{
 				wmh->flags &= ~XUrgencyHint;
-				XSetWMHints(fwm->GetDisplay(), window, wmh);
+				XSetWMHints(display, window, wmh);
 			}
 			else
 			{
@@ -286,10 +319,11 @@ namespace flow::X11
 	void Client::SetState(long state)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
 		long data[] = { state, None };
 
 		XChangeProperty(
-			fwm->GetDisplay(),
+			display,
 			window,
 			fwm->GetWmAtom()[WMState],
 			fwm->GetWmAtom()[WMState],
@@ -306,10 +340,24 @@ namespace flow::X11
 		int screen_width = fwm->GetScreenWidth();
 		int screen_height = fwm->GetScreenHeight();
 		int base_min;
+		bool w_flip = false, h_flip = false;
 
-		/* set minimum possible */
-		*w = Max(1, *w);
-		*h = Max(1, *h);
+
+		if (*w < 0)
+		{
+			*x += *w;
+			*w = -*w;
+			w_flip = true;
+		}
+
+		if (*h < 0)
+		{
+			*y += *h;
+			*h = -*h;
+			h_flip = true;
+		}
+
+
 		if (interact)
 		{
 			if (*x > screen_width)
@@ -379,8 +427,6 @@ namespace flow::X11
 		cm->Focus(nullptr);
 	}
 
-
-
 	void Client::UpdateTitle()
 	{
 		char c_name[256];
@@ -390,11 +436,12 @@ namespace flow::X11
 		{
 			fwm->GetTextProp(window, XA_WM_NAME, c_name, sizeof c_name);
 		}
-		if (name[0] == '\0') {
+		if (name[0] == '\0')
+		{
 			strcpy(c_name, "broken");
 		}
 
-		name = std::string (c_name);
+		name = std::string(c_name);
 		logger::success("NAME IS NOW: ", name);
 
 	}

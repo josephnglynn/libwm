@@ -241,8 +241,6 @@ namespace flow::X11
 
 		XUnmapWindow(display, client->window);
 		XConfigureWindow(display, window, CWBorderWidth, &wc);
-		XSetWindowBorder(display, window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
-		client->Configure();
 		client->UpdateWindowType();
 		client->UpdateSizeHints();
 		client->UpdateWmHints();
@@ -253,7 +251,7 @@ namespace flow::X11
 			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
 		);
 
-		XRaiseWindow(display, window);
+
 		AddClient(client);
 
 		XChangeProperty(
@@ -283,7 +281,8 @@ namespace flow::X11
 		}
 		selected = client;
 		Frame(client);
-		Focus(nullptr);
+		XRaiseWindow(display, window);
+		Focus(client);
 	}
 
 	void ClientManager::Focus(X11::Client* client)
@@ -307,8 +306,9 @@ namespace flow::X11
 		}
 		else
 		{
-			XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
-			XDeleteProperty(display, root, fwm->GetNetAtom()[NetActiveWindow]);
+			Window focus = fwm->GetBase() ? fwm->GetBase() : root;
+			XSetInputFocus(display, focus, RevertToPointerRoot, CurrentTime);
+			XDeleteProperty(display, focus, fwm->GetNetAtom()[NetActiveWindow]);
 		}
 		selected = client;
 	}
@@ -317,17 +317,15 @@ namespace flow::X11
 	{
 		auto fwm = X11::FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
+
 		Monitor* m = client->monitor;
 		if (!destroyed)
 		{
 			XWindowChanges wc;
 			wc.border_width = client->old_border_width;
-			XGrabServer(fwm->GetDisplay());
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int
-			{ return 0; });
-			XUnmapWindow(display, client->frame);
-			XReparentWindow(display, client->window, fwm->GetRootWindow(), 0, 0);
-			XRemoveFromSaveSet(display, client->window);
+			XGrabServer(display);
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int { return 0; });
+			UnFrame(client);
 			XDestroyWindow(display, client->frame);
 			XConfigureWindow(display, client->window, CWBorderWidth, &wc);
 			XUngrabButton(display, AnyButton, AnyModifier, client->window);
@@ -348,7 +346,6 @@ namespace flow::X11
 		auto display = fwm->GetDisplay();
 		auto root = fwm->GetRootWindow();
 		fwm->GetKeyboardManager()->GrabButtons(client, 0);
-		XSetWindowBorder(display, client->window, fwm->GetColorScheme()[SchemeNorm][ColBorder].pixel);
 		if (set_focus)
 		{
 			XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
@@ -362,6 +359,21 @@ namespace flow::X11
 		if (client->ApplySizeHints(&x, &y, &w, &h, interact)) client->ResizeClient(x, y, w, h);
 	}
 
+
+
+	void ClientManager::ReparentToBase(Client* client) {
+		auto fwm = FlowWindowManagerX11::Get();
+		auto base = fwm->GetBase();
+
+		if (!base) return;
+
+
+		auto display = fwm->GetDisplay();
+
+		XReparentWindow(display, client->frame, base, client->position.x, client->position.y);
+	}
+
+
 	void ClientManager::Frame(X11::Client* client)
 	{
 		if (client->is_annoying) return;
@@ -370,7 +382,7 @@ namespace flow::X11
 		auto root = fwm->GetRootWindow();
 		auto shell = fwm->GetShell();
 
-		client->frame = shell->CreateWindow(
+		client->frame = shell->CreateFrame(
 			client->position.x,
 			client->position.y,
 			client->position.width,
@@ -385,6 +397,17 @@ namespace flow::X11
 
 		fwm->GetKeyboardManager()->GrabButtons(client, 0);
 		XMapWindow(display, client->window);
+		ReparentToBase(client);
+	}
+
+	void ClientManager::UnFrame(X11::Client* client)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+		auto root = fwm->GetRootWindow();
+		XUnmapWindow(display, client->frame);
+		XReparentWindow(display, client->window, root, client->position.x, client->position.y);
+		XRemoveFromSaveSet(display, client->window);
 	}
 
 	bool ClientManager::CheckAtom(Window window, Atom big_atom, Atom small_atom)
@@ -450,6 +473,23 @@ namespace flow::X11
 
 		return nullptr;
 	}
+
+	void ClientManager::KillClient(Client* client)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+		if (!client->SendEvent(fwm->GetWmAtom()[WMDelete]))
+		{
+			XGrabServer(display);
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int { return 0; });
+			XSetCloseDownMode(display, DestroyAll);
+			XKillClient(display, selected->window);
+			XSync(display, false);
+			XSetErrorHandler(nullptr);
+			XUngrabServer(display);
+		}
+	}
+
 
 }
 

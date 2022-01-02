@@ -33,8 +33,11 @@ namespace flow::X11
 		void Manage(Window window, XWindowAttributes* wa);
 		void UnManage(X11::Client* client, int destroyed);
 		void Frame(X11::Client* client);
+		void UnFrame(X11::Client* client);
 		void Resize(X11::Client* client, int x, int y, int w, int h, int interact);
+		void ReparentToBase(Client* client);
 		static long GetState(Window window);
+		void KillClient(Client* client);
 
 		X11::Client* WindowToClient(Window w);
 		bool DontTouchWindow(Window w);

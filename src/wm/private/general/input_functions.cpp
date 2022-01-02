@@ -29,6 +29,8 @@ namespace flow::input_functions
 			return focusClient;
 		case ReloadShell:
 			return reloadShell;
+		case FullScreen:
+			return fullScreen;
 		}
 	}
 
@@ -345,21 +347,21 @@ namespace flow::input_functions
 				if (positionOfMouse.vertical == CENTER_MIDDLE)
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
-					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
+					nw = hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1);
 					cm->Resize(c, nx, c->position.y, nw, c->position.height, 1);
 				}
 				else if (positionOfMouse.horizontal == CENTER_MIDDLE)
 				{
 					ny = vc ? event.xmotion.y : c->position.y;
-					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
+					nh = vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1);
 					cm->Resize(c, c->position.x, ny, c->position.width, nh, 1);
 				}
 				else
 				{
 					nx = hc ? event.xmotion.x : c->position.x;
 					ny = vc ? event.xmotion.y : c->position.y;
-					nw = Max(hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1), 1);
-					nh = Max(vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1), 1);
+					nw = hc ? (ocx2 - nx) : (event.xmotion.x - ocx - 2 * c->border_width + 1);
+					nh = vc ? (ocy2 - ny) : (event.xmotion.y - ocy - 2 * c->border_width + 1);
 					cm->Resize(c, nx, ny, nw, nh, 1);
 				}
 
@@ -392,19 +394,10 @@ namespace flow::input_functions
 	void killClient(const std::string&)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
-		Client* selected = fwm->GetClientManager()->selected;
+		auto cm = fwm->GetClientManager();
+		Client* selected = cm->selected;
 		if (!selected) return;
-		if (!selected->SendEvent(fwm->GetWmAtom()[WMDelete]))
-		{
-			XGrabServer(fwm->GetDisplay());
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int
-			{ return 0; });
-			XSetCloseDownMode(fwm->GetDisplay(), DestroyAll);
-			XKillClient(fwm->GetDisplay(), selected->window);
-			XSync(fwm->GetDisplay(), false);
-			XSetErrorHandler(nullptr);
-			XUngrabServer(fwm->GetDisplay());
-		}
+		cm->KillClient(selected);
 	}
 
 	void reloadShell(const std::string&)
@@ -420,6 +413,13 @@ namespace flow::input_functions
 		fwm->GetKeyboardManager()->Update(config->key_bindings, config->client_key_bindings, config->mod_key);
 		delete config;
 
+	}
+
+	void fullScreen(const std::string&)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		auto cm = fwm->GetClientManager();
+		cm->selected->SetFullScreen(true);
 	}
 }
 

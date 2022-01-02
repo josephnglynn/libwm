@@ -168,6 +168,10 @@ namespace flow::X11
 					}
 				}
 				client_manager->Focus(nullptr);
+				if (base) 
+				{
+					XResizeWindow(display, base, screen_width, screen_height);
+				}
 			}
 		}
 	}
@@ -270,22 +274,6 @@ namespace flow::X11
 			return;
 		if (!client_manager->DontTouchWindow(mre.window))
 		{
-			if (!base && shell->GetShellInfo().non_c_base)
-			{
-				XClassHint* classHint = XAllocClassHint();
-				XGetClassHint(display, mre.window, classHint);
-				const char* res_name = classHint->res_name;
-				const char* res_class = classHint->res_class;
-				NonConformingWB ncwm = shell->GetNCWB();
-				if ((ncwm.base.res_name && strcmp(ncwm.base.res_name, res_name) == 0) || (ncwm.base.res_class && strcmp(ncwm.base.res_class, res_class) == 0))
-				{
-					base = mre.window;
-					XMapWindow(display, mre.window);
-					XMoveResizeWindow(display, mre.window, 0, 0, screen_width, screen_height);
-					return;
-				}
-			}
-
 			client_manager->Manage(mre.window, &wa);
 		}
 	}
@@ -358,6 +346,8 @@ namespace flow::X11
 			}
 		}
 	}
+
+
 
 }
 

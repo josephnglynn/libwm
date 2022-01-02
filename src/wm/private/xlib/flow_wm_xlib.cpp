@@ -7,6 +7,8 @@
 #include "../../public/xlib/enums/enums.hpp"
 #include "../../public/flow_wm_xlib.hpp"
 #include "../../../logger/public/logger.hpp"
+#include <csignal>
+#include <sys/wait.h>
 
 #ifndef FLOW_WM_VERSION
 #define FLOW_WM_VERSION "unofficial-build"
@@ -14,7 +16,6 @@
 
 namespace flow::X11
 {
-
 	FlowWindowManagerX11* FlowWindowManagerX11::instance;
 
 	void FlowWindowManagerX11::HandleEvent(XEvent& event)
@@ -69,12 +70,54 @@ namespace flow::X11
 		}
 	}
 
+	void HandleSignal(int signal)
+	{
+		auto fwm = FlowWindowManagerX11::Get();
+		auto display = fwm->GetDisplay();
+		auto cm = fwm->GetClientManager();
+		auto base = fwm->GetBase();
+
+		logger::success("Signal handler called... unwinding");
+		Client* c;
+		for (c = cm->GetFirst(); c; c = cm->GetFirst())
+		{
+			logger::info("Unmanaging client:", c->name);
+			try
+			{
+				cm->UnManage(c, 0);
+			}
+			catch (std::exception& e)
+			{
+				logger::warn("An error occurred unmanaging client:", c->name);
+			}
+		}
+
+		logger::info("Killing shell");
+		if (base)
+		{
+			c = new Client(base);
+			cm->KillClient(c);
+			delete c;
+		}
+
+		XCloseDisplay(display);
+		delete fwm;
+		logger::error("EXITING");
+		std::exit(signal);
+	}
+
 	void FlowWindowManagerX11::Start()
 	{
 
+		std::signal(SIGABRT, HandleSignal);
+		std::signal(SIGFPE, HandleSignal);
+		std::signal(SIGILL, HandleSignal);
+		std::signal(SIGINT, HandleSignal);
+		std::signal(SIGSEGV, HandleSignal);
+		std::signal(SIGTERM, HandleSignal);
+
 		while (!quit)
 		{
-
 			XEvent event;
 			XNextEvent(display, &event);
 			Client* c;
@@ -83,7 +126,7 @@ namespace flow::X11
 			{
 				shell->HandleEventBase(&event, 0, 0, screen_width, screen_height);
 			}
-			if ((c =client_manager->GetClientFromFrame(event.xany.window)))
+			if ((c = client_manager->GetClientFromFrame(event.xany.window)))
 			{
 				shell->HandleEventFrame(&event, c->position.x, c->position.y, c->position.width, c->position.height);
 				if (event.xbutton.subwindow == c->window)
@@ -110,6 +153,11 @@ namespace flow::X11
 	FlowWindowManagerX11::~FlowWindowManagerX11()
 	{
 		if (!detached) XCloseDisplay(display);
+		delete screen_manager;
+		delete keyboard_manager;
+		delete client_manager;
+		delete drw;
+		delete shell;
 	}
 
 	FlowWindowManagerX11* FlowWindowManagerX11::Init(Config* config)
@@ -146,7 +194,7 @@ namespace flow::X11
 
 		XSelectInput(instance->display, instance->root_window, SubstructureRedirectMask);
 		XSync(instance->display, false);
-		XSetErrorHandler(nullptr);
+		XSetErrorHandler(FlowX11ErrorHandler);
 		XSync(instance->display, false);
 
 		instance->SetConfig(config);
@@ -167,7 +215,10 @@ namespace flow::X11
 
 		//TODO FIX SHELL
 		instance->shell = new Shell(config->shell_location);
-		instance->shell->OnLoad();
+		instance->shell->OnLoad([](XEvent* event)
+		{
+		  instance->HandleEvent(*event);
+		});
 
 		instance->screen_manager = new ScreenManager();
 		instance->client_manager = new ClientManager();
@@ -207,27 +258,6 @@ namespace flow::X11
 		instance->cursor[CurResizeBottomMiddle] = CursorUtils::CreateCursor(instance->drw, XC_bottom_side);
 		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
 		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
-
-
-		//TODO FIX THIS STARTING HERE
-		static const char col_gray1[] = "#222222";
-		static const char col_gray2[] = "#444444";
-		static const char col_gray3[] = "#bbbbbb";
-		static const char col_gray4[] = "#eeeeee";
-		static const char col_cyan[] = "#005577";
-		static const char* colors[][4] = {
-			/*               fg         bg         border   */
-			{ col_gray3, col_gray1, col_gray2, "#ffffff" },
-			{ col_gray4, col_cyan, col_cyan, "#ffffff" },
-		};
-
-		instance->color_scheme =
-			static_cast<XftColor**>(malloc(sizeof(XftColor*) * sizeof(colors) / sizeof(colors[0])));
-		for (unsigned int i = 0; i < sizeof(colors) / sizeof(colors[0]); i++)
-		{
-			instance->color_scheme[i] = ColorScheme::ScmCreate(instance->drw, colors[i], 3);
-		}
-		//TODO ENDING HERE
 
 		instance->UpdateStatus();
 		instance->wm_check_window = XCreateSimpleWindow(instance->display, instance->root_window, 0, 0, 1, 1, 0, 0, 0);
@@ -298,33 +328,25 @@ namespace flow::X11
 			instance->config->mod_key
 		);
 
+#ifdef DEBUG
+		XSetErrorHandler(nullptr);
+#endif
+		instance->base = instance->shell->CreateBackWindow(
+			0,
+			0,
+			instance->screen_width,
+			instance->screen_height,
+			instance->display,
+			instance->root_window
+		);
+
+
 		instance->keyboard_manager->Start(instance->display, instance->root_window);
 		instance->client_manager->Focus(nullptr);
 		instance->Scan();
 
-		if (!instance->shell->GetShellInfo().non_c_base)
-		{
-			instance->base = instance->shell->CreateBackWindow(0,
-				0,
-				instance->screen_width,
-				instance->screen_height,
-				instance->display,
-				instance->root_window
-			);
-			XMapWindow(instance->display, instance->base);
-		}
-		else
-		{
-			//We don't care any more
-			instance->shell->CreateBackWindow(
-				0,
-				0,
-				0,
-				0,
-				nullptr,
-				0
-			);
-		}
+
+
 
 		return instance;
 	}
@@ -340,17 +362,17 @@ namespace flow::X11
 		this->config = c;
 	}
 
-	void FlowWindowManagerX11::Scan()
+	void FlowWindowManagerX11::Scanner(Window window)
 	{
-
 		unsigned int num;
 		Window d1, d2, * wins = nullptr;
 		XWindowAttributes wa;
 
-		if (XQueryTree(display, root_window, &d1, &d2, &wins, &num))
+		if (XQueryTree(display, window, &d1, &d2, &wins, &num))
 		{
 			for (unsigned int i = 0; i < num; i++)
 			{
+				if (wins[i] == base) continue;
 				if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect || wa.map_state != IsViewable
 					|| XGetTransientForHint(display, wins[i], &d1))
 				{
@@ -367,6 +389,7 @@ namespace flow::X11
 
 			for (unsigned int i = 0; i < num; i++)
 			{
+				if (wins[i] == base) continue;
 				if (!XGetWindowAttributes(display, wins[i], &wa))
 				{
 					continue;
@@ -386,6 +409,11 @@ namespace flow::X11
 				XFree(wins);
 			}
 		}
+	}
+
+	void FlowWindowManagerX11::Scan()
+	{
+		Scanner(root_window);
 	}
 
 	void FlowWindowManagerX11::UpdateStatus()

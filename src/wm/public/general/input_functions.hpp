@@ -22,6 +22,7 @@ namespace flow::input_functions
 	void killClient(const std::string& arg);
 	void focusClient(const std::string& arg);
 	void reloadShell(const std::string& arg);
+	void fullScreen(const std::string& arg);
 }
 
 #endif //FLOW_WM_SRC_WM_PRIVATE_GENERAL_INPUT_FUNCTIONS_HPP

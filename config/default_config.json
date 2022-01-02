@@ -12,7 +12,7 @@
     {
       "arg": "dmenu_run",
       "function": 0,
-      "key": 102,
+      "key": 114,
       "mod": 64
     },
     {
@@ -29,8 +29,8 @@
     },
     {
       "arg": "",
-      "function": 5,
-      "key": 114,
+      "function": 6,
+      "key": 102,
       "mod": 64
     }
   ],
@@ -48,6 +48,6 @@
       "button": 3,
       "function": 2,
       "arg": ""
-    }
+    },
   ]
 }
