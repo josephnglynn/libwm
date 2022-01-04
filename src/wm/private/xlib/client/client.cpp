@@ -168,18 +168,17 @@ namespace flow::X11
 		auto fwm = FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
 
-		if (detail.width <= frame_offsets.left + frame_offsets.right)
+		if (detail.width <= static_cast<int>(frame_offsets.left + frame_offsets.right))
 		{
 			detail.width = frame_offsets.left + frame_offsets.right + 1;
 
 		}
 
-		if (detail.height <= frame_offsets.top + frame_offsets.bottom)
+		if (detail.height <= static_cast<int>(frame_offsets.top + frame_offsets.bottom))
 		{
 			detail.height = frame_offsets.top + frame_offsets.bottom + 1;
 		}
 
-		XWindowChanges wc;
 
 		old_position = position;
 		position = detail;
@@ -340,21 +339,18 @@ namespace flow::X11
 		int screen_width = fwm->GetScreenWidth();
 		int screen_height = fwm->GetScreenHeight();
 		int base_min;
-		bool w_flip = false, h_flip = false;
 
 
 		if (*w < 0)
 		{
 			*x += *w;
 			*w = -*w;
-			w_flip = true;
 		}
 
 		if (*h < 0)
 		{
 			*y += *h;
 			*h = -*h;
-			h_flip = true;
 		}
 
 

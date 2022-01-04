@@ -28,7 +28,6 @@ namespace flow
 		unsigned int snap;
 		unsigned int border_size_in_pixels;
 		unsigned int opacity = UINT32_MAX; //TODO
-		unsigned int outline = 0; //TODO
 		std::string shell_location;
 		std::vector<KeyBinding> key_bindings;
 		std::vector<ClientKeyBinding> client_key_bindings;

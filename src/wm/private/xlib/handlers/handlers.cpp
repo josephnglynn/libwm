@@ -211,6 +211,7 @@ namespace flow::X11
 			return;
 		}
 
+		//TODO DONT RAISE WINDOW
 		client_manager->Focus(c);
 	}
 
