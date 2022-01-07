@@ -251,7 +251,6 @@ namespace flow::X11
 			EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask
 		);
 
-
 		AddClient(client);
 
 		XChangeProperty(
@@ -285,7 +284,7 @@ namespace flow::X11
 		Focus(client);
 	}
 
-	void ClientManager::Focus(X11::Client* client)
+	void ClientManager::Focus(X11::Client* client, bool fromButtonPress)
 	{
 		auto fwm = FlowWindowManagerX11::Get();
 		auto display = fwm->GetDisplay();
@@ -298,11 +297,18 @@ namespace flow::X11
 
 		if (client)
 		{
-			if (client->monitor != fwm->GetScreenManager()->selected_monitor) fwm->GetScreenManager()->selected_monitor = client->monitor;
+			if (client->monitor != fwm->GetScreenManager()->selected_monitor)
+				fwm->GetScreenManager()->selected_monitor = client->monitor;
 			if (client->is_urgent) client->SetUrgent(0);
 			fwm->GetKeyboardManager()->GrabButtons(client, 1);
 			client->SetFocus();
+
+#ifdef FLOW_BETTER_FOCUS
+			if (fromButtonPress) XRaiseWindow(display, client->frame);
+#else
 			XRaiseWindow(display, client->frame);
+#endif
+
 		}
 		else
 		{
@@ -324,7 +330,8 @@ namespace flow::X11
 			XWindowChanges wc;
 			wc.border_width = client->old_border_width;
 			XGrabServer(display);
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int { return 0; });
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int
+			{ return 0; });
 			UnFrame(client);
 			XDestroyWindow(display, client->frame);
 			XConfigureWindow(display, client->window, CWBorderWidth, &wc);
@@ -359,20 +366,17 @@ namespace flow::X11
 		if (client->ApplySizeHints(&x, &y, &w, &h, interact)) client->ResizeClient(x, y, w, h);
 	}
 
-
-
-	void ClientManager::ReparentToBase(Client* client) {
+	void ClientManager::ReparentToBase(Client* client)
+	{
 		auto fwm = FlowWindowManagerX11::Get();
 		auto base = fwm->GetBase();
 
 		if (!base) return;
 
-
 		auto display = fwm->GetDisplay();
 
 		XReparentWindow(display, client->frame, base, client->position.x, client->position.y);
 	}
-
 
 	void ClientManager::Frame(X11::Client* client)
 	{
@@ -481,7 +485,8 @@ namespace flow::X11
 		if (!client->SendEvent(fwm->GetWmAtom()[WMDelete]))
 		{
 			XGrabServer(display);
-			XSetErrorHandler([](Display*, XErrorEvent*) -> int { return 0; });
+			XSetErrorHandler([](Display*, XErrorEvent*) -> int
+			{ return 0; });
 			XSetCloseDownMode(display, DestroyAll);
 			XKillClient(display, selected->window);
 			XSync(display, false);
@@ -489,7 +494,6 @@ namespace flow::X11
 			XUngrabServer(display);
 		}
 	}
-
 
 }
 

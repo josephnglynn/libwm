@@ -6,7 +6,7 @@
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../../logger/public/logger.hpp"
+#include "../../../../external/logger/src/public/logger.hpp"
 #include "../../../public/general/masks.hpp"
 
 namespace flow::X11
@@ -29,7 +29,7 @@ namespace flow::X11
 
 		if ((client = client_manager->WindowToClient(xb.window)))
 		{
-			client_manager->Focus(client);
+			client_manager->Focus(client, true);
 			screen_manager->ReStack();
 			XAllowEvents(display, ReplayPointer, CurrentTime);
 			XSync(display, false);

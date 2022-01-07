@@ -4,7 +4,7 @@
 
 #include "../../../public/xlib/shell/shell.hpp"
 #include <dlfcn.h>
-#include "../../logger/public/logger.hpp"
+#include "../../external/logger/src/public/logger.hpp"
 
 namespace flow
 {

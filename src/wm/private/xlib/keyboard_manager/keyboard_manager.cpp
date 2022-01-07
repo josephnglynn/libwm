@@ -5,7 +5,7 @@
 #include "../../../public/xlib/keyboard_manager/keyboard_manager.hpp"
 #include <X11/keysym.h>
 #include <flow_wm_xlib.hpp>
-#include "../../logger/public/logger.hpp"
+#include "../../external/logger/src/public/logger.hpp"
 namespace flow
 {
 
@@ -43,11 +43,11 @@ namespace flow
 		KeyCode key_code;
 		XUngrabKey(display, AnyKey, AnyModifier, root_window);
 
-		for (auto & i : key_bindings_root)
+		for (auto& i: key_bindings_root)
 		{
 			if ((key_code = XKeysymToKeycode(display, i.key)))
 			{
-				for (unsigned int modifier : modifiers)
+				for (unsigned int modifier: modifiers)
 				{
 
 					XGrabKey(
@@ -119,6 +119,7 @@ namespace flow
 			if (km->key_bindings_client[i].click == ClkClientWin)
 			{
 				for (j = 0; j < sizeof modifiers / sizeof modifiers[0]; j++)
+				{
 					XGrabButton(
 						fwm->GetDisplay(),
 						km->key_bindings_client[i].button,
@@ -131,8 +132,25 @@ namespace flow
 						None,
 						None
 					);
+				}
+
 			}
 		}
+
+#ifdef FLOW_BETTER_FOCUS
+		 XGrabButton(
+			fwm->GetDisplay(),
+			Button1,
+			AnyModifier,
+			client->frame,
+			false,
+			ButtonPressMask | ButtonReleaseMask,
+			GrabModeAsync,
+			GrabModeAsync,
+			None,
+			None
+		);
+#endif
 
 	}
 }

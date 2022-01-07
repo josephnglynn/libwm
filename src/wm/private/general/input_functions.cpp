@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include "../../public/general/input_functions.hpp"
 #include "../../public/general/inline_functions.hpp"
-#include "../../../logger/public/logger.hpp"
+#include "../../../external/logger/src/public/logger.hpp"
 #include "../../public/general/masks.hpp"
 
 using namespace flow::X11;

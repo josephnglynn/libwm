@@ -3,7 +3,7 @@
 //
 
 #include "../../../public/xlib/color_scheme/color_scheme.hpp"
-#include "../../../../logger/public/logger.hpp"
+#include "../../../../external/logger/src/public/logger.hpp"
 
 namespace flow::ColorScheme
 {

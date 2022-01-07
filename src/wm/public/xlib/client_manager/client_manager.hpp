@@ -28,7 +28,7 @@ namespace flow::X11
 		void SetFirst(Client* client);
 		void SetLast(Client* client);
 
-		void Focus(X11::Client* client);
+		void Focus(X11::Client* client, bool fromButtonPress = false);
 		void UnFocus(X11::Client* client, int set_focus);
 		void Manage(Window window, XWindowAttributes* wa);
 		void UnManage(X11::Client* client, int destroyed);

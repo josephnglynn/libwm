@@ -11,7 +11,7 @@
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
 
-#include "../../../../logger/public/logger.hpp"
+#include "../../../../external/logger/src/public/logger.hpp"
 
 namespace flow::X11
 {

@@ -3,7 +3,7 @@
 //
 
 #include "../../public/general/config.hpp"
-#include "../../../logger/public/logger.hpp"
+#include "../../../external/logger/src/public/logger.hpp"
 
 namespace flow
 {
