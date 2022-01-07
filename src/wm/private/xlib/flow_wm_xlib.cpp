@@ -6,7 +6,7 @@
 #include "../../public/xlib/color_scheme/color_scheme.hpp"
 #include "../../public/xlib/enums/enums.hpp"
 #include "../../public/flow_wm_xlib.hpp"
-#include "../../../external/logger/src/public/logger.hpp"
+#include <logger/logger.hpp>
 #include <csignal>
 #include <sys/wait.h>
 

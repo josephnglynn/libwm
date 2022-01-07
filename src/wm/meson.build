@@ -1,4 +1,4 @@
-wm_includes = include_directories('public')
+wm_includes = [include_directories('public')]
 
 wm_sources = [
                 'private/general/shapes.cpp',
@@ -23,7 +23,7 @@ wm_deps = [dependency('x11'), dependency('xinerama'), dependency('nlohmann_json'
 flow_wm_lib = shared_library(
     'flow_wm_lib',
      wm_sources,
-     include_directories : wm_includes,
+     include_directories : external_includes + wm_includes,
      install: true,
      link_with: [shell_base],
      dependencies: wm_deps

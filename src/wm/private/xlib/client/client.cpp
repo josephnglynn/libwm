@@ -10,8 +10,7 @@
 #include "../../../public/xlib/client/client.hpp"
 #include "../../../public/flow_wm_xlib.hpp"
 #include "../../../public/general/inline_functions.hpp"
-
-#include "../../../../external/logger/src/public/logger.hpp"
+#include <logger/logger.hpp>
 
 namespace flow::X11
 {

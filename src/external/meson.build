@@ -1,4 +1,4 @@
 subdir('logger')
 subdir('shell-base')
 
-external_includes = logger_includes
+external_includes = [logger_includes]

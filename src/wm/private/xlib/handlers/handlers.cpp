@@ -6,7 +6,7 @@
 #define FLOW_WM_HANDLERS_HPP
 #include <X11/Xatom.h>
 #include "../../../public/flow_wm_xlib.hpp"
-#include "../../../../external/logger/src/public/logger.hpp"
+#include <logger/logger.hpp>
 #include "../../../public/general/masks.hpp"
 
 namespace flow::X11

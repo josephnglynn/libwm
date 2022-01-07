@@ -3,7 +3,7 @@
 //
 
 #include "../../../public/xlib/fnt/fnt.hpp"
-#include "../../../../external/logger/src/public/logger.hpp"
+#include <logger/logger.hpp>
 
 namespace flow {
 	Fnt* Fnt::XCreateFont(DrawableWindow* drw, const char* font_name, FcPattern* font_pattern)

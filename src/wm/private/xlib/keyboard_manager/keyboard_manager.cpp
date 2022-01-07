@@ -5,7 +5,7 @@
 #include "../../../public/xlib/keyboard_manager/keyboard_manager.hpp"
 #include <X11/keysym.h>
 #include <flow_wm_xlib.hpp>
-#include "../../external/logger/src/public/logger.hpp"
+#include <logger/logger.hpp>
 namespace flow
 {
 
