@@ -1,7 +1,7 @@
-[submodule "src/external/shell-base"]
-	path = src/external/shell-base
-	url = https://github.com/FlowSpatialOs/shell-base
-
-[submodule "src/external/logger"]
-	path = src/external/logger
+[submodule "external/logger"]
+	path = external/logger
 	url = https://github.com/josephnglynn/logger
+
+[submodule "external/shell-base"]
+	path = external/shell-base
+	url = https://github.com/FlowSpatialOs/shell-base

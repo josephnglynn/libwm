@@ -7,7 +7,7 @@
 #include <string>
 #include <X11/Xlib.h>
 #include <functional>
-#include "../../../../external/shell-base/src/types/types.hpp"
+#include <shell-base/types/types.hpp>
 
 namespace flow
 {
