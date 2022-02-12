@@ -3,7 +3,7 @@
   "time": 0,
   "mod_key": 64,
   "snap": 0,
-  "shell_location": "/home/joseph/CLionProjects/shell-borders-base/build/libshell-base.so",
+  "shell_location": "/home/joseph/CLionProjects/shell-borders-base/build/libshell_base.so",
   "border_size": 1,
   "fonts": [
     "monospace:size=10"

@@ -8,7 +8,7 @@
 #include <X11/extensions/Xinerama.h>
 #include <vector>
 #include "../../general/shapes.hpp"
-
+#include <glob.h>
 
 namespace flow::X11 {
 	class  ClientManager;

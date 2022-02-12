@@ -8,6 +8,7 @@
 #include "../../public/flow_wm_xlib.hpp"
 #include <logger/logger.hpp>
 #include <csignal>
+#include "../../public/general/input_functions.hpp"
 #include <sys/wait.h>
 
 #ifndef FLOW_WM_VERSION
@@ -381,8 +382,10 @@ namespace flow::X11
 
 				if (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState)
 				{
+					/*
 					suicide_list.push_back(wins[i]);
-					client_manager->Manage(wins[i], &wa);
+					client_manager->Manage(wins[i], &wa);*/
+					client_manager->KillClient(new Client(wins[i]));
 				}
 
 			}
@@ -398,8 +401,9 @@ namespace flow::X11
 				if (XGetTransientForHint(display, wins[i], &d1)
 					&& (wa.map_state == IsViewable || ClientManager::GetState(wins[i]) == IconicState))
 				{
-					suicide_list.push_back(wins[i]);
-					client_manager->Manage(wins[i], &wa);
+					/*suicide_list.push_back(wins[i]);
+					client_manager->Manage(wins[i], &wa);*/
+					client_manager->KillClient(new Client(wins[i]));
 				}
 
 			}
