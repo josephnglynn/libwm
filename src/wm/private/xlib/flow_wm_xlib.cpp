@@ -3,7 +3,6 @@
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
 #include <unistd.h>
-#include "../../public/xlib/color_scheme/color_scheme.hpp"
 #include "../../public/xlib/enums/enums.hpp"
 #include "../../public/flow_wm_xlib.hpp"
 #include <logger/logger.hpp>
@@ -157,7 +156,6 @@ namespace flow::X11
 		delete screen_manager;
 		delete keyboard_manager;
 		delete client_manager;
-		delete drw;
 		delete shell;
 	}
 
@@ -200,19 +198,13 @@ namespace flow::X11
 
 		instance->SetConfig(config);
 
-		instance->drw = DrawableWindow::Create(
-			instance->display,
-			instance->screen,
-			instance->root_window,
-			instance->screen_width,
-			instance->screen_height
-		);
 
-		if (!DrawableWindow::CreateFontSet(instance->drw, config->fonts))
+
+		/*if (!DrawableWindow::CreateFontSet(instance->drw, config->fonts))
 		{
 			logger::error("Can't load fonts");
 			std::exit(-1);
-		}
+		}*/
 
 		//TODO FIX SHELL
 		instance->shell = new Shell(config->shell_location);
@@ -248,17 +240,17 @@ namespace flow::X11
 		instance->net_atom[NetMWMHints] = XInternAtom(instance->display, "_MOTIF_WM_HINTS", false);
 		instance->net_atom[NetWindowOpacity] = XInternAtom(instance->display, "_NET_WM_WINDOW_OPACITY", false);
 
-		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->drw, XC_left_ptr);
-		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->drw, XC_top_left_corner);
-		instance->cursor[CurResizeTopMiddle] = CursorUtils::CreateCursor(instance->drw, XC_top_side);
-		instance->cursor[CurResizeTopRight] = CursorUtils::CreateCursor(instance->drw, XC_top_right_corner);
-		instance->cursor[CurResizeCenterLeft] = CursorUtils::CreateCursor(instance->drw, XC_left_side);
-		instance->cursor[CurResizeCenterMiddle] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
-		instance->cursor[CurResizeCenterRight] = CursorUtils::CreateCursor(instance->drw, XC_right_side);
-		instance->cursor[CurResizeBottomRight] = CursorUtils::CreateCursor(instance->drw, XC_bottom_right_corner);
-		instance->cursor[CurResizeBottomMiddle] = CursorUtils::CreateCursor(instance->drw, XC_bottom_side);
-		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->drw, XC_bottom_left_corner);
-		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->drw, XC_fleur);
+		instance->cursor[CurNormal] = CursorUtils::CreateCursor(instance->display, XC_left_ptr);
+		instance->cursor[CurResizeTopLeft] = CursorUtils::CreateCursor(instance->display, XC_top_left_corner);
+		instance->cursor[CurResizeTopMiddle] = CursorUtils::CreateCursor(instance->display, XC_top_side);
+		instance->cursor[CurResizeTopRight] = CursorUtils::CreateCursor(instance->display, XC_top_right_corner);
+		instance->cursor[CurResizeCenterLeft] = CursorUtils::CreateCursor(instance->display, XC_left_side);
+		instance->cursor[CurResizeCenterMiddle] = CursorUtils::CreateCursor(instance->display, XC_fleur);
+		instance->cursor[CurResizeCenterRight] = CursorUtils::CreateCursor(instance->display, XC_right_side);
+		instance->cursor[CurResizeBottomRight] = CursorUtils::CreateCursor(instance->display, XC_bottom_right_corner);
+		instance->cursor[CurResizeBottomMiddle] = CursorUtils::CreateCursor(instance->display, XC_bottom_side);
+		instance->cursor[CurResizeBottomLeft] = CursorUtils::CreateCursor(instance->display, XC_bottom_left_corner);
+		instance->cursor[CurMove] = CursorUtils::CreateCursor(instance->display, XC_fleur);
 
 		instance->UpdateStatus();
 		instance->wm_check_window = XCreateSimpleWindow(instance->display, instance->root_window, 0, 0, 1, 1, 0, 0, 0);

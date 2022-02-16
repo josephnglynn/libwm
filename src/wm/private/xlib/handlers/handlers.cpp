@@ -159,7 +159,6 @@ namespace flow::X11
 			screen_height = ev.height;
 			if (screen_manager->UpdateGeom() || dirty)
 			{
-				drw->Resize(screen_width, screen_height);
 				for (m = screen_manager->GetMons(); m; m = m->next)
 				{
 					for (c = client_manager->GetFirst(); c; c = c->next)

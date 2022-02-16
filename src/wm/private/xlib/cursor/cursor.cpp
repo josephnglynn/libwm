@@ -7,10 +7,10 @@
 
 namespace flow::CursorUtils
 {
-	Cur* CreateCursor(DrawableWindow* drw, int shape)
+	Cur* CreateCursor(Display* display, int shape)
 	{
 		Cur* cur = new Cur();
-		cur->cursor = XCreateFontCursor(drw->dpy, shape);
+		cur->cursor = XCreateFontCursor(display, shape);
 
 		return cur;
 	}

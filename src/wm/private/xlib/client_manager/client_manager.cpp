@@ -282,6 +282,8 @@ namespace flow::X11
 		Frame(client);
 		XRaiseWindow(display, window);
 		Focus(client);
+
+
 	}
 
 	void ClientManager::Focus(X11::Client* client, bool fromButtonPress)

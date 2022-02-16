@@ -12,7 +12,6 @@
 #include "xlib/screens/screens.hpp"
 #include "xlib/keyboard_manager/keyboard_manager.hpp"
 #include "xlib/cursor/cursor.hpp"
-#include "xlib/drawable_window/drawable_window.hpp"
 #include "xlib/enums/enums.hpp"
 #include "xlib/shell/shell.hpp"
 
@@ -119,7 +118,6 @@ namespace flow::X11
 		bool quit = false;
 		Atom wm_atom[WMLast], net_atom[NetLast];
 		Cur* cursor[CurLast];
-		DrawableWindow* drw = nullptr;
 		Window wm_check_window = 0;
 		Shell* shell = nullptr;
 		int screen = 0;

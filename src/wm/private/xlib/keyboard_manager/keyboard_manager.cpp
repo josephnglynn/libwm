@@ -25,7 +25,7 @@ namespace flow
 		XFreeModifiermap(modmap);
 	}
 
-	KeyboardManager::KeyboardManager(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk)
+	KeyboardManager::KeyboardManager(std::vector <KeyBinding>& kb, std::vector <ClientKeyBinding>& ckb, Key mk)
 	{
 		Update(kb, ckb, mk);
 	}
@@ -64,7 +64,7 @@ namespace flow
 		}
 	}
 
-	void KeyboardManager::Update(std::vector<KeyBinding>& kb, std::vector<ClientKeyBinding>& ckb, Key mk)
+	void KeyboardManager::Update(std::vector <KeyBinding>& kb, std::vector <ClientKeyBinding>& ckb, Key mk)
 	{
 		mod_key = mk;
 		key_bindings_root = kb;
@@ -138,19 +138,22 @@ namespace flow
 		}
 
 #ifdef FLOW_BETTER_FOCUS
-		 XGrabButton(
-			fwm->GetDisplay(),
-			Button1,
-			AnyModifier,
-			client->frame,
-			false,
-			ButtonPressMask | ButtonReleaseMask,
-			GrabModeAsync,
-			GrabModeAsync,
-			None,
-			None
-		);
+		XGrabButton(
+		   fwm->GetDisplay(),
+		   Button1,
+		   AnyModifier,
+		   client->frame,
+		   false,
+		   ButtonPressMask | ButtonReleaseMask,
+		   GrabModeAsync,
+		   GrabModeAsync,
+		   None,
+		   None
+	   );
 #endif
 
 	}
 }
+
+
+
