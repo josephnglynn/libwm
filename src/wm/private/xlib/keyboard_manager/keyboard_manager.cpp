@@ -98,7 +98,7 @@ namespace flow
 			km->num_lock_mask | LockMask
 		};
 		XUngrabButton(fwm->GetDisplay(), AnyButton, AnyModifier, client->window);
-		if (!focused)
+		/*if (!focused)
 		{
 			XGrabButton(
 				fwm->GetDisplay(),
@@ -112,7 +112,7 @@ namespace flow
 				None,
 				None
 			);
-		}
+		}*/
 
 		for (i = 0; i < km->key_bindings_client.size(); i++)
 		{
@@ -125,7 +125,7 @@ namespace flow
 						km->key_bindings_client[i].button,
 						km->key_bindings_client[i].event_mask | modifiers[j],
 						client->window,
-						false,
+						True,
 						ButtonPressMask | ButtonReleaseMask,
 						GrabModeAsync,
 						GrabModeSync,
@@ -136,22 +136,6 @@ namespace flow
 
 			}
 		}
-
-#ifdef FLOW_BETTER_FOCUS
-		XGrabButton(
-		   fwm->GetDisplay(),
-		   Button1,
-		   AnyModifier,
-		   client->frame,
-		   false,
-		   ButtonPressMask | ButtonReleaseMask,
-		   GrabModeAsync,
-		   GrabModeAsync,
-		   None,
-		   None
-	   );
-#endif
-
 	}
 }
 
